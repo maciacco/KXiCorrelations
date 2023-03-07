@@ -129,7 +129,7 @@ void Correlation (const char* inFileName = "o_merge_parallel", const char* outFi
           }
         }
         for (int iC = 0; iC < 2; ++iC){
-          hCorrDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_corr[iC]  / sqrt( avg_avg_var_k[1-iC][1] * avg_avg_var_xi[0][1]));
+          hCorrDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_corr[iC]  / sqrt( avg_avg_var_k[iC][1] * avg_avg_var_xi[1][1]));
           double avg_var_k_tmp = iC == 0 ? avg_avg_var_k[0][0] : avg_avg_var_k[0][1];
           double avg_var_xi_tmp = iC == 0 ? avg_avg_var_xi[1][0] : avg_avg_var_xi[1][1];
           hAvgVarKDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_var_k_tmp / n_ev_tot);
