@@ -6,15 +6,15 @@ void set_line_style(TF1* f);
 void set_text_style(TText* t);
 void set_text_style(TLegend* l);
 
-void MultiplicityDistribution(const char* inFileName = "oMC", const char* outFileName = "Mult"){
+void MultiplicityDistribution(const char* inFileName = "o_merge_parallel", const char* outFileName = "Mult"){
   gStyle->SetOptStat(0);
   
   TFile f(Form("%s.root", inFileName));
   TFile o(Form("%s.root", outFileName), "recreate");
 
-  TH3F *hMult = (TH3F*)f.Get("subsample_0/hOppNKaonXi_0");
+  TH3F *hMult = (TH3F*)f.Get("subsample_o1/hOppNKaonXiMinus");
   for (int iS = 1; iS < N_SAMPLE; ++iS){
-    TH3F *hMultTmp = (TH3F*)f.Get(Form("subsample_%d/hOppNKaonXi_%d", iS, iS));
+    TH3F *hMultTmp = (TH3F*)f.Get(Form("subsample_o%d/hOppNKaonXiMinus", iS + 1));
     hMult->Add(hMultTmp);
   }
   hMult->SetName("hMult");

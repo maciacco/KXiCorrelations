@@ -45,8 +45,9 @@ ROOT.gROOT.SetBatch()
 ROOT.EnableImplicitMT(10)
 
 # training
+RECOMPUTE_DICT = True
 PLOT_DIR = 'plots'
-MAKE_TRAIN_TEST_PLOT = True
+MAKE_TRAIN_TEST_PLOT = False
 OPTIMIZE = True
 OPTIMIZED = True
 TRAIN = args.dotraining
@@ -184,12 +185,12 @@ if TRAINING:
                     os.mkdir('models_test')
                 bin_model = bin
                 if MERGE_CENTRALITY:
-                    bin_model = f'all__{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}'
+                    bin_model = f'all_0_90_{pt_bins[0]}_{pt_bins[1]}'
 
                 if OPTIMIZE and TRAIN:
                     model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES,'roc_auc', nfold=5, timeout=300)
 
-                isModelTrained = os.path.isfile(f'models_test/{bin_model}_trained')
+                isModelTrained = os.path.isfile(f'models_test/{bin_model}_optimized_trained')
                 print(f'isModelTrained {bin_model}: {isModelTrained}')
                 if TRAIN and not isModelTrained:
                     # weights={0:2,1:6,2:3}
@@ -202,7 +203,7 @@ if TRAINING:
                 elif COMPUTE_SCORES_FROM_EFF and isModelTrained:
                     print('Model trained...')
                     if OPTIMIZED:
-                        model_hdl.load_model_handler(f'models_test/{bin_model}_trained')
+                        model_hdl.load_model_handler(f'models_test/{bin_model}_optimized_trained')
                     else:
                         model_hdl.load_model_handler(f'models_test/{bin_model}_trained')
                 else:
@@ -254,7 +255,7 @@ if TRAINING:
                     plt.close('all')
 
                 if COMPUTE_SCORES_FROM_EFF:
-                    pass
+                    #pass
                     # get scores corresponding to BDT prompt efficiencies using test sets
                     eff_array = np.arange(0.10, MAX_EFF, 0.01)
                     score_array = analysis_utils.score_from_efficiency_array(
@@ -273,7 +274,7 @@ if TRAINING:
                 del train_test_data_cent
                 ##############################################################
 
-    if COMPUTE_SCORES_FROM_EFF and TRAIN:
+    if COMPUTE_SCORES_FROM_EFF and ( TRAIN or RECOMPUTE_DICT ):
         pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
 
 

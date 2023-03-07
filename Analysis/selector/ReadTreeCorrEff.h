@@ -34,6 +34,9 @@ public :
    TTreeReaderArray<MiniXi> fMiniXi = {fReader, "MiniXi"};
    TTreeReaderArray<MiniKaon> fMiniKaon = {fReader, "MiniKaon"};
 
+   TFile *fileEffK;
+   TFile *fileEffXi;
+
    // histograms
    TH1D *fCent[N_SAMPLE];
    TH1D *fKaonQ1[2][2][N_SAMPLE];
@@ -46,8 +49,8 @@ public :
    TH1D *fOppKaonXiQ11[2][2][N_SAMPLE];
    TH3I *fNKaonXi[2][N_SAMPLE];
 
-   TH1D *fEffK[2][kNCentBinsSmall];
-   TH1D *fEffXi[2][1]; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
+   TH1D *fEffK[2][kNCentBins];
+   TH1D *fEffXi[2][kNCentBins];
    TH3F *fBDTEffXi; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT -> SEPARATELY FOR CHARGES)
 
 
