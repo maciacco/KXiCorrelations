@@ -122,14 +122,14 @@ void Correlation (const char* inFileName = "o_merge_parallel", const char* outFi
             }
           }
           for (int iC = 0; iC < 2; ++iC){
-            hCorrDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * delta + 0.001) - 1]->Fill(avg_corr_[iC]); // / sqrt( avg_avg_var_k_[iC][1] * avg_avg_var_xi_[1][1] )
+            hCorrDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * delta + 0.001) - 1]->Fill(avg_corr_[iC] / sqrt( avg_avg_var_k_[iC][1] * avg_avg_var_xi_[1][1] ));
             hAvgVarKDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * delta + 0.001) - 1]->Fill(avg_avg_var_k_[0][iC]);
             hAvgVarXiDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * delta + 0.001) - 1]->Fill(avg_avg_var_xi_[1][iC]);
             //std::cout << hCent->FindBin(kCentBins[iCent] + iSubCent * delta + 0.001) - 1 << std::endl;
           }
         }
         for (int iC = 0; iC < 2; ++iC){
-          hCorrDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_corr[iC] / n_ev_tot); // / sqrt( avg_avg_var_k[1-iC][1] * avg_avg_var_xi[0][1])
+          hCorrDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_corr[iC]  / sqrt( avg_avg_var_k[1-iC][1] * avg_avg_var_xi[0][1]));
           double avg_var_k_tmp = iC == 0 ? avg_avg_var_k[0][0] : avg_avg_var_k[0][1];
           double avg_var_xi_tmp = iC == 0 ? avg_avg_var_xi[1][0] : avg_avg_var_xi[1][1];
           hAvgVarKDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_var_k_tmp / n_ev_tot);
