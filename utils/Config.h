@@ -19,7 +19,7 @@ struct MiniXiMC : public MiniXi {
 };
 
 struct MiniKaon {
-  Double32_t fPt; //[-12.7,12.8,8]
+  Double32_t fPt; //[-3.175,3.2,8]
   Double32_t fEta; //[-1.27,1.28,8]
   Double32_t fNsigmaTPC; //[-6.35,6.4,8]
   Double32_t fNsigmaTOF; //[-6.35,6.4,8]
@@ -27,11 +27,12 @@ struct MiniKaon {
 };
 
 struct MiniKaonMC : public MiniKaon {
-  Double32_t fPtMC; //[-12.7,12.8,8]
+  Double32_t fPtMC; //[-3.175,3.2,8]
   Double32_t fEtaMC; //[-1.27,1.28,8]
   bool fIsReconstructed;
   unsigned char fFlag;
 };
+
 
 struct MiniCollision {
   Double32_t fZ; //[-12.7,12.8,8]
@@ -40,14 +41,14 @@ struct MiniCollision {
 };
 
 constexpr const char* kDataDir = "/data/mciacco/KXiCorrelations";
-constexpr const char* kEffKFile = "KaonXiEff";
-constexpr const char* kEffXiFile = "KaonXiEff"; //"XiEff";
+constexpr const char* kEffKFile = "KaonXiEff_21d6_1";
+constexpr const char* kEffXiFile = "XiEff"; //"XiEff";
 constexpr const char* kEffBDTXiFile = "XiBDTEff";
 
 constexpr double kXiMass{1.32171};
 
-constexpr bool isMC = true;
-constexpr int N_SAMPLE = 1;
+constexpr bool isMC = false;
+constexpr int N_SAMPLE = 15;
 constexpr int N_SUB_CENT = 10;
 constexpr int kNCentBinsMed = 18;
 constexpr const char* kSubsampleFlag = "";
@@ -70,17 +71,21 @@ constexpr int kNCentBins = 9;
 constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
 
 constexpr double kEtaCut = 0.8;
-constexpr double kNsigmaTPCcut = 3.;
+constexpr double kNsigmaTPCcut = 5.;
 constexpr double kNsigmaTPCcutPresel = 3.;
-constexpr double kNsigmaTOFcut = 4.;
+constexpr double kNsigmaTOFcut = 5.;
 constexpr double kTPCptCut = .5;
 constexpr double kTOFptCut = 1.;
 constexpr double kXiLowPtCut = 1.;
 constexpr double kXiUpPtCut = 3.;
-constexpr double kXiMassCut = .02;
-constexpr double kBdtEffCut = .4;
+constexpr double kXiMassCut = .005;
+constexpr double kBdtEffCut = .5;
+constexpr double kBdtScoreCut = 0.99;
 constexpr double kPtLowLimitK = 0.2;
-constexpr int kLimitedSample = 100;
+constexpr int kLimitedSample = 1000;
+
+constexpr double kNsigmaTPCcutAsym[] = {-2.5, 3.5};
+constexpr double kNsigmaTOFcutAsym[] = {-3., 3.};
 
 constexpr int kNBinsPt = 40;
 constexpr double kMinPt = 0;
@@ -88,16 +93,28 @@ constexpr double kDeltaPt = 0.1;
 constexpr int kNBinsPtXi = 8;
 constexpr double kMinPtXi = 0;
 constexpr double kDeltaPtXi = 0.5;
+constexpr int kNEtaBins = 1;
+constexpr double kMinEta = -1.;
+constexpr double kDeltaEta = 2.;
 
 constexpr double kDummyEffK = 1.; // for code validation purposes
 constexpr double kDummyEffXi = 1.; // for code validation purposes
+constexpr double kDummyBdtScoreXi = .5; // for code validation purposes
 
 constexpr int kTextFont = 44;
 constexpr int kTextSize = 20;
 
 constexpr const char* kCollidingSystemText = "Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV";
-constexpr const char* kParticleAntiparticleText[2] = {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
+constexpr const char* kParticleAntiparticleText[2] = {"K^{+}", "#Xi^{-}"}; // {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
+constexpr const char* kParticleAntiparticleTextAM[2][2] = {{"K^{-}", "K^{+}"}, {"#Xi^{+}", "#Xi^{-}"}}; // {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
 
 constexpr bool kLimitSample = false;
+constexpr bool kUseIndex = true;
+
+constexpr bool kRebinNsigma = true;
+constexpr bool k2018 = false;
+
+constexpr bool kNetCorrelation = true;
+constexpr bool kUseBdtInMC = true;
 
 #endif // CONFIGFILE_H

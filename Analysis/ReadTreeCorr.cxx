@@ -1,7 +1,7 @@
 #include <TFile.h>
 #include <TTree.h>
 #include <TBranch.h>
-#include <TH2D.h>
+#include <TH3D.h>
 #include <TCanvas.h>
 #include <TMath.h>
 #include <Riostream.h>
@@ -16,7 +16,7 @@ bool limit_tree = false;
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
 
-void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21l5_child1_cpy", const char* ofname = "oo_limit"){ // mc_tree/AnalysisResults_mc
+void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6abc", const char* ofname = "oo_limit_2ad6"){ // mc_tree/AnalysisResults_mc
   ROOT::EnableImplicitMT(10);
   TFile f(Form("%s/%s.root", kDataDir, fname));
   std::vector<MiniKaonMC> *k = nullptr;
@@ -33,13 +33,13 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21l5_child1_cp
   t->SetBranchAddress("MiniKaonMC", &k, &bk);
   t->SetBranchAddress("MiniXiMC", &xi, &bxi);
   TBranch *be = t->GetBranch("MiniCollision");
-  t->SetBranchAddress("index", &index, &bindex);
+  if (kUseIndex) t->SetBranchAddress("index", &index, &bindex);
   be->SetAddress(&c);
   
-  TH2D *hGenKaon[2];
-  TH2D *hGenXi[2];
-  TH2D *hRecKaon[2];
-  TH2D *hRecXi[2];
+  TH3D *hGenKaon[2];
+  TH3D *hGenXi[2];
+  TH3D *hRecKaon[2];
+  TH3D *hRecXi[2];
   double ptBins[kNBinsPt + 1];
   for (int iB = 0; iB < kNBinsPt + 1; ++iB){
     ptBins[iB] = kMinPt + kDeltaPt * iB;
@@ -48,11 +48,15 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21l5_child1_cp
   for (int iB = 0; iB < kNBinsPtXi + 1; ++iB){
     ptBinsXi[iB] = kMinPt + kDeltaPtXi * iB;
   }
+  double etaBins[kNEtaBins + 1];
+  for (int iB = 0; iB < kNEtaBins + 1; ++iB){
+    etaBins[iB] = kMinEta + kDeltaEta * iB;
+  }
   for (int iC = 0; iC < 2; ++iC){
-    hGenKaon[iC] = new TH2D(Form("h%sGenKaon", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNBinsPt, ptBins);
-    hGenXi[iC] = new TH2D(Form("h%sGenXi", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNBinsPtXi, ptBinsXi);
-    hRecKaon[iC] = new TH2D(Form("h%sRecKaon", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNBinsPt, ptBins);
-    hRecXi[iC] = new TH2D(Form("h%sRecXi", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNBinsPtXi, ptBinsXi);
+    hGenKaon[iC] = new TH3D(Form("h%sGenKaon", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPt, ptBins);
+    hGenXi[iC] = new TH3D(Form("h%sGenXi", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPtXi, ptBinsXi);
+    hRecKaon[iC] = new TH3D(Form("h%sRecKaon", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPt, ptBins);
+    hRecXi[iC] = new TH3D(Form("h%sRecXi", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPtXi, ptBinsXi);
   }
 
   TFile o(Form("%s.root", ofname), "recreate");
@@ -70,8 +74,10 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21l5_child1_cp
       be->GetEntry(tentry);
       bk->GetEntry(tentry);
       bxi->GetEntry(tentry);
-      bindex->GetEntry(tentry);
-      //if (index * nEntries < iS * nEntriesSample || index * nEntries > nEntriesSample * (iS + 1)) continue;
+      if (kUseIndex){
+        bindex->GetEntry(tentry);
+        if (index * nEntries < iS * nEntriesSample || index * nEntries > nEntriesSample * (iS + 1)) continue;
+      }
       if (c->fCent > 90) continue;
 
       int nK[] = {0, 0};
@@ -79,33 +85,37 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21l5_child1_cp
       for (UInt_t iK = 0; iK < k->size(); ++iK){
         if (std::abs(k->at(iK).fPtMC) > kTOFptCut || std::abs(k->at(iK).fPtMC) < kPtLowLimitK || k->at(iK).fFlag != 1 || std::abs(k->at(iK).fEtaMC) > kEtaCut) continue;
         int im_MC = k->at(iK).fPtMC > 0 ? 1 : 0;
-        hGenKaon[im_MC]->Fill(c->fCent, std::abs(k->at(iK).fPtMC));
+        hGenKaon[im_MC]->Fill(c->fCent, k->at(iK).fEtaMC, std::abs(k->at(iK).fPtMC));
         if (
+            (k->at(iK).fCutBitMap == 1 || k->at(iK).fCutBitMap == 2) &&
             k->at(iK).fIsReconstructed &&
             std::abs(k->at(iK).fPt) > kPtLowLimitK && std::abs(k->at(iK).fPt) < kTOFptCut &&
             (std::abs(k->at(iK).fEta) < kEtaCut) &&
-            ((std::abs(k->at(iK).fPt) < kTPCptCut && (std::abs(k->at(iK).fNsigmaTPC) < kNsigmaTPCcut) ) ||
-            (std::abs(k->at(iK).fPt) > kTPCptCut && (std::abs(k->at(iK).fPt) < kTOFptCut) && (std::abs(k->at(iK).fNsigmaTPC) < kNsigmaTPCcutPresel) && (std::abs(k->at(iK).fNsigmaTOF) < kNsigmaTOFcut)))
+            ((std::abs(k->at(iK).fPt) < kTPCptCut && (k->at(iK).fNsigmaTPC > kNsigmaTPCcutAsym[0] && k->at(iK).fNsigmaTPC < kNsigmaTPCcutAsym[1]) ) ||
+            (std::abs(k->at(iK).fPt) > kTPCptCut && (std::abs(k->at(iK).fPt) < kTOFptCut) && (std::abs(k->at(iK).fNsigmaTPC) < kNsigmaTPCcutPresel) && (k->at(iK).fNsigmaTOF > kNsigmaTOFcutAsym[0] && k->at(iK).fNsigmaTOF < kNsigmaTOFcutAsym[1])))
           )
         {
           int im = k->at(iK).fPt > 0 ? 1 : 0;
-          hRecKaon[im]->Fill(c->fCent, std::abs(k->at(iK).fPt));
+          hRecKaon[im]->Fill(c->fCent, k->at(iK).fEta, std::abs(k->at(iK).fPt));
         }
       }
 
       for (UInt_t iXi = 0; iXi < xi->size(); ++iXi){
         if (std::abs(xi->at(iXi).fPtMC) > kXiUpPtCut || std::abs(xi->at(iXi).fPtMC) < kXiLowPtCut || std::abs(xi->at(iXi).fEtaMC) > kEtaCut) continue;
         int im_MC = xi->at(iXi).fPtMC > 0;
-        hGenXi[im_MC]->Fill(c->fCent, std::abs(xi->at(iXi).fPtMC));
+        hGenXi[im_MC]->Fill(c->fCent, xi->at(iXi).fEtaMC, std::abs(xi->at(iXi).fPtMC));
         if (
             std::abs(xi->at(iXi).fEta) < kEtaCut &&
             std::abs(xi->at(iXi).fPt) > kXiLowPtCut && std::abs(xi->at(iXi).fPt) < kXiUpPtCut &&
             std::abs(xi->at(iXi).fMass - kXiMass) < kXiMassCut
           )
         {
+          if (kUseBdtInMC){
+            if (xi->at(iXi).fBdtOut < kBdtScoreCut) continue;
+          }
           if (!xi->at(iXi).fIsReconstructed || xi->at(iXi).fFlag != 1 || std::abs(xi->at(iXi).fEtaMC) > kEtaCut) continue;
           int im = xi->at(iXi).fPt > 0;
-          hRecXi[im]->Fill(c->fCent, std::abs(xi->at(iXi).fPt));
+          hRecXi[im]->Fill(c->fCent, xi->at(iXi).fEta, std::abs(xi->at(iXi).fPt));
         }
       }
     }

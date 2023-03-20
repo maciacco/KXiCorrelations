@@ -16,8 +16,8 @@
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
 
-void RandomiseTree(const char* inFileName = "AnalysisResults_LHC21l5_child1_cpy"){
-  TFile *in = TFile::Open(Form("%s/mc_tree/%s.root", kDataDir, inFileName), "update");
+void RandomiseTree(const char* inFileName = "AnalysisResults_LHC15o_KXI"){
+  TFile *in = TFile::Open(Form("%s/tree/%s.root", kDataDir, inFileName), "update");
 
   float rnd = 0.;
   TTree *t = (TTree*)in->Get("StrangenessTree");

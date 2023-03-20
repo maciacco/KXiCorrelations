@@ -96,7 +96,7 @@ void set_hist_style(TH1D* h){
 
 void set_line_style(TF1* f){
   f->SetLineWidth(1);
-  f->SetLineColor(kBlack);
+  f->SetLineColor(kRed);
 }
 
 void set_text_style(TText* t){
