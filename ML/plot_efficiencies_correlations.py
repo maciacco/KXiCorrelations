@@ -64,7 +64,7 @@ MAX_EFF = 1.00
 TRAINING = not args.application
 PLOT_DIR = 'plots'
 MAKE_PRESELECTION_EFFICIENCY = args.eff
-MAKE_FEATURES_PLOTS = False
+MAKE_FEATURES_PLOTS = True
 MAKE_TRAIN_TEST_PLOT = args.train
 OPTIMIZE = False
 OPTIMIZED = False
@@ -126,7 +126,7 @@ if TRAINING:
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-            df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
+            df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
 
             if MAKE_PRESELECTION_EFFICIENCY and not MAKE_FEATURES_PLOTS and not MAKE_TRAIN_TEST_PLOT:
                 ##############################################################
@@ -135,7 +135,7 @@ if TRAINING:
                 # df_generated = uproot.open(os.path.expandvars(MC_SIGNAL_PATH_GEN))['LambdaTree'].arrays(library="pd")
                 
                 root_file_presel_eff = ROOT.TFile(f"PreselEff_{cent_bins[0]}_{cent_bins[1]}.root", "update")
-                df_signal_cent = df_signal.query(f'pdg {split_ineq_sign} and competingMass > 0.01 and (pdg==3312 or pdg==-3312) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega and flag==1') # and (hasTOFhit or hasITSrefit)') # pt cut? (hasTOFhit or hasITSrefit) and  and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5
+                df_signal_cent = df_signal.query(f'pdg {split_ineq_sign} and competingMass > 0.008 and (pdg==3312 or pdg==-3312) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 2.5 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and flag==1 and not isOmega')
                 df_generated_cent = df_signal.query(
                     f'pdg {split_ineq_sign} and ctMC > 0. and ctMC < 20 and (pdg==3312 or pdg==-3312) and flag==1') # pt cut?
                 #del df_generated
@@ -167,16 +167,16 @@ if TRAINING:
 
     del df_signal
 
-    df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/AnalysisResults_0_90.root"))['XiOmegaTree'].arrays(library="pd")
+    df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_0_90.root"))['XiOmegaTree'].arrays(library="pd")
 
     if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY and not TRAIN:
         ######################################################
         # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
         ######################################################
 
-        df_background = uproot.open(os.path.expandvars("/data/mciacco/KXiCorrelations/AnalysisResults-data.root"))['XiOmegaTree'].arrays(library="pd")
-        df_prompt_ct = df_signal.query(f'competingMass > 0.01 and (pdg==3312 or pdg==-3312) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega and flag==1') # pt cut?
-        df_background_ct = df_background.query(f'competingMass > 0.01 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega') # pt cut?
+        df_background = uproot.open(os.path.expandvars("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root"))['XiOmegaTree'].arrays(library="pd")
+        df_prompt_ct = df_signal.query(f'competingMass > 0.01 and (pdg==3312 or pdg==-3312) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69') # and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega and flag==1') # pt cut?
+        df_background_ct = df_background.query(f'competingMass > 0.01 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69') # and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega') # pt cut?
         #print(df_prompt_ct.keys())
         #print(df_background_ct.keys())
 
@@ -191,16 +191,22 @@ if TRAINING:
             os.mkdir(f'{PLOT_DIR}/features')
 
         leg_labels = ['background', 'signal']
-        bins = [64,64,64,64,60,50,50,50,64]
-        range_feature = [(0,2.55),(0,2.55),(0,2.55),(0,2.55),(0,1.2),(0,1.),(0.95,1),(0.95,1),(-5.,5.)]
-        plt.figure(1,figsize=(12,12))
-        for i_feature, feature in enumerate(TRAINING_COLUMNS_LIST):
-            plt.subplot(3,3,i_feature+1, title=feature)
-            plt.hist(df_background_ct[feature], bins=bins[i_feature], label="background",log=True, density=True, alpha=0.5, range=range_feature[i_feature])
-            plt.hist(df_prompt_ct[feature], bins=bins[i_feature], label="signal", log=True, density=True, alpha=0.5, range=range_feature[i_feature])
-            if i_feature == (len(TRAINING_COLUMNS_LIST)-1):
-                plt.xlim(xmin=-4.5,xmax=4.5)
-                plt.legend(loc='best')
+        plot_distr = plot_utils.plot_distr(
+            [background_tree_handler, prompt_tree_handler],
+            TRAINING_COLUMNS_LIST, bins=40, labels=leg_labels, log=True, density=True, figsize=(12, 12),
+            alpha=0.5, grid=False)
+        plt.subplots_adjust(left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.50, wspace=0.50)
+        # bins = [64,64,64,64,60,50,50,50,64]
+        # range_feature = [(0,2.55),(0,2.55),(0,2.55),(0,2.55),(0,1.2),(0,1.),(0.95,1),(0.95,1),(-5.,5.)]
+        # plt.figure(1,figsize=(12,12))
+        # for i_feature, feature in enumerate(TRAINING_COLUMNS_LIST):
+        #     plt.subplot(3,3,i_feature+1, title=feature)
+        #     plt.hist(df_background_ct[feature], bins=bins[i_feature], label="background",log=True, density=True, alpha=0.5, range=range_feature[i_feature])
+        #     plt.hist(df_prompt_ct[feature], bins=bins[i_feature], label="signal", log=True, density=True, alpha=0.5, range=range_feature[i_feature])
+        #     if i_feature == (len(TRAINING_COLUMNS_LIST)-1):
+        #         plt.xlim(xmin=-4.5,xmax=4.5)
+        #         plt.legend(loc='best')
+        plt.tight_layout()
         plt.savefig(f'{PLOT_DIR}/features/FeaturePlots.pdf')
         bkg_corr = plot_utils.plot_corr([background_tree_handler], TRAINING_COLUMNS_LIST, ['Background'])
         bkg_corr.set_size_inches(6,6)

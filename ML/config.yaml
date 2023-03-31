@@ -5,18 +5,20 @@ CT_BINS: [[0,1],[1,2],[2,3],[3,4],[4,5],[5,10]] # training
 CT_BINS_CENT:  [[0,1,2,3,4,5,10]] #,[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10],[0,1,2,3,4,5,10]]
 PT_BINS: [[1.,1.5],[1.5,2],[2,2.5],[2.5,3],[3,4]]
 PT_BINS_CENT: [[1.,1.5,2,2.5,3,4]] #,[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4],[1.,1.5,2,2.5,3,4]]
-CENTRALITY_LIST:  [[0,10],[10,20],[20,30],[30,40],[40,50],[50,60],[60,70],[70,80],[80,90]] #[[0,90]]
-CENTRALITY_BINS:  [0,10,20,30,40,50,60,70,80,90] #[[0,90]]
-#CENTRALITY_LIST:  [[0,90]]
-#CENTRALITY_BINS:  [0,90]
+#CENTRALITY_LIST:  [[0,10]] #,[10,20],[20,30],[30,40],[40,50],[50,60],[60,70],[70,80],[80,90]] #[[0,90]]
+#CENTRALITY_BINS:  [0,10] #,20,30,40,50,60,70,80,90] #[[0,90]]
+CENTRALITY_LIST:  [[0,90]]
+CENTRALITY_BINS:  [0,90]
 
 RANDOM_STATE: 42
 
 HYPERPARAMS:
-  n_estimators: 300
+  n_estimators: 900
   max_depth: 3
   learning_rate: 0.05
-  gamma: 1
+  gamma: 1.2
+  colsample_bytree: 0.8
+  subsample: 0.7
   # learning_rate: 0.0982
   # n_estimators: 181
   seed: 42
@@ -24,9 +26,24 @@ HYPERPARAMS:
 HYPERPARAMS_RANGES:
   # booster parameters
   n_estimators: !!python/tuple [100,2000]
-  max_depth: !!python/tuple [2,10]
+  max_depth: !!python/tuple [2,8]
   learning_rate: !!python/tuple [0.05,1.]
-  gamma: !!python/tuple [0.2, 10.]
+  gamma: !!python/tuple [0.2, 5.]
+  subsample: !!python/tuple [0.5, 0.9]
+  colsample_bytree: !!python/tuple [0.5, 0.9]
+  # learning_rate: !!python/tuple [0.01, 0.3] # learning rate
+  # n_estimators: !!python/tuple [50, 500] # number of boosting trees
+  # gamma: !!python/tuple [0.3, 1.1] # specifies the minimum loss reduction required to make a split
+  # min_child_weight: !!python/tuple [1, 12]
+  # subsample: !!python/tuple [0.5, 0.9] # denotes the fraction of observations to be randomly samples for each tree
+  # colsample_bytree: !!python/tuple [0.5, 0.9] # denotes the fraction of columns to be randomly samples for each tree
+
+HYPERPARAMS_RANGES_LOW_PT:
+  # booster parameters
+  n_estimators: !!python/tuple [100,2000]
+  max_depth: !!python/tuple [2,8]
+  learning_rate: !!python/tuple [0.05,1.]
+  gamma: !!python/tuple [0.2, 5.]
   subsample: !!python/tuple [0.5, 0.9]
   colsample_bytree: !!python/tuple [0.5, 0.9]
   # learning_rate: !!python/tuple [0.01, 0.3] # learning rate
@@ -39,10 +56,6 @@ HYPERPARAMS_RANGES:
 TRAINING_COLUMNS:
   #- radius #[0,25.4,8]
   #- radiusV0 #[0,25.4,8]
-  - dcaBachPV #[0,2.54,8]
-  - dcaV0PV #[0,2.54,16]
-  - dcaV0piPV #[0,2.54,8]
-  - dcaV0prPV #[0,2.54,8]
   - dcaV0tracks #[0,2.54,8]
   - dcaBachV0 #[0,2.54,8]
   - cosPA #[0.95,1,16]
@@ -56,3 +69,213 @@ TRAINING_COLUMNS:
   #- tpcClBach
   #- tpcClV0Pr
   #- tpcClV0Pi
+  - dcaBachPV #[0,2.54,8]
+  - dcaV0PV #[0,2.54,16]
+  - dcaV0piPV #[0,2.54,8]
+  - dcaV0prPV #[0,2.54,8]
+  #- mass
+
+HYPERPARAMS_OPTIMIZED_0:
+  base_score: 0.5
+  booster: gbtree
+  callbacks: null
+  colsample_bylevel: 1
+  colsample_bynode: 1
+  colsample_bytree: 0.6504902568270768
+  early_stopping_rounds: null
+  enable_categorical: false
+  eval_metric: null
+  gamma: 2.4294364189047037
+  gpu_id: 0
+  grow_policy: depthwise
+  importance_type: null
+  interaction_constraints: ''
+  learning_rate: 0.05501235918928236
+  max_bin: 256
+  max_cat_to_onehot: 4
+  max_delta_step: 0
+  max_depth: 4
+  max_leaves: 0
+  min_child_weight: 1
+  missing: .nan
+  monotone_constraints: ()
+  n_estimators: 907
+  n_jobs: 0
+  num_parallel_tree: 1
+  objective: binary:logistic
+  predictor: auto
+  random_state: 42
+  reg_alpha: 0
+  reg_lambda: 1
+  sampling_method: uniform
+  scale_pos_weight: 1
+  seed: 42
+  subsample: 0.5889045484850132
+  tree_method: gpu_hist
+  use_label_encoder: false
+  validate_parameters: 1
+  verbosity: null
+
+HYPERPARAMS_OPTIMIZED_1:
+  base_score: 0.5
+  booster: gbtree
+  callbacks: null
+  colsample_bylevel: 1
+  colsample_bynode: 1
+  colsample_bytree: 0.5767902490569048
+  early_stopping_rounds: null
+  enable_categorical: false
+  eval_metric: null
+  gamma: 3.4051406030325486
+  gpu_id: 0
+  grow_policy: depthwise
+  importance_type: null
+  interaction_constraints: ''
+  learning_rate: 0.050042301960928154
+  max_bin: 256
+  max_cat_to_onehot: 4
+  max_delta_step: 0
+  max_depth: 7
+  max_leaves: 0
+  min_child_weight: 1
+  missing: .nan
+  monotone_constraints: ()
+  n_estimators: 1612
+  n_jobs: 0
+  num_parallel_tree: 1
+  objective: binary:logistic
+  predictor: auto
+  random_state: 42
+  reg_alpha: 0
+  reg_lambda: 1
+  sampling_method: uniform
+  scale_pos_weight: 1
+  seed: 42
+  subsample: 0.5014493032770717
+  tree_method: gpu_hist
+  use_label_encoder: false
+  validate_parameters: 1
+  verbosity: null
+
+HYPERPARAMS_OPTIMIZED_2:
+  base_score: 0.5
+  booster: gbtree
+  callbacks: null
+  colsample_bylevel: 1
+  colsample_bynode: 1
+  colsample_bytree: 0.8533117004875995
+  early_stopping_rounds: null
+  enable_categorical: false
+  eval_metric: null
+  gamma: 2.2457134247676724
+  gpu_id: 0
+  grow_policy: depthwise
+  importance_type: null
+  interaction_constraints: ''
+  learning_rate: 0.05041524977421949
+  max_bin: 256
+  max_cat_to_onehot: 4
+  max_delta_step: 0
+  max_depth: 7
+  max_leaves: 0
+  min_child_weight: 1
+  missing: .nan
+  monotone_constraints: ()
+  n_estimators: 1376
+  n_jobs: 0
+  num_parallel_tree: 1
+  objective: binary:logistic
+  predictor: auto
+  random_state: 42
+  reg_alpha: 0
+  reg_lambda: 1
+  sampling_method: uniform
+  scale_pos_weight: 1
+  seed: 42
+  subsample: 0.8799090957223198
+  tree_method: gpu_hist
+  use_label_encoder: false
+  validate_parameters: 1
+  verbosity: null
+
+HYPERPARAMS_OPTIMIZXED_3:
+  base_score: 0.5
+  booster: gbtree
+  callbacks: null
+  colsample_bylevel: 1
+  colsample_bynode: 1
+  colsample_bytree: 0.6819793493895315
+  early_stopping_rounds: null
+  enable_categorical: false
+  eval_metric: null
+  gamma: 4.392601888062558
+  gpu_id: 0
+  grow_policy: depthwise
+  importance_type: null
+  interaction_constraints: ''
+  learning_rate: 0.0953948794559876
+  max_bin: 256
+  max_cat_to_onehot: 4
+  max_delta_step: 0
+  max_depth: 7
+  max_leaves: 0
+  min_child_weight: 1
+  missing: .nan
+  monotone_constraints: ()
+  n_estimators: 1286
+  n_jobs: 0
+  num_parallel_tree: 1
+  objective: binary:logistic
+  predictor: auto
+  random_state: 42
+  reg_alpha: 0
+  reg_lambda: 1
+  sampling_method: uniform
+  scale_pos_weight: 1
+  seed: 42
+  subsample: 0.5783028927350707
+  tree_method: gpu_hist
+  use_label_encoder: false
+  validate_parameters: 1
+  verbosity: null
+
+HYPERPARAMS_OPTIMIZED_4:
+  base_score: 0.5
+  booster: gbtree
+  callbacks: null
+  colsample_bylevel: 1
+  colsample_bynode: 1
+  colsample_bytree: 0.8165899803231229
+  early_stopping_rounds: null
+  enable_categorical: false
+  eval_metric: null
+  gamma: 3.6063736498810703
+  gpu_id: 0
+  grow_policy: depthwise
+  importance_type: null
+  interaction_constraints: ''
+  learning_rate: 0.05450153068927657
+  max_bin: 256
+  max_cat_to_onehot: 4
+  max_delta_step: 0
+  max_depth: 7
+  max_leaves: 0
+  min_child_weight: 1
+  missing: .nan
+  monotone_constraints: ()
+  n_estimators: 1985
+  n_jobs: 0
+  num_parallel_tree: 1
+  objective: binary:logistic
+  predictor: auto
+  random_state: 42
+  reg_alpha: 0
+  reg_lambda: 1
+  sampling_method: uniform
+  scale_pos_weight: 1
+  seed: 42
+  subsample: 0.6551542579711637
+  tree_method: gpu_hist
+  use_label_encoder: false
+  validate_parameters: 1
+  verbosity: null

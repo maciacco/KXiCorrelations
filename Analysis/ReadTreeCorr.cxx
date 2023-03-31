@@ -9,14 +9,12 @@
 #include "TRandom3.h"
 #include "TROOT.h"
 
-bool limit_tree = false;
-
 #ifdef __CINT__
 #pragma link C++ class std::vector<MiniKaonMC>+;
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
 
-void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6abc", const char* ofname = "oo_limit_2ad6"){ // mc_tree/AnalysisResults_mc
+void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6_strinj", const char* ofname = "oo_limit_21d6_strinj"){ // mc_tree/AnalysisResults_mc
   ROOT::EnableImplicitMT(10);
   TFile f(Form("%s/%s.root", kDataDir, fname));
   std::vector<MiniKaonMC> *k = nullptr;
@@ -40,27 +38,34 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6abc", cons
   TH3D *hGenXi[2];
   TH3D *hRecKaon[2];
   TH3D *hRecXi[2];
+  TH3D *hBDTOut[2];
   double ptBins[kNBinsPt + 1];
   for (int iB = 0; iB < kNBinsPt + 1; ++iB){
     ptBins[iB] = kMinPt + kDeltaPt * iB;
   }
   double ptBinsXi[kNBinsPtXi + 1];
   for (int iB = 0; iB < kNBinsPtXi + 1; ++iB){
-    ptBinsXi[iB] = kMinPt + kDeltaPtXi * iB;
+    double f = iB < kNBinsPtXi ? 0. : 1.;
+    ptBinsXi[iB] = kMinPt + kDeltaPtXi * iB + f * kDeltaPtXi;
   }
   double etaBins[kNEtaBins + 1];
   for (int iB = 0; iB < kNEtaBins + 1; ++iB){
     etaBins[iB] = kMinEta + kDeltaEta * iB;
+  }
+  double bdtBins[101];
+  for (int iB = 0; iB < 101; ++iB){
+    bdtBins[iB] = iB / 100.;
   }
   for (int iC = 0; iC < 2; ++iC){
     hGenKaon[iC] = new TH3D(Form("h%sGenKaon", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPt, ptBins);
     hGenXi[iC] = new TH3D(Form("h%sGenXi", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPtXi, ptBinsXi);
     hRecKaon[iC] = new TH3D(Form("h%sRecKaon", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPt, ptBins);
     hRecXi[iC] = new TH3D(Form("h%sRecXi", kAntiMatterLabel[iC]), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPtXi, ptBinsXi);
+    hBDTOut[iC] = new TH3D(Form("h%sBDTOutXi", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c});BDT out", kNCentBins, kCentBins, kNBinsPtXi, ptBinsXi, 100, bdtBins);
   }
 
   TFile o(Form("%s.root", ofname), "recreate");
-  Long64_t nEntries = limit_tree ? kLimitedSample : t->GetEntries();
+  Long64_t nEntries = kLimitSample ? kLimitedSample : t->GetEntries();
   Long64_t nEntriesSample = nEntries/N_SAMPLE;
   for (int iS = 0; iS < N_SAMPLE; ++iS){
     for (int iC = 0; iC < 2; ++iC){
@@ -68,6 +73,7 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6abc", cons
       hRecKaon[iC]->Reset();
       hGenXi[iC]->Reset();
       hRecXi[iC]->Reset();
+      hBDTOut[iC]->Reset();
     }
     for (Long64_t i = 0; i < nEntries; ++i){
       Long64_t tentry = i;
@@ -110,12 +116,13 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6abc", cons
             std::abs(xi->at(iXi).fMass - kXiMass) < kXiMassCut
           )
         {
+          if (!xi->at(iXi).fIsReconstructed || xi->at(iXi).fFlag != 1 || std::abs(xi->at(iXi).fEtaMC) > kEtaCut || (xi->at(iXi).fRecFlag & BIT(0)) != 1 || (xi->at(iXi).fRecFlag & BIT(1)) != 2) continue;
           if (kUseBdtInMC){
             if (xi->at(iXi).fBdtOut < kBdtScoreCut) continue;
           }
-          if (!xi->at(iXi).fIsReconstructed || xi->at(iXi).fFlag != 1 || std::abs(xi->at(iXi).fEtaMC) > kEtaCut) continue;
           int im = xi->at(iXi).fPt > 0;
           hRecXi[im]->Fill(c->fCent, xi->at(iXi).fEta, std::abs(xi->at(iXi).fPt));
+          hBDTOut[im]->Fill(c->fCent, std::abs(xi->at(iXi).fPt), xi->at(iXi).fBdtOut);
         }
       }
     }
@@ -127,6 +134,7 @@ void ReadTreeCorr(const char* fname = "mc_tree/AnalysisResults_LHC21d6abc", cons
       hRecKaon[iC]->Write();
       hGenXi[iC]->Write();
       hRecXi[iC]->Write();
+      hBDTOut[iC]->Write();
     }
   }
 

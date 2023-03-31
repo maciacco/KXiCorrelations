@@ -1,7 +1,7 @@
 #include "../utils/Config.h"
 
 #define CHARGE_XI 0
-//#define CLOSURE_TEST
+#define CLOSURE_TEST
 
 const bool test_from_th2 = false;
 
@@ -12,7 +12,7 @@ double compute_covariance(const int iC, const double kaonQ1[2], const double kao
 double compute_net_covariance(const double kaonQ1[2], const double kaonQ1Sq[2], const double kaonQ2[2], const double xiQ1[2], const double xiQ1Sq[2], const double xiQ2[2], const double sameKaonXiQ11[2], const double oppKaonXiQ11[2]);
 double compute_net_variance(const double Q1[2], const double Q11[2], const double Q1Sq[2], const double Q2[2]);
 
-void Correlation (const char* inFileName = "o_merge_parallel", const char* outFileName = "out_merge_parallel"){
+void Correlation (const char* inFileName = "o_merge_parallel_15o_full", const char* outFileName = "out_merge_parallel"){
   TFile *inFile = TFile::Open(Form("%s.root", inFileName));
   if (!inFile) return;
   TFile outFile(Form("%s.root", outFileName), "recreate");

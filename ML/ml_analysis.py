@@ -37,7 +37,7 @@ DUMP_HYPERPARAMS = True
 USE_REAL_DATA = True
 
 PRODUCE_DATASETS = args.generate
-use_gpu = False
+use_gpu = True
 
 # avoid pandas warning
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -47,14 +47,14 @@ ROOT.EnableImplicitMT(10)
 # training
 RECOMPUTE_DICT = True
 PLOT_DIR = 'plots'
-MAKE_TRAIN_TEST_PLOT = False
+MAKE_TRAIN_TEST_PLOT = True
 OPTIMIZE = True
 OPTIMIZED = True
 TRAIN = args.dotraining
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
 TRAINING = args.train and (COMPUTE_SCORES_FROM_EFF or TRAIN)
 MERGE_CENTRALITY = args.mergecentrality
-CREATE_TRAIN_TEST = True
+CREATE_TRAIN_TEST = False
 
 # application
 APPLICATION = args.application
@@ -80,6 +80,7 @@ TRAINING_COLUMNS_LIST = params['TRAINING_COLUMNS']
 RANDOM_STATE = params['RANDOM_STATE']
 HYPERPARAMS = params['HYPERPARAMS']
 HYPERPARAMS_RANGES = params['HYPERPARAMS_RANGES']
+HYPERPARAMS_RANGES_LOW_PT = params['HYPERPARAMS_RANGES_LOW_PT']
 ##################################################################
 
 ROOT.gInterpreter.ProcessLine(".L help.h+")
@@ -94,7 +95,7 @@ if PRODUCE_DATASETS and not TRAIN:
         cent_bins = CENTRALITY_LIST[i_cent_bins]
 
         # get sidebands (both for training and as pseudo-data)
-        df_data = ROOT.RDataFrame("XiOmegaTree","/data/mciacco/KXiCorrelations/AnalysisResults-data.root")
+        df_data = ROOT.RDataFrame("XiOmegaTree","/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root")
         df_index = df_data.Define("index_1","gRandom->Rndm()+mass-mass")
         df_index.Filter(f"(mass < 1.31 || mass > 1.333) && centrality > {cent_bins[0]} && centrality < {cent_bins[1]}").Snapshot("LambdaTree",f"/data/mciacco/KXiCorrelations/trainingBackground_{cent_bins[0]}_{cent_bins[1]}.root")
 
@@ -113,10 +114,26 @@ if TRAINING:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-        df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
-
-        df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/AnalysisResults-data.root"))['XiOmegaTree'].arrays(library="pd")
-
+        df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
+        df_signal.dcaV0piPV = df_signal.dcaV0piPV.round(1)
+        df_signal.dcaV0prPV = df_signal.dcaV0prPV.round(1)
+        df_signal.dcaBachPV = df_signal.dcaBachPV.round(1)
+        # df_signal.cosPA = df_signal.cosPA.round(6)
+        # df_signal.cosPAV0 = df_signal.cosPAV0.round(6)
+        # df_signal.dcaBachV0 = df_signal.dcaBachV0.round(2)
+        # df_signal.dcaV0tracks = df_signal.dcaV0tracks.round(2)
+        # df_signal.dcaV0PV = df_signal.dcaV0PV.round(3)
+        # df_signal.tpcNsigmaV0Pr = df_signal.tpcNsigmaV0Pr.round(1)
+        df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root"))['XiOmegaTree'].arrays(library="pd")
+        df_background.dcaV0piPV = df_background.dcaV0piPV.round(1)
+        df_background.dcaV0prPV = df_background.dcaV0prPV.round(1)
+        df_background.dcaBachPV = df_background.dcaBachPV.round(1)
+        # df_background.cosPA = df_background.cosPA.round(6)
+        # df_background.cosPAV0 = df_background.cosPAV0.round(6)
+        # df_background.dcaBachV0 = df_background.dcaBachV0.round(2)
+        # df_background.dcaV0tracks = df_background.dcaV0tracks.round(2)
+        # df_background.dcaV0PV = df_background.dcaV0PV.round(3)
+        # df_background.tpcNsigmaV0Pr = df_background.tpcNsigmaV0Pr.round(1)
         for pt_bins in PT_BINS:
 
             for split in SPLIT_LIST:
@@ -130,8 +147,8 @@ if TRAINING:
 
                 train_test_data = [pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()]
                 if CREATE_TRAIN_TEST and (COMPUTE_SCORES_FROM_EFF or TRAIN):
-                    df_prompt_ct = df_signal.query(f'(pdg==3312 or pdg==-3312) and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and flag==1 and not isOmega')
-                    df_background_ct = df_background.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega')
+                    df_prompt_ct = df_signal.query(f'(pdg==3312 or pdg==-3312) and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 2.5 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and flag==1 and not isOmega')
+                    df_background_ct = df_background.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 2.5 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')
 
                     n_background = df_background_ct.shape[0]
                     n_prompt = df_prompt_ct.shape[0]
@@ -171,7 +188,7 @@ if TRAINING:
                 if use_gpu:
                     model_clf = xgb.XGBClassifier(use_label_encoder=False, tree_method="gpu_hist", gpu_id=0)
                 else:
-                    model_clf = xgb.XGBClassifier(use_label_encoder=False, n_jobs=2, tree_method="hist")
+                    model_clf = xgb.XGBClassifier(use_label_encoder=False, n_jobs=10, tree_method="hist")
                 model_hdl = ModelHandler(model_clf, TRAINING_COLUMNS_LIST)
                 model_hdl.set_model_params(HYPERPARAMS)
 
@@ -188,7 +205,10 @@ if TRAINING:
                     bin_model = f'all_0_90_{pt_bins[0]}_{pt_bins[1]}'
 
                 if OPTIMIZE and TRAIN:
-                    model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES,'roc_auc', nfold=5, timeout=300)
+                    if pt_bins[0] > 1.4 and pt_bins[0] < 1.6:
+                        model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES_LOW_PT,'roc_auc', nfold=5, timeout=300)
+                    else:
+                        model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES,'roc_auc', nfold=5, timeout=300)
 
                 isModelTrained = os.path.isfile(f'models_test/{bin_model}_optimized_trained')
                 print(f'isModelTrained {bin_model}: {isModelTrained}')
@@ -315,10 +335,10 @@ if APPLICATION:
                 if USE_REAL_DATA:
                     if USE_PD:
                         #df_data = pd.read_parquet('df_test/data_dataset')
-                        df_data = uproot.open(f'/data/mciacco/KXiCorrelations/AnalysisResults-data.root')['XiOmegaTree'].arrays(library="pd")
+                        df_data = uproot.open(f'/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root')['XiOmegaTree'].arrays(library="pd")
                         #df_data = df_data.append(df_data_r, ignore_index=True)
                         df_data_cent = df_data.query(
-                        f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega')
+                        f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')
                         del df_data
 
                         data_y_score = model_hdl.predict(df_data_cent, output_margin=False)
@@ -328,8 +348,8 @@ if APPLICATION:
                         df_data_cent.to_parquet(f'df_test/{bin}.parquet.gzip', compression='gzip')
                     else:
                         df_data = TreeHandler()
-                        df_data.get_handler_from_large_file(f"/data/mciacco/KXiCorrelations/AnalysisResults-data.root", "XiOmegaTree",
-                            preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega',
+                        df_data.get_handler_from_large_file(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root", "XiOmegaTree",
+                            preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega',
                             max_workers=4, model_handler=model_hdl, output_margin=False)
 
 
@@ -338,8 +358,8 @@ if APPLICATION:
                         df_data.write_df_to_parquet_files(bin,"df_test/")
                 else:
                     bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}_mc_apply'
-                    df_data = uproot.open(f'/data/mciacco/KXiCorrelations/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
-                    df_data_cent = df_data.query(f'flag==1 and (pdg==3334 or pdg==-3334) and isReconstructed and matter {split_ineq_sign} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega')                   
+                    df_data = uproot.open(f'/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
+                    df_data_cent = df_data.query(f'flag==1 and (pdg==3334 or pdg==-3334) and isReconstructed and matter {split_ineq_sign} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')                   
                     data_y_score = model_hdl.predict(df_data_cent, output_margin=False)
                     print(f"df_shape_0 = {df_data_cent.shape[0]}")
                     df_data_cent.loc[:,'model_output'] = data_y_score.tolist()[:]

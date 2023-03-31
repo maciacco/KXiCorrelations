@@ -19,10 +19,10 @@ constexpr double T_kin[nCent] = {0.090, 0.091, 0.094, 0.097, 0.101, 0.108, 0.115
 constexpr double n[nCent] = {0.735, 0.736, 0.739, 0.771, 0.828, 0.908, 1.052, 1.262, 1.678, 2.423};
 constexpr double avg_mult[nCent] = {1943, 1587, 1180, 786, 512, 318, 183, 96.3, 44.9, 17.5};
 
-constexpr int centSplit[][2]={{0,1},{2,3},{4,5},{6,9}}; // 0-5%, 5-10%, etc.
-constexpr int nCentSplit[]={2,2,2,4}; // 0-5%, 5-10%, etc.
-constexpr int centClass = 3; // 0-5% -> 0, 5-10% -> 1, etc.
-const char* cent_string="50_90.root";
+constexpr int centSplit[][2]={{0,9},{0,1},{2,3},{4,5},{6,9}}; // 0-5%, 5-10%, etc.
+constexpr int nCentSplit[]={10,2,2,2,4}; // 0-5%, 5-10%, etc.
+constexpr int centClass = 0; // 0-5% -> 0, 5-10% -> 1, etc.
+const char* cent_string="0_90.root";
 
 constexpr bool reject = true;
 
@@ -133,7 +133,7 @@ double full_bw_max(TF1 *bw_array[], double max_steps = 1.e3, double max_pT = 10.
   return h.GetMaximum();
 }
 
-const char* kInFileMCName = "/data/mciacco/Omega_PbPb/AnalysisResults-mc.root";
+const char* kInFileMCName = "/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_MC.root";
 const char* kInFileCentName = "/data/mciacco/HypCheckLambdaMass/data/StrangenessRatios_summary.root";
 const char* kOutFileName = "pTShapesLXiOm_";
 
@@ -189,7 +189,7 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
         bool cut = gRandom->Rndm() < (bw*normMin/hNormVal/bw_max);
         return cut;
       };
-      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Filter(reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("AnalysisResults_%s",cent_string));
+      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Filter(reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_%s",cent_string));
     }
     else {
       auto reweight = [hTmp, normMin, bw_max, hBW](float pT){
@@ -199,7 +199,7 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
         double weight=bw*normMin/hNormVal/bw_max;
         return weight;
       };
-      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Define("weightMC",reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("AnalysisResults_%s",cent_string));
+      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Define("weightMC",reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_%s",cent_string));
     }
   }
 

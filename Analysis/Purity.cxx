@@ -4,7 +4,9 @@
 
 double purity_error(double sig, double bkg, double sig_err, double bkg_err, double sig_bkg_cov = 0.);
 
-void Purity(const char* inFileName = "o_merge_parallel", const char* outFileName = "Purity"){
+bool fitMass = true;
+
+void Purity(const char* inFileName = "o_merge_parallel_15o_full", const char* outFileName = "Purity"){
   gStyle->SetOptStat(0);
 
   // killing RooFit output
@@ -15,17 +17,30 @@ void Purity(const char* inFileName = "o_merge_parallel", const char* outFileName
   TFile f(Form("%s.root", inFileName));
   TFile o(Form("%s.root", outFileName), "recreate");
 
-  TH3F *hNsigmaTPC = (TH3F*)f.Get("hANsigmaTPC");
-  TH3F *hNsigmaTOF = (TH3F*)f.Get("hANsigmaTOF");
-  TH3F *hMass = (TH3F*)f.Get("hAMass");
+  for (int iM = 0; iM < 2; ++iM){
+    TH3F *hNsigmaTPC = (TH3F*)f.Get(Form("h%sNsigmaTPC", kAntiMatterLabel[iM]));
+    TH3F *hNsigmaTOF = (TH3F*)f.Get(Form("h%sNsigmaTOF", kAntiMatterLabel[iM]));
+    TH3F *hMass = (TH3F*)f.Get(Form("h%sMass", kAntiMatterLabel[iM]));
+    TH1D *hPurity[kNCentBins];
+    TH1D *hPurityXi[kNCentBins];
+    TCanvas cPurity(Form("%sPurity_K", kAntiMatterLabel[iM]), Form("%sPurity_K", kAntiMatterLabel[iM]));
+    TCanvas cPurityXi(Form("%sPurity_Xi", kAntiMatterLabel[iM]), Form("%sPurity_Xi", kAntiMatterLabel[iM]));
+    TLegend lPurity(0.2, 0.2, 0.6, 0.5);
+    lPurity.SetTextFont(44);
+    lPurity.SetTextSize(25);
+    TLegend lPurityXi(0.2, 0.2, 0.6, 0.5);
+    lPurityXi.SetTextFont(44);
+    lPurityXi.SetTextSize(25);
 
-  TH1D *hPurity[kNCentBins];
-  TCanvas cPurity("Purity_K", "Purity_K");
-  TLegend lPurity(0.5, 0.5, 0.6, 0.7);
+    for (int iCent = 1; iCent < kNCentBins + 1; ++iCent){
 
-  for (int iCent = 1; iCent < kNCentBins + 1; ++iCent){
-    hPurity[iCent - 1] = new TH1D(Form("hPurity_%.0f_%.0f", hNsigmaTPC->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTPC->GetXaxis()->GetBinUpEdge(iCent)), ";#it{p}_{T} (GeV/#it{c});S / (S + B)", kNBinsPt, kPtLowLimitK, kPtLowLimitK + kDeltaPt * kNBinsPt);
-    for (int iPart = 0; iPart < 1; ++iPart){
+      double ptBinsXi[kNBinsPtXi + 1];
+      for (int iB = 0; iB < kNBinsPtXi + 1; ++iB){
+        double f = iB < kNBinsPtXi ? 0. : 1.;
+        ptBinsXi[iB] = kMinPt + kDeltaPtXi * iB + f * kDeltaPtXi;
+      }
+      hPurity[iCent - 1] = new TH1D(Form("hPurityK_%.0f_%.0f", hNsigmaTPC->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTPC->GetXaxis()->GetBinUpEdge(iCent)), ";#it{p}_{T} (GeV/#it{c});S / (S + B)", kNBinsPt, 0., kDeltaPt * kNBinsPt);
+      hPurityXi[iCent - 1] = new TH1D(Form("hPurityXi_%.0f_%.0f", hMass->GetXaxis()->GetBinLowEdge(iCent), hMass->GetXaxis()->GetBinUpEdge(iCent)), ";#it{p}_{T} (GeV/#it{c});S / (S + B)", kNBinsPtXi, ptBinsXi);
       for (int iP = 1; iP < 15; ++iP){
         if (iP < 3 || iP > 10) continue;
         TH1D* hNsigmaTPCProj = (TH1D*)hNsigmaTPC->ProjectionZ(Form("hNsigmaTPCProj_%d_%d", iCent, iP), iCent, iCent, iP, iP);
@@ -39,13 +54,62 @@ void Purity(const char* inFileName = "o_merge_parallel", const char* outFileName
           //hNsigmaTPCProj->Rebin(2);
           //hNsigmaTOFProj->Rebin(2);
         }
-        double purity = 0., error = 0.;;
+        double purity = 0., error = 0.;
+        if (fitMass){
+          RooRealVar *roo_m = new RooRealVar("m", "#it{M} (#Lambda + #pi^{-})", 1.305, 1.34, "GeV/#it{c}^{2}");
+          roo_m->setBins(100);
+          RooDataHist roo_data("data", "data", RooArgSet(*roo_m), hMassProj);
+
+          RooRealVar mass("mass", "mass", 1.31, 1.335);
+          RooRealVar sigma_left_mc("#sigma", "sigma", 0.001, 0.003);
+          RooRealVar sigma_right_mc("sigma_right", "sigma_right", 0.001, 0.003);
+          RooRealVar alpha_left_mc("alpha_left", "alpha_left", 0., 5.);
+          RooRealVar alpha_right_mc("alpha_right", "alpha_right", 0., 5.);
+          RooRealVar n_left_mc("n_left", "n_left", 1., 30.);
+          RooRealVar n_right_mc("n_right", "n_right", 1., 30.);
+          RooDSCBShape roo_signal("signal", "signal", *roo_m, mass, sigma_left_mc, alpha_left_mc, n_left_mc, alpha_right_mc, n_right_mc); 
+          
+          RooRealVar roo_n_signal("N_{sig}", "Nsignal", 1., 1.e7);
+          RooRealVar roo_n_background("N_{bkg}", "Nbackground", 1., 1.e5);
+          RooRealVar roo_slope("slope", "slope", -20., 20.);
+          RooExponential roo_bkg("background", "background", *roo_m, roo_slope);
+
+          RooAddPdf roo_model("model", "model", RooArgList(roo_signal, roo_bkg), RooArgList(roo_n_signal, roo_n_background));
+          for (int i = 0; i < 3; ++i) roo_model.fitTo(roo_data, RooFit::Save());
+          const char* nameMass = Form("f%sMass_%.0f_%.0f_%.1f_%.1f", kAntiMatterLabel[iM], hMass->GetXaxis()->GetBinLowEdge(iCent), hMass->GetXaxis()->GetBinUpEdge(iCent), hMass->GetYaxis()->GetBinLowEdge(iP), hMass->GetYaxis()->GetBinUpEdge(iP));
+          RooPlot *massFrame = (RooPlot*)roo_m->frame(RooFit::Name(nameMass));
+          roo_data.plotOn(massFrame, RooFit::Name("data"));
+          roo_model.plotOn(massFrame, RooFit::Name("model"));
+          roo_model.plotOn(massFrame, RooFit::Name("model"), RooFit::Components("signal"), RooFit::LineColor(kRed));
+          roo_model.plotOn(massFrame, RooFit::Name("model"), RooFit::Components("background"), RooFit::LineColor(kGreen));
+          roo_model.plotOn(massFrame, RooFit::Name("model"));
+          
+          roo_m->setRange("signalRange", 1.312, 1.330);
+          
+          double sigIntegralTOF = (((RooAbsPdf *)(roo_model.pdfList().at(0)))->createIntegral(RooArgSet(*roo_m), RooFit::NormSet(RooArgSet(*roo_m)), RooFit::Range("signalRange")))->getVal();
+          double bkgIntegralTOF = (((RooAbsPdf *)(roo_model.pdfList().at(1)))->createIntegral(RooArgSet(*roo_m), RooFit::NormSet(RooArgSet(*roo_m)), RooFit::Range("signalRange")))->getVal();
+          double bkgTOF = roo_n_background.getVal() * bkgIntegralTOF;
+          double sigTOF = roo_n_signal.getVal() * sigIntegralTOF;
+          purity = sigTOF/(sigTOF + bkgTOF);
+          error = purity_error(sigTOF, bkgTOF, roo_n_signal.getError() * sigIntegralTOF, roo_n_background.getError() * bkgIntegralTOF);
+          std::cout << "mass : purity = " << purity << std::endl; 
+          
+          TCanvas cMass(nameMass, nameMass);
+          cMass.cd();
+          massFrame->Draw();
+          TLatex t;
+          t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
+          cMass.Write();
+          hPurityXi[iCent - 1]->SetBinContent(hPurityXi[iCent - 1]->FindBin(hMass->GetYaxis()->GetBinCenter(iP)), purity);
+          hPurityXi[iCent - 1]->SetBinError(hPurityXi[iCent - 1]->FindBin(hMass->GetYaxis()->GetBinCenter(iP)), error);
+          //massFrame->Write();
+        }
         if (hNsigmaTPC->GetYaxis()->GetBinCenter(iP) < kTPCptCut && hNsigmaTPC->GetYaxis()->GetBinCenter(iP) > kPtLowLimitK){
-          RooRealVar tpcSignal("tpcSignal", "n#sigma_{K}", -3.5, 3.5, "a.u.");
+          RooRealVar tpcSignal("tpcSignal", "n#sigma_{K}", -4., 3., "a.u.");
           RooDataHist tpcDataHist("tpcDataHist", "tpcDataHist", RooArgList(tpcSignal), hNsigmaTPCProj);
           RooRealVar tpcMu("#mu", "tpcMu", -2., 2.);
-          RooRealVar tpcSigma("#sigma", "tpcSigma", 0., 2.);
-          RooRealVar tpcAlphaL("#alpha_{L}", "tpcAlphaL", -1.3, -0.5);
+          RooRealVar tpcSigma("#sigma", "tpcSigma", 0.2, 2.);
+          RooRealVar tpcAlphaL("#alpha_{L}", "tpcAlphaL", -1.3, -0.7);
           RooRealVar tpcAlphaR("#alpha_{R}", "tpcAlphaR", 0.7, 1.5);
           RooRealVar tpcTauBkg("#tau", "tpcTauBkg", -100., 0.);
           RooRealVar tpcNSignal("N_{sig}", "tpcNSignal", 0., 1.e9);
@@ -54,7 +118,7 @@ void Purity(const char* inFileName = "o_merge_parallel", const char* outFileName
           RooAbsPdf *tpcBackgroundPDF = new RooExponential("tpcBackgroundPDF", "tpcBackgroundPDF", tpcSignal, tpcTauBkg);
           RooAddPdf *tpcModel = new RooAddPdf("tpcModel", "tpcModel", RooArgList(*tpcSignalPDF, *tpcBackgroundPDF), RooArgList(tpcNSignal, tpcNBkg));
           for (int i = 0; i < 2; ++i) tpcModel->fitTo(tpcDataHist, RooFit::Save());
-          const char* nameTPC = Form("fANsigmaTPC_%.0f_%.0f_%.1f_%.1f", hNsigmaTPC->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTPC->GetXaxis()->GetBinUpEdge(iCent), hNsigmaTPC->GetYaxis()->GetBinLowEdge(iP), hNsigmaTPC->GetYaxis()->GetBinUpEdge(iP));
+          const char* nameTPC = Form("f%sNsigmaTPC_%.0f_%.0f_%.1f_%.1f", kAntiMatterLabel[iM], hNsigmaTPC->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTPC->GetXaxis()->GetBinUpEdge(iCent), hNsigmaTPC->GetYaxis()->GetBinLowEdge(iP), hNsigmaTPC->GetYaxis()->GetBinUpEdge(iP));
           RooPlot *tpcFrame = (RooPlot*)tpcSignal.frame(RooFit::Name(nameTPC));
           tpcDataHist.plotOn(tpcFrame, RooFit::Name("data"));
           tpcModel->plotOn(tpcFrame, RooFit::Name("model"));
@@ -84,14 +148,14 @@ void Purity(const char* inFileName = "o_merge_parallel", const char* outFileName
           RooRealVar tofSigma("#sigma", "tofSigma", 0.5, 1.5);
           RooRealVar tofAlphaL("#alpha_{L}", "tofAlphaL", -1.5, -0.7);
           RooRealVar tofAlphaR("#alpha_{R}", "tofAlphaR", 0.7, 1.5);
-          RooRealVar tofTauBkg("#tau", "tofTauBkg", -5., 0.);
+          RooRealVar tofTauBkg("#tau", "tofTauBkg", -10., 0.);
           RooRealVar tofNSignal("N_{sig}", "tofNSignal", 0., 1.e9);
           RooRealVar tofNBkg("N_{bkg}", "tofNBkg", 0., 1.e8);
           RooAbsPdf *tofSignalPDF = new RooGausDExp("tofSignalPDF", "tofSignalPDF", tofSignal, tofMu, tofSigma, tofAlphaL, tofAlphaR);
           RooAbsPdf *tofBackgroundPDF = new RooExponential("tofBackgroundPDF", "tofBackgroundPDF", tofSignal, tofTauBkg);
           RooAddPdf *tofModel = new RooAddPdf("tofModel", "tofModel", RooArgList(*tofSignalPDF, *tofBackgroundPDF), RooArgList(tofNSignal, tofNBkg));
           for (int i = 0; i < 2; ++i) tofModel->fitTo(tofDataHist, RooFit::Save());
-          const char* nameTOF = Form("fANsigmaTOF_%.0f_%.0f_%.1f_%.1f", hNsigmaTOF->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTOF->GetXaxis()->GetBinUpEdge(iCent), hNsigmaTOF->GetYaxis()->GetBinLowEdge(iP), hNsigmaTOF->GetYaxis()->GetBinUpEdge(iP));
+          const char* nameTOF = Form("f%sNsigmaTOF_%.0f_%.0f_%.1f_%.1f", kAntiMatterLabel[iM], hNsigmaTOF->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTOF->GetXaxis()->GetBinUpEdge(iCent), hNsigmaTOF->GetYaxis()->GetBinLowEdge(iP), hNsigmaTOF->GetYaxis()->GetBinUpEdge(iP));
           RooPlot *tofFrame = (RooPlot*)tofSignal.frame(RooFit::Name(nameTOF));
           tofDataHist.plotOn(tofFrame, RooFit::Name("data"));
           tofModel->plotOn(tofFrame, RooFit::Name("model"));
@@ -116,27 +180,42 @@ void Purity(const char* inFileName = "o_merge_parallel", const char* outFileName
         }
 
         std::cout << "pt = (" << iP << "), purity = " << purity << std::endl;
-        hPurity[iCent - 1]->SetBinContent(iP, purity);
-        hPurity[iCent - 1]->SetBinError(iP, error);
+        hPurity[iCent - 1]->SetBinContent(hPurity[iCent - 1]->FindBin(hNsigmaTPC->GetYaxis()->GetBinCenter(iP)), purity);
+        hPurity[iCent - 1]->SetBinError(hPurity[iCent - 1]->FindBin(hNsigmaTPC->GetYaxis()->GetBinCenter(iP)), error);
       }
+      hPurity[iCent - 1]->SetMarkerStyle(20);
+      hPurity[iCent - 1]->SetMarkerSize(1.2);
+      hPurity[iCent - 1]->SetMarkerColor(colors[iCent - 1]);
+      hPurity[iCent - 1]->SetLineColor(colors[iCent - 1]);
+      hPurity[iCent - 1]->Write();
+      hPurity[iCent - 1]->GetXaxis()->SetRangeUser(0., 1.);
+      cPurity.cd();
+      hPurity[iCent - 1]->Draw(iCent == 1 ? "pe x0" : "pe x0 same");
+      lPurity.AddEntry(hPurity[iCent - 1], Form("%.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+
+      hPurityXi[iCent - 1]->SetMarkerStyle(20);
+      hPurityXi[iCent - 1]->SetMarkerSize(1.2);
+      hPurityXi[iCent - 1]->SetMarkerColor(colors[iCent - 1]);
+      hPurityXi[iCent - 1]->SetLineColor(colors[iCent - 1]);
+      hPurityXi[iCent - 1]->Write();
+      hPurityXi[iCent - 1]->GetXaxis()->SetRangeUser(0., 3.);
+      cPurityXi.cd();
+      hPurityXi[iCent - 1]->Draw(iCent == 1 ? "pe x0" : "pe x0 same");
+      lPurityXi.AddEntry(hPurityXi[iCent - 1], Form("%.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
     }
-    hPurity[iCent - 1]->SetMarkerStyle(20);
-    hPurity[iCent - 1]->SetMarkerSize(1.2);
-    // hPurity[iCent - 1]->SetMarkerColor(gStyle->GetColorPalette((iCent - 1) * 255 / kNCentBins));
-    // hPurity[iCent - 1]->SetLineColor(gStyle->GetColorPalette((iCent - 1) * 255 / kNCentBins));
-    hPurity[iCent - 1]->Write();
+
+    o.cd();
     cPurity.cd();
-
-    hPurity[iCent - 1]->Draw(iCent == 1 ? "pe x0 plc pmc" : "pe x0 same plc pmc");
+    lPurity.Draw("same");
+    cPurity.Write();
+    cPurity.Print(Form("%spurity.pdf", kAntiMatterLabel[iM]));
+    cPurityXi.cd();
+    lPurityXi.Draw("same");
+    cPurityXi.Print(Form("%spurityXi.pdf", kAntiMatterLabel[iM]));
+    hNsigmaTPC->Write();
+    hNsigmaTOF->Write();
+    hMass->Write();
   }
-
-  o.cd();
-  cPurity.cd();
-  lPurity.Draw("same");
-  cPurity.Write();
-  hNsigmaTPC->Write();
-  hNsigmaTOF->Write();
-  hMass->Write();
   f.Close();
   o.Close();
 }
