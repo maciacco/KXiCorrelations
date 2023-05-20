@@ -8,8 +8,10 @@
 #include <TMath.h>
 #include <Riostream.h>
 #include "../utils/Config.h"
-#include "TRandom3.h"
-#include "TROOT.h"
+#include <TRandom3.h>
+#include <TROOT.h>
+#include <TNtuple.h>
+#include <TStopwatch.h>
 
 //#define CLOSURE_TEST
 
@@ -20,14 +22,17 @@
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
 
-void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o", const int tree_number = 1)
+void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o15_", const int tree_number = 1)
 {
+
+  TStopwatch w;
+  w.Start();
 
   TFile *fEffK = TFile::Open(Form("%s/%s.root", kDataDir, kEffKFile));
   TFile *fEffXi = TFile::Open(Form("%s/%s.root", kDataDir, kEffXiFile));
   TFile *fEffBDTXi = TFile::Open(Form("%s/%s.root", kDataDir, kEffBDTXiFile));
   TFile f(Form("%s/%s.root", kDataDir, fname));
-  TFile o(Form("%s.root", ofname), "recreate");
+  TFile o(Form("%s/%s.root", kResDir, ofname), "recreate");
 
   #ifndef CLOSURE_TEST
     std::vector<MiniKaon> *k = nullptr;
@@ -53,8 +58,8 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
     t->SetBranchAddress("MiniKaon", &k, &bk);
     t->SetBranchAddress("MiniXi", &xi, &bxi);
   }
-  if (kUseIndex)
-    t->SetBranchAddress("index", &index, &bindex);
+  //if (kUseIndex)
+    //t->SetBranchAddress("index", &index, &bindex);
   TBranch *be = t->GetBranch("MiniCollision");
   be->SetAddress(&c);
   
@@ -82,13 +87,24 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
   TH1D *hSameKaonXiQ11[2][2][N_SAMPLE];
   TH1D *hOppKaonXiQ11[2][2][N_SAMPLE];
   
-  TH3F *hNsigmaTPC[2];
-  TH3F *hNsigmaTOF[2];
+  TH3F *hNsigmaITS[2][kNEtaBins];
+  TH3F *hNsigmaTPC[2][kNEtaBins];
+  TH3F *hNsigmaTOF[2][kNEtaBins];
+  TH3F *hBDTOut[2];
   TH3F *hMass[2];
 
-  TH1D *hEffK[2][kNCentBins][kNEtaBins][N_SAMPLE];
-  TH1D *hEffXi[2][kNCentBins][kNEtaBins][N_SAMPLE]; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
+  const int kKCut = kNTpcClsCuts * kNDcaCuts * kNChi2Cuts * kNPidCuts;
+  const int kXiCut = kNMassCuts * kNBdtCuts;
+  TH1D *hEffK[2][kNCentBins][kNEtaBins][N_SAMPLE][kKCut];
+  TH1D *hEffXi[2][kNCentBins][kNEtaBins][N_SAMPLE][kXiCut]; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
   TH3F *hBDTEffXi; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT -> SEPARATELY FOR CHARGES)
+
+  TNtuple *evtTuple[kNTpcClsCuts * kNDcaCuts * kNChi2Cuts * kNPidCuts];
+  
+  for (int i{0}; i < kNTpcClsCuts * kNDcaCuts * kNChi2Cuts * kNPidCuts; ++i)
+  {
+    evtTuple[i] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN:q1xiP:q1xiN:q2xiP:q2xiN:trk:V0M");
+  }
 
   for (int iS = 0; iS < N_SAMPLE; ++iS){
     hCent[iS] = new TH1D(Form("hCent"), ";Centrality (%);Entries", kNCentBinsSmall, kCentBinsSmall);
@@ -123,12 +139,16 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
     for (int iCent = 0; iCent < kNCentBins; ++iCent){
       for (int iEta = 0; iEta < kNEtaBins; ++iEta){
         for (int iS = 0; iS < N_SAMPLE; ++iS){
-          if (fEffK){
-            hEffK[iC][iCent][iEta][iS] = (TH1D*)fEffK->Get(Form("subsample_%d/h%sEff%s_%d_%d", 1, kAntiMatterLabel[iC], kPartLabel[0], iCent, iEta));
+          for (int iVar{0}; iVar < kNTpcClsCuts * kNDcaCuts * kNChi2Cuts * kNPidCuts; ++iVar){
+            if (fEffK){
+              hEffK[iC][iCent][iEta][iS][iVar] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[0], iCent, iEta, iVar));
+            }
           }
           // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
-          if (fEffXi){
-            hEffXi[iC][iCent][iEta][iS] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d/h%sEff%s_%d_%d", 1, kAntiMatterLabel[iC], kPartLabel[1], iCent, iEta)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
+          for (int iVar{0}; iVar < kNMassCuts * kNBdtCuts; ++iVar){
+            if (fEffXi){
+              hEffXi[iC][iCent][iEta][iS][iVar] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[1], iCent, iEta, iVar)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
+            }
           }
         }
       }
@@ -167,9 +187,13 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
         hNKaonXi[iC][iM][iS] = new TH3F(Form("h%sNKaonXi%s", kChargeLabel[iC], kXiChargeLabel[iM]), ";Centrality (%);K;#Xi", 100, 0, 100, 1000, 0, 1000, 20, 0, 20);
       }
     }
-    hNsigmaTPC[iC] = new TH3F(Form("h%sNsigmaTPC", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{n}#sigma_{TPC} (a.u.)", 10, 0, 100, 30, 0, 3, 120, -6, 6);
-    hNsigmaTOF[iC] = new TH3F(Form("h%sNsigmaTOF", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{n}#sigma_{TOF} (a.u.)", 10, 0, 100, 30, 0, 3, 120, -6, 6);
-    
+    for (int iE = 0; iE < kNEtaBins; ++iE){
+      hNsigmaITS[iC][iE] = new TH3F(Form("h%sNsigmaITS_%d", kAntiMatterLabel[iC], iE), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{n}#sigma_{ITS} (a.u.)", 10, 0, 100, 30, 0, 3, 120, -6, 6);
+      hNsigmaTPC[iC][iE] = new TH3F(Form("h%sNsigmaTPC_%d", kAntiMatterLabel[iC], iE), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{n}#sigma_{TPC} (a.u.)", 10, 0, 100, 30, 0, 3, 120, -6, 6);
+      hNsigmaTOF[iC][iE] = new TH3F(Form("h%sNsigmaTOF_%d", kAntiMatterLabel[iC], iE), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{n}#sigma_{TOF} (a.u.)", 10, 0, 100, 30, 0, 3, 120, -6, 6);
+    }
+
+    hBDTOut[iC] = new TH3F(Form("h%sBDTOutXi", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c});BDT out", 10, 0, 100, 8, 0, 4, 1000, 0, 1);
     hMass[iC] = new TH3F(Form("h%sMass", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c});#it{M}(#pi + #Lambda) (GeV/#it{c}^{2})", 10, 0, 10, 8, 0, 4, 200, 1.29, 1.34);
   }
 
@@ -235,6 +259,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
     }
   }
 
+  gRandom->SetSeed(42);
   for (Long64_t i = 0; i < nEntries; ++i){
     const int iS = (int)(gRandom->Rndm() * N_SAMPLE);
 
@@ -246,10 +271,15 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
     bk->GetEntry(tentry);
     bxi->GetEntry(tentry);
 
-    double cent = c->fCent;
-    if (cent > 90) continue;
+    float cent = c->fCent;
+    if (cent > kMaxCent) continue;
     int ic = hCentTmp.FindBin(cent);
+    // if (ic > 9) std::cout << "ic = " << ic << std::endl;
     int ic_sm = hCentSmallTmp.FindBin(cent);
+
+    if (kRejectMultXiFromSameDaughters && (c->fTrigger & 16) == 16){
+      continue;
+    }
 
     if ( !isMC && k2018 && ( ( cent > 9.9 && cent < 30 && ( ( c->fTrigger & 1 ) != 1 ) ) || ( cent > 49.9 && ( ( c->fTrigger & 1 ) != 1 ) ) ) ){
       continue;
@@ -258,270 +288,323 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
     hCent[iS]->Fill(cent);
     //hCentSmallTmp.Fill(cent);
 
-    #ifdef CLOSURE_TEST
-      double qK_1_gen_tmp[] = {0, 0};
-      double qXi_1_gen_tmp[] = {0, 0};
-      double qK_2_gen_tmp[] = {0, 0};
-      double qXi_2_gen_tmp[] = {0, 0};
-      Long64_t nK_gen[] = {0, 0};
-      Long64_t nXi_gen[] = {0, 0};
-    #endif // CLOSURE_TEST
-    double qK_1_tmp[][2] = {{0, 0}, {0, 0}};
-    double qXi_1_tmp[][2] = {{0, 0}, {0, 0}};
-    double qK_1_tmp_update[][2] = {{0, 0}, {0, 0}};
-    double qXi_1_tmp_update[][2] = {{0, 0}, {0, 0}};
-    double qK_1_sq_tmp[][2] = {{0, 0}, {0, 0}};
-    double qXi_1_sq_tmp[][2] = {{0, 0}, {0, 0}};
-    double qK_2_tmp[][2] = {{0, 0}, {0, 0}};
-    double qXi_2_tmp[][2] = {{0, 0}, {0, 0}};
-    Long64_t nK[] = {0, 0};
-    Long64_t nXi[] = {0, 0};
-
-    UInt_t l_k = 0;
-    for (auto k_tmp : *k){
-      l_k++;
-    }
-
-    for (auto k_tmp : *k){
+    for (int iVar{0}; iVar < kNTpcClsCuts * kNDcaCuts * kNChi2Cuts * kNPidCuts; ++iVar)
+    {
+      int iTpcClsCut = (iVar / 1) % kNTpcClsCuts;
+      int iPidCut = (iVar / kNTpcClsCuts) % kNPidCuts;
+      int iDcaCut = (iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
+      int iChi2Cut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
+      int iMassCut = iTpcClsCut;
+      int iBdtScoreCut = iPidCut;
+      //if (!(i%10000)) std::cout << "iTpcClsCut = " << iTpcClsCut << ", iDcaCut = " << iDcaCut << ", iChi2Cut = " << iChi2Cut << ", iPidCut = " << iPidCut << std::endl;
 
       #ifdef CLOSURE_TEST
-      if ( std::abs(k_tmp.fPtMC) > kTOFptCut || std::abs(k_tmp.fPtMC) < kPtLowLimitK || k_tmp.fFlag != 1 || std::abs(k_tmp.fEtaMC) > kEtaCut ) continue;
-        int im_MC = k_tmp.fPtMC > 0 ? 1 : 0;
-        qK_1_gen_tmp[im_MC] += 1.;
-        qK_2_gen_tmp[im_MC] += 1.;
-        nK_gen[im_MC] += 1;
+        double qK_1_gen_tmp[] = {0, 0};
+        double qXi_1_gen_tmp[] = {0, 0};
+        double qK_2_gen_tmp[] = {0, 0};
+        double qXi_2_gen_tmp[] = {0, 0};
+        Long64_t nK_gen[] = {0, 0};
+        Long64_t nXi_gen[] = {0, 0};
       #endif // CLOSURE_TEST
-      if (
-          (k_tmp.fCutBitMap == 1 || k_tmp.fCutBitMap == 2) &&
-          std::abs(k_tmp.fPt) > kPtLowLimitK && std::abs(k_tmp.fPt) < kTOFptCut &&
-          (std::abs(k_tmp.fEta) < kEtaCut) &&
-          ((std::abs(k_tmp.fPt) < kTPCptCut && (k_tmp.fNsigmaTPC > kNsigmaTPCcutAsym[0] && k_tmp.fNsigmaTPC < kNsigmaTPCcutAsym[1]) ) ||
-          (std::abs(k_tmp.fPt) > kTPCptCut && (std::abs(k_tmp.fPt) < kTOFptCut) && (std::abs(k_tmp.fNsigmaTPC) < kNsigmaTPCcutPresel) && (k_tmp.fNsigmaTOF > kNsigmaTOFcutAsym[0] && k_tmp.fNsigmaTOF < kNsigmaTOFcutAsym[1])))
-        )
-      {
+      double qK_1_tmp[][2] = {{0, 0}, {0, 0}};
+      double qXi_1_tmp[][2] = {{0, 0}, {0, 0}};
+      double qK_1_tmp_update[][2] = {{0, 0}, {0, 0}};
+      double qXi_1_tmp_update[][2] = {{0, 0}, {0, 0}};
+      double qK_1_sq_tmp[][2] = {{0, 0}, {0, 0}};
+      double qXi_1_sq_tmp[][2] = {{0, 0}, {0, 0}};
+      double qK_2_tmp[][2] = {{0, 0}, {0, 0}};
+      double qXi_2_tmp[][2] = {{0, 0}, {0, 0}};
+      Long64_t nK[] = {0, 0};
+      Long64_t nXi[] = {0, 0};
+
+      UInt_t l_k = 0;
+      for (auto k_tmp : *k){
+        l_k++;
+      }
+
+      for (auto k_tmp : *k){
+
         #ifdef CLOSURE_TEST
-          int im_ = k_tmp.fPt > 0 ? 1 : 0;
-          int ie_ = hEtaTmp.FindBin(k_tmp.fEtaMC);
-          double eff_ = fEffK ? hEffK[im_][ic - 1][ie_ - 1][iS]->GetBinContent(hEffK[im_][ic - 1][ie_ - 1][iS]->FindBin(std::abs(k_tmp.fPtMC))) : kDummyEffK;
-          if (!k_tmp.fIsReconstructed || k_tmp.fFlag != 1) continue;
-          int im_tmp = k_tmp.fPt > 0 ? 1 : 0;
-          hRecKaon[im_tmp]->Fill(cent, std::abs(k_tmp.fPt), 1./eff_);
+        if ( std::abs(k_tmp.fPtMC) > kTOFptCut || std::abs(k_tmp.fPtMC) < kPtLowLimitK || k_tmp.fFlag != 1 || std::abs(k_tmp.fEtaMC) > kEtaCut ) continue;
+          int im_MC = k_tmp.fPtMC > 0 ? 1 : 0;
+          qK_1_gen_tmp[im_MC] += 1.;
+          qK_2_gen_tmp[im_MC] += 1.;
+          nK_gen[im_MC] += 1;
         #endif // CLOSURE_TEST
-        int im = k_tmp.fPt > 0 ? 1 : 0;
-        int ie = hEtaTmp.FindBin(k_tmp.fEta);
-        //std::cout << "im = " << im << ", ic = " << ic - 1 << std::endl;
-        double eff = fEffK ? hEffK[im][ic - 1][ie - 1][iS]->GetBinContent(hEffK[im][ic - 1][ie - 1][iS]->FindBin(std::abs(k_tmp.fPt))) : kDummyEffK;
-        //std::cout << "pt = " << std::abs(k_tmp.fPt) << "; bin = " << hEffK[im][ic - 1][ie - 1][iS]->GetXaxis()->FindBin(std::abs(k_tmp.fPt)) << "eff = " << eff << std::endl;
-        qK_1_tmp[im][0] += 1.;
-        qK_1_tmp_update[im][0] += 1.;
-        qK_2_tmp[im][0] += 1.;
-        qK_1_tmp[im][1] += (1./eff);
-        qK_1_tmp_update[im][1] += (1./eff);
-        double q2 = 1./eff/eff;
-        qK_2_tmp[im][1] += q2;
-        nK[im] += 1;
-        hNsigmaTPC[im]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTPC);
-        hNsigmaTOF[im]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTOF);
-      }
-    }
-    for (int iM = 0; iM < 2; ++iM){
-      #ifdef CLOSURE_TEST
-        hGenRecKaon[iM]->Fill(cent, nK_gen[iM], nK[iM]);
-      #endif
-      for (int iCorr = 0; iCorr < 2; ++iCorr){
-        double q1_sq = qK_1_tmp[iM][iCorr] * qK_1_tmp[iM][iCorr];
-        qK_1_sq_tmp[iM][iCorr] += q1_sq;
-        //std::cout << "qK_1_sq_tmp[" << iM << "][" << iCorr << "] = " << qK_1_tmp_update[iM][iCorr] * qK_1_tmp_update[iM][iCorr] << std::endl;
-        //std::cout << "qK_1_tmp[" << iM << "][" << iCorr << "] = " << qK_1_tmp[iM][iCorr] << std::endl;
-        qK_1_tmp_update[iM][iCorr] = 0.;
-      }
-    }
-
-    for (auto xi_tmp : *xi){
-      try {
-        double pt = xi_tmp.fPt;
-      }
-      catch (const std::out_of_range& e) {
-        continue;
-      }
-      //std::cout << "iXi = " << iXi << "; size = " << (UInt_t)(xi->size()) << std::endl;
-      #ifdef CLOSURE_TEST
-        if ( std::abs(xi_tmp.fPtMC) > kXiUpPtCut || std::abs(xi_tmp.fPtMC) < kXiLowPtCut || std::abs(xi_tmp.fEtaMC) > kEtaCut || (xi_tmp.fRecFlag & BIT(0)) != 1 || (xi_tmp.fRecFlag & BIT(1)) != 2 ) continue;
-        int im_MC = xi_tmp.fPtMC > 0;
-        qXi_1_gen_tmp[im_MC] += 1.;
-        qXi_2_gen_tmp[im_MC] += 1.;
-        nXi_gen[im_MC] += 1;
-        hGenXi[im_MC]->Fill(cent, std::abs(xi_tmp.fPtMC));
-      #endif // CLOSURE_TEST
-      if (
-          std::abs(xi_tmp.fEta) < kEtaCut &&
-          std::abs(xi_tmp.fPt) > kXiLowPtCut && std::abs(xi_tmp.fPt) < kXiUpPtCut &&
-          std::abs(xi_tmp.fMass - kXiMass) < kXiMassCut
-        )
-      {
-        if (kUseBdtInMC){
-          if (xi_tmp.fBdtOut < kBdtScoreCut) continue;
+        if (
+            ( ( ( ((k_tmp.fCutBitMap & kCutDCA[iDcaCut]) == kCutDCA[iDcaCut]) || ((k_tmp.fCutBitMap & kCutDCA2[iDcaCut]) == kCutDCA2[iDcaCut]) ) && kRequireDCAcut[iDcaCut] ) || !kRequireDCAcut[iDcaCut] ) &&
+            ( ( ((k_tmp.fCutBitMap & kCutTPCcls[iTpcClsCut]) == kCutTPCcls[iTpcClsCut] || (k_tmp.fCutBitMap & kCutTPCcls2[iTpcClsCut]) == kCutTPCcls2[iTpcClsCut]) && kRequireTPCclsCut[iTpcClsCut] ) || !kRequireTPCclsCut[iTpcClsCut]) &&
+            ( ( ((k_tmp.fCutBitMap & kCutChi2[iChi2Cut]) == kCutChi2[iChi2Cut] || (k_tmp.fCutBitMap & kCutChi22[iChi2Cut]) == kCutChi22[iChi2Cut]) && kRequireChi2Cut[iChi2Cut] ) || !kRequireChi2Cut[iChi2Cut] ) &&
+            std::abs(k_tmp.fPt) > kPtLowLimitK && std::abs(k_tmp.fPt) < kTOFptCut &&
+            (std::abs(k_tmp.fEta) < kEtaCut)
+            &&
+            ((std::abs(k_tmp.fPt) < kTPCptCut && (k_tmp.fNsigmaTPC > kNsigmaTPCcutAsym[iPidCut][0] && k_tmp.fNsigmaTPC < kNsigmaTPCcutAsym[iPidCut][1])) ||
+            (std::abs(k_tmp.fPt) > kTPCptCut && (std::abs(k_tmp.fPt) < kTOFptCut) && (std::abs(k_tmp.fNsigmaTPC) < kNsigmaTPCcutPresel) && (k_tmp.fNsigmaTOF > kNsigmaTOFcutAsym[iPidCut][0] && k_tmp.fNsigmaTOF < kNsigmaTOFcutAsym[iPidCut][1])))
+          )
+        {
+          if (std::abs(k_tmp.fPt) < kITSptCut && (k_tmp.fNsigmaITS < kNsigmaITScutAsym[0] || k_tmp.fNsigmaITS > kNsigmaITScutAsym[1])) continue;
+          if (kUseCircularPID)
+          {
+            double nsigmaITS = k_tmp.fNsigmaITS;
+            double nsigmaTPC = k_tmp.fNsigmaTPC;
+            double nsigmaTOF = k_tmp.fNsigmaTOF;
+            if (TMath::Sqrt(nsigmaITS * nsigmaITS + nsigmaTPC * nsigmaTPC) > kCircularCuts[0] && std::abs(k_tmp.fPt) < kTPCptCut) continue;
+            else if (TMath::Sqrt(nsigmaTPC * nsigmaTPC + nsigmaTOF * nsigmaTOF) > kCircularCuts[0] && std::abs(k_tmp.fPt) > kTPCptCut && std::abs(k_tmp.fPt) < kTOFptCut) continue;
+          }
+          #ifdef CLOSURE_TEST
+            int im_ = k_tmp.fPt > 0 ? 1 : 0;
+            int ie_ = hEtaTmp.FindBin(k_tmp.fEtaMC);
+            double eff_ = fEffK ? hEffK[im_][ic - 1][ie_ - 1][iS]->GetBinContent(hEffK[im_][ic - 1][ie_ - 1][iS]->FindBin(std::abs(k_tmp.fPtMC))) : kDummyEffK;
+            if (!k_tmp.fIsReconstructed || k_tmp.fFlag != 1) continue;
+            int im_tmp = k_tmp.fPt > 0 ? 1 : 0;
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hRecKaon[im_tmp]->Fill(cent, std::abs(k_tmp.fPt), 1./eff_);
+          #endif // CLOSURE_TEST
+          int im = k_tmp.fPt > 0 ? 1 : 0;
+          int ie = hEtaTmp.FindBin(k_tmp.fEta);
+          //std::cout << "im = " << im << ", ic = " << ic - 1 << std::endl;
+          double eff = fEffK ? hEffK[im][ic - 1][ie - 1][iS][iVar]->GetBinContent(hEffK[im][ic - 1][ie - 1][iS][iVar]->FindBin(std::abs(k_tmp.fPt))) : kDummyEffK;
+          //std::cout << "pt = " << std::abs(k_tmp.fPt) << "; bin = " << hEffK[im][ic - 1][ie - 1][iS]->GetXaxis()->FindBin(std::abs(k_tmp.fPt)) << "eff = " << eff << std::endl;
+          qK_1_tmp[im][0] += 1.;
+          qK_1_tmp_update[im][0] += 1.;
+          qK_2_tmp[im][0] += 1.;
+          qK_1_tmp[im][1] += (1./eff);
+          qK_1_tmp_update[im][1] += (1./eff);
+          double q2 = 1./eff/eff;
+          qK_2_tmp[im][1] += q2;
+          nK[im] += 1;
+          #ifdef FILL_HIST
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1){
+              hNsigmaITS[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaITS);
+              hNsigmaTPC[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTPC);
+              hNsigmaTOF[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTOF);
+            }
+          #endif // FILLHIST
         }
-        #ifdef CLOSURE_TEST
-          if (!xi_tmp.fIsReconstructed || xi_tmp.fFlag != 1) continue;
-        #endif // CLOSURE_TEST
-        double bdtEff = 1.;
-        if (!isMC && !kUseBdtInMC){
-          bdtEff = kBdtEffCut;
-          double bdtScoreCut = fEffBDTXi ? hBDTEffXi->GetBinContent(hBDTEffXi->FindBin(cent, std::abs(xi_tmp.fPt), bdtEff)) : kDummyBdtScoreXi;
-          if (xi_tmp.fBdtOut < bdtScoreCut) continue;
-          //std::cout << "bdtScoreCut = " << bdtScoreCut << std::endl;
-        }
-        int im = xi_tmp.fPt > 0 ? 1 : 0;
-        int ie = hEtaTmp.FindBin(xi_tmp.fEta);
-        //std::cout << "xi: " << cent << "\t" << xi_tmp.fPt << "\t" << bdtEff << std::endl;
-        #ifdef CLOSURE_TEST
-          hRecXi[im]->Fill(cent, std::abs(xi_tmp.fPt));
-        #endif // CLOSURE_TEST
-        //std::cout << hEffXi[im][ic - 1][ie - 1][iS]->GetName() << std::endl;
-        double eff = fEffXi ? hEffXi[im][ic - 1][ie - 1][iS]->GetBinContent(hEffXi[im][ic - 1][ie - 1][iS]->FindBin(std::abs(xi_tmp.fPt))) : kDummyEffXi;
-        //std::cout << "pt = " << std::abs(xi_tmp.fPt) << "; bin = " << hEffXi[im][ic - 1][ie - 1][iS]->FindBin(std::abs(xi_tmp.fPt)) << "eff = " << eff << std::endl;
-        qXi_1_tmp[im][0] += 1.;
-        qXi_1_tmp_update[im][0] += 1.;
-        qXi_2_tmp[im][0] += 1.;
-        qXi_1_tmp[im][1] += (1./eff/bdtEff);
-        qXi_1_tmp_update[im][1] += (1./eff/bdtEff);
-        qXi_2_tmp[im][1] += (1./eff/eff/bdtEff/bdtEff);
-        nXi[im] += 1;
-        hMass[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fMass);
       }
-    }
-    for (int iM = 0; iM < 2; ++iM){
-      #ifdef CLOSURE_TEST
-        hGenRecXi[iM]->Fill(cent, nXi_gen[iM], nXi[iM]);
-      #endif
-      for (int iCorr = 0; iCorr < 2; ++iCorr){
-        qXi_1_sq_tmp[iM][iCorr] += (qXi_1_tmp_update[iM][iCorr] * qXi_1_tmp_update[iM][iCorr]);
-        qXi_1_tmp_update[iM][iCorr] = 0.;
-      }
-    }
-
-    for (int iM = 0; iM < 2; ++iM){
-      #ifdef CLOSURE_TEST
-        qK_1_Gen[ic_sm-1][iM][iS] += qK_1_gen_tmp[iM];
-        qK_11_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[iM]*qK_1_gen_tmp[1-iM]);
-        qK_1Sq_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[iM]*qK_1_gen_tmp[iM]);
-        qK_2_Gen[ic_sm-1][iM][iS] += qK_2_gen_tmp[iM];
-        qXi_1_Gen[ic_sm-1][iM][iS] += qXi_1_gen_tmp[iM];
-        qXi_11_Gen[ic_sm-1][iM][iS] += (qXi_1_gen_tmp[iM]*qXi_1_gen_tmp[1-iM]);
-        qXi_1Sq_Gen[ic_sm-1][iM][iS] += (qXi_1_gen_tmp[iM]*qXi_1_gen_tmp[iM]);
-        //std::cout << "qXi_1_gen_tmp[iM][iC] = " << qXi_1_gen_tmp[iM] << "; square = " << qXi_1_gen_tmp[iM]*qXi_1_gen_tmp[iM] << std::endl;
-        qXi_2_Gen[ic_sm-1][iM][iS] += qXi_2_gen_tmp[iM];
-        qKXi_11Same_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[iM]*qXi_1_gen_tmp[1-iM]);
-        qKXi_11Opp_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[1-iM]*qXi_1_gen_tmp[1-iM]);
-        hNKaonXi_Gen[0][iM][iS]->Fill(cent, nK_gen[iM], nXi_gen[1-iM]);
-        hNKaonXi_Gen[1][iM][iS]->Fill(cent, nK_gen[1-iM], nXi_gen[1-iM]);
-      #endif // CLOSURE_TEST
-      for (int iC = 0; iC < 2; ++iC){ // loop over efficiency correction
-        qK_1[ic_sm-1][iC][iM][iS] += qK_1_tmp[iM][iC];
-        qK_11[ic_sm-1][iC][iM][iS] += (qK_1_tmp[iM][iC]*qK_1_tmp[1-iM][iC]);
-        qK_1Sq[ic_sm-1][iC][iM][iS] += qK_1_sq_tmp[iM][iC];
-        qK_2[ic_sm-1][iC][iM][iS] += qK_2_tmp[iM][iC];
-        qXi_1[ic_sm-1][iC][iM][iS] += qXi_1_tmp[iM][iC];
-        qXi_11[ic_sm-1][iC][iM][iS] += (qXi_1_tmp[iM][iC]*qXi_1_tmp[1-iM][iC]);
-        //std::cout <<  qXi_1[ic_sm-1][iC][iM] << std::endl;
-        qXi_1Sq[ic_sm-1][iC][iM][iS] += qXi_1_sq_tmp[iM][iC];
-        //std::cout << "qXi_1_tmp[iM][iC] = " << qXi_1_tmp[iM][iC] << "; square = " << qXi_1_tmp[iM][iC]*qXi_1_tmp[iM][iC] << std::endl;
-        qXi_2[ic_sm-1][iC][iM][iS] += qXi_2_tmp[iM][iC];
-        qKXi_11Same[ic_sm-1][iC][iM][iS] += (qK_1_tmp[iM][iC]*qXi_1_tmp[1-iM][iC]);
-        qKXi_11Opp[ic_sm-1][iC][iM][iS] += (qK_1_tmp[1-iM][iC]*qXi_1_tmp[1-iM][iC]);
-      }
-      hNKaonXi[0][iM][iS]->Fill(cent, nK[iM], nXi[1-iM]);
-      hNKaonXi[1][iM][iS]->Fill(cent, nK[1-iM], nXi[1-iM]);
-    }
-  }
-
-
-  for (int iS = 0; iS < N_SAMPLE; ++iS){
-    if (isMC || (!isMC && kUseIndex)){
-      o.mkdir(Form("subsample_%d", iS + 1));
-      o.cd(Form("subsample_%d", iS + 1));
-    }
-    else {
-      o.mkdir(Form("subsample_%s", ofname));
-      o.cd(Form("subsample_%s", ofname));
-    }
-    for (int iM = 0; iM < 2; ++iM){
-      for (int iC = 0; iC < kNCentBinsSmall; ++iC){
-        double ev = hCent[iS]->GetBinContent(iC+1);
-        // std::cout << "n_ev = " << ev << std::endl;
+      for (int iM = 0; iM < 2; ++iM){
         #ifdef CLOSURE_TEST
-          hKaonQ1_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1_Gen[iC][iM][iS]/ev : 0);
-          hKaonQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_11_Gen[iC][iM][iS]/ev : 0);
-          hKaonQ1Sq_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1Sq_Gen[iC][iM][iS]/ev : 0);
-          hKaonQ2_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_2_Gen[iC][iM][iS]/ev : 0);
-          hXiQ1_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1_Gen[iC][iM][iS]/ev : 0);
-          hXiQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_11_Gen[iC][iM][iS]/ev : 0);
-          hXiQ1Sq_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1Sq_Gen[iC][iM][iS]/ev : 0);
-          hXiQ2_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_2_Gen[iC][iM][iS]/ev : 0);
-          hSameKaonXiQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Same_Gen[iC][iM][iS]/ev : 0);
-          hOppKaonXiQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Opp_Gen[iC][iM][iS]/ev : 0);
-        #endif // CLOSURE_TEST
+          if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hGenRecKaon[iM]->Fill(cent, nK_gen[iM], nK[iM]);
+        #endif
         for (int iCorr = 0; iCorr < 2; ++iCorr){
-          hKaonQ1[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1[iC][iCorr][iM][iS]/ev : 0);
-          hKaonQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_11[iC][iCorr][iM][iS]/ev : 0);
-          hKaonQ1Sq[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1Sq[iC][iCorr][iM][iS]/ev : 0);
-          hKaonQ2[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_2[iC][iCorr][iM][iS]/ev : 0);
-          hXiQ1[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1[iC][iCorr][iM][iS]/ev : 0);
-          hXiQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_11[iC][iCorr][iM][iS]/ev : 0);
-          hXiQ1Sq[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1Sq[iC][iCorr][iM][iS]/ev : 0);
-          hXiQ2[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_2[iC][iCorr][iM][iS]/ev : 0);
-          hSameKaonXiQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Same[iC][iCorr][iM][iS]/ev : 0);
-          hOppKaonXiQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Opp[iC][iCorr][iM][iS]/ev : 0);
+          double q1_sq = qK_1_tmp[iM][iCorr] * qK_1_tmp[iM][iCorr];
+          qK_1_sq_tmp[iM][iCorr] += q1_sq;
+          //std::cout << "qK_1_sq_tmp[" << iM << "][" << iCorr << "] = " << qK_1_tmp_update[iM][iCorr] * qK_1_tmp_update[iM][iCorr] << std::endl;
+          //std::cout << "qK_1_tmp[" << iM << "][" << iCorr << "] = " << qK_1_tmp[iM][iCorr] << std::endl;
+          qK_1_tmp_update[iM][iCorr] = 0.;
         }
       }
-      #ifdef CLOSURE_TEST
-        hKaonQ1_Gen[iM][iS]->Write();
-        hKaonQ11_Gen[iM][iS]->Write();
-        hKaonQ1Sq_Gen[iM][iS]->Write();
-        hKaonQ2_Gen[iM][iS]->Write();
-        hXiQ1_Gen[iM][iS]->Write();
-        hXiQ11_Gen[iM][iS]->Write();
-        hXiQ1Sq_Gen[iM][iS]->Write();
-        hXiQ2_Gen[iM][iS]->Write();
-        hSameKaonXiQ11_Gen[iM][iS]->Write();
-        hOppKaonXiQ11_Gen[iM][iS]->Write();
-        for (int iC = 0; iC < 2; ++iC)
-          hNKaonXi_Gen[iM][iC][iS]->Write();
-      #endif // CLOSURE_TEST
-      for (int iC = 0; iC < 2; ++iC){
-        hKaonQ1[iM][iC][iS]->Write();
-        hKaonQ11[iM][iC][iS]->Write();
-        hKaonQ1Sq[iM][iC][iS]->Write();
-        hKaonQ2[iM][iC][iS]->Write();
-        hXiQ1[iM][iC][iS]->Write();
-        hXiQ11[iM][iC][iS]->Write();
-        hXiQ1Sq[iM][iC][iS]->Write();
-        hXiQ2[iM][iC][iS]->Write();
-        hSameKaonXiQ11[iM][iC][iS]->Write();
-        hOppKaonXiQ11[iM][iC][iS]->Write();
-        hNKaonXi[iC][iM][iS]->Write();
+
+      if (iVar < kNMassCuts * kNBdtCuts){
+        for (auto xi_tmp : *xi){
+          try {
+            double pt = xi_tmp.fPt;
+          }
+          catch (const std::out_of_range& e) {
+            continue;
+          }
+          //std::cout << "iXi = " << iXi << "; size = " << (UInt_t)(xi->size()) << std::endl;
+          #ifdef CLOSURE_TEST
+            if ( std::abs(xi_tmp.fPtMC) > kXiUpPtCut || std::abs(xi_tmp.fPtMC) < kXiLowPtCut || std::abs(xi_tmp.fEtaMC) > kEtaCut || xi_tmp.fFlag != 1) continue;
+            int im_MC = xi_tmp.fPtMC > 0 ? 1 : 0;
+            qXi_1_gen_tmp[im_MC] += 1.;
+            qXi_2_gen_tmp[im_MC] += 1.;
+            nXi_gen[im_MC] += 1;
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hGenXi[im_MC]->Fill(cent, std::abs(xi_tmp.fPtMC));
+          #endif // CLOSURE_TEST
+          if (
+              std::abs(xi_tmp.fEta) < kEtaCut &&
+              std::abs(xi_tmp.fPt) > kXiLowPtCut && std::abs(xi_tmp.fPt) < kXiUpPtCut &&
+              std::abs(xi_tmp.fMass - kXiMass) < kXiMassCuts[iMassCut]
+            )
+          {
+            if (kUseBdtInMC){
+              if (xi_tmp.fBdtOut < kBdtScoreCuts[iBdtScoreCut]) continue;
+            }
+            if ((xi_tmp.fRecFlag & BIT(0)) != 1 || (xi_tmp.fRecFlag & BIT(1)) != 2) continue;
+            #ifdef CLOSURE_TEST
+              if (!xi_tmp.fIsReconstructed || xi_tmp.fFlag != 1) continue;
+            #endif // CLOSURE_TEST
+            double bdtEff = 1.;
+            if (!isMC && !kUseBdtInMC){
+              bdtEff = kBdtEffCut;
+              double bdtScoreCut = fEffBDTXi ? hBDTEffXi->GetBinContent(hBDTEffXi->FindBin(cent, std::abs(xi_tmp.fPt), bdtEff)) : kDummyBdtScoreXi;
+              if (xi_tmp.fBdtOut < bdtScoreCut) continue;
+              //std::cout << "bdtScoreCut = " << bdtScoreCut << std::endl;
+            }
+            int im = xi_tmp.fPt > 0 ? 1 : 0;
+            int ie = hEtaTmp.FindBin(xi_tmp.fEta);
+            //std::cout << "xi: " << cent << "\t" << xi_tmp.fPt << "\t" << bdtEff << std::endl;
+            #ifdef CLOSURE_TEST
+              if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hRecXi[im]->Fill(cent, std::abs(xi_tmp.fPt));
+            #endif // CLOSURE_TEST
+            //std::cout << hEffXi[im][ic - 1][ie - 1][iS]->GetName() << std::endl;
+            double eff = fEffXi ? hEffXi[im][ic - 1][ie - 1][iS][iVar]->GetBinContent(hEffXi[im][ic - 1][ie - 1][iS][iVar]->FindBin(std::abs(xi_tmp.fPt))) : kDummyEffXi;
+            //std::cout << "pt = " << std::abs(xi_tmp.fPt) << "; bin = " << hEffXi[im][ic - 1][ie - 1][iS]->FindBin(std::abs(xi_tmp.fPt)) << "eff = " << eff << std::endl;
+            qXi_1_tmp[im][0] += 1.;
+            qXi_1_tmp_update[im][0] += 1.;
+            qXi_2_tmp[im][0] += 1.;
+            qXi_1_tmp[im][1] += (1./eff/bdtEff);
+            qXi_1_tmp_update[im][1] += (1./eff/bdtEff);
+            qXi_2_tmp[im][1] += (1./eff/eff/bdtEff/bdtEff);
+            nXi[im] += 1;
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hMass[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fMass);
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hBDTOut[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fBdtOut);
+          }
+        }
+        for (int iM = 0; iM < 2; ++iM){
+          #ifdef CLOSURE_TEST
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hGenRecXi[iM]->Fill(cent, nXi_gen[iM], nXi[iM]);
+          #endif
+          for (int iCorr = 0; iCorr < 2; ++iCorr){
+            qXi_1_sq_tmp[iM][iCorr] += (qXi_1_tmp_update[iM][iCorr] * qXi_1_tmp_update[iM][iCorr]);
+            qXi_1_tmp_update[iM][iCorr] = 0.;
+          }
+        }
       }
+
+      #ifdef FILL_HIST
+        if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1)
+        {
+          for (int iM = 0; iM < 2; ++iM){
+            #ifdef CLOSURE_TEST
+              qK_1_Gen[ic_sm-1][iM][iS] += qK_1_gen_tmp[iM];
+              qK_11_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[iM]*qK_1_gen_tmp[1-iM]);
+              qK_1Sq_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[iM]*qK_1_gen_tmp[iM]);
+              qK_2_Gen[ic_sm-1][iM][iS] += qK_2_gen_tmp[iM];
+              qXi_1_Gen[ic_sm-1][iM][iS] += qXi_1_gen_tmp[iM];
+              qXi_11_Gen[ic_sm-1][iM][iS] += (qXi_1_gen_tmp[iM]*qXi_1_gen_tmp[1-iM]);
+              qXi_1Sq_Gen[ic_sm-1][iM][iS] += (qXi_1_gen_tmp[iM]*qXi_1_gen_tmp[iM]);
+              //std::cout << "qXi_1_gen_tmp[iM][iC] = " << qXi_1_gen_tmp[iM] << "; square = " << qXi_1_gen_tmp[iM]*qXi_1_gen_tmp[iM] << std::endl;
+              qXi_2_Gen[ic_sm-1][iM][iS] += qXi_2_gen_tmp[iM];
+              qKXi_11Same_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[iM]*qXi_1_gen_tmp[1-iM]);
+              qKXi_11Opp_Gen[ic_sm-1][iM][iS] += (qK_1_gen_tmp[1-iM]*qXi_1_gen_tmp[1-iM]);
+              hNKaonXi_Gen[0][iM][iS]->Fill(cent, nK_gen[iM], nXi_gen[1-iM]);
+              hNKaonXi_Gen[1][iM][iS]->Fill(cent, nK_gen[1-iM], nXi_gen[1-iM]);
+            #endif // CLOSURE_TEST
+            for (int iC = 0; iC < 2; ++iC){ // loop over efficiency correction
+              qK_1[ic_sm-1][iC][iM][iS] += qK_1_tmp[iM][iC];
+              qK_11[ic_sm-1][iC][iM][iS] += (qK_1_tmp[iM][iC]*qK_1_tmp[1-iM][iC]);
+              qK_1Sq[ic_sm-1][iC][iM][iS] += qK_1_sq_tmp[iM][iC];
+              qK_2[ic_sm-1][iC][iM][iS] += qK_2_tmp[iM][iC];
+              qXi_1[ic_sm-1][iC][iM][iS] += qXi_1_tmp[iM][iC];
+              qXi_11[ic_sm-1][iC][iM][iS] += (qXi_1_tmp[iM][iC]*qXi_1_tmp[1-iM][iC]);
+              //if (!(i%1000000))std::cout <<  qXi_1[ic_sm-1][iC][iM][iS] << std::endl;
+              qXi_1Sq[ic_sm-1][iC][iM][iS] += qXi_1_sq_tmp[iM][iC];
+              //std::cout << "qXi_1_tmp[iM][iC] = " << qXi_1_tmp[iM][iC] << "; square = " << qXi_1_tmp[iM][iC]*qXi_1_tmp[iM][iC] << std::endl;
+              qXi_2[ic_sm-1][iC][iM][iS] += qXi_2_tmp[iM][iC];
+              qKXi_11Same[ic_sm-1][iC][iM][iS] += (qK_1_tmp[iM][iC]*qXi_1_tmp[1-iM][iC]);
+              qKXi_11Opp[ic_sm-1][iC][iM][iS] += (qK_1_tmp[1-iM][iC]*qXi_1_tmp[1-iM][iC]);
+            }
+            hNKaonXi[0][iM][iS]->Fill(cent, nK[iM], nXi[1-iM]);
+            hNKaonXi[1][iM][iS]->Fill(cent, nK[1-iM], nXi[1-iM]);
+          }
+        }
+      #endif // FILL_HIST
+
+      evtTuple[iVar]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1], qXi_1_tmp[0][1], qXi_1_tmp[1][1], qXi_2_tmp[0][1], qXi_2_tmp[1][1], 0, 0);
     }
-    hCent[iS]->Write();
   }
 
+  #ifdef FILL_HIST
+    for (int iS = 0; iS < N_SAMPLE; ++iS){
+      if (isMC || (!isMC && kUseIndex)){
+        o.mkdir(Form("subsample_%s%d", kSubsampleFlag, iS + 1));
+        o.cd(Form("subsample_%s%d", kSubsampleFlag, iS + 1));
+      }
+      else {
+        o.mkdir(Form("subsample_%s", ofname));
+        o.cd(Form("subsample_%s", ofname));
+      }
+      for (int iM = 0; iM < 2; ++iM){
+        for (int iC = 0; iC < kNCentBinsSmall; ++iC){
+          double ev = hCent[iS]->GetBinContent(iC+1);
+          // std::cout << "n_ev = " << ev << std::endl;
+          #ifdef CLOSURE_TEST
+            hKaonQ1_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1_Gen[iC][iM][iS]/ev : 0);
+            hKaonQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_11_Gen[iC][iM][iS]/ev : 0);
+            hKaonQ1Sq_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1Sq_Gen[iC][iM][iS]/ev : 0);
+            hKaonQ2_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qK_2_Gen[iC][iM][iS]/ev : 0);
+            hXiQ1_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1_Gen[iC][iM][iS]/ev : 0);
+            hXiQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_11_Gen[iC][iM][iS]/ev : 0);
+            hXiQ1Sq_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1Sq_Gen[iC][iM][iS]/ev : 0);
+            hXiQ2_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_2_Gen[iC][iM][iS]/ev : 0);
+            hSameKaonXiQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Same_Gen[iC][iM][iS]/ev : 0);
+            hOppKaonXiQ11_Gen[iM][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Opp_Gen[iC][iM][iS]/ev : 0);
+          #endif // CLOSURE_TEST
+          for (int iCorr = 0; iCorr < 2; ++iCorr){
+            hKaonQ1[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1[iC][iCorr][iM][iS]/ev : 0);
+            hKaonQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_11[iC][iCorr][iM][iS]/ev : 0);
+            hKaonQ1Sq[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_1Sq[iC][iCorr][iM][iS]/ev : 0);
+            hKaonQ2[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qK_2[iC][iCorr][iM][iS]/ev : 0);
+            hXiQ1[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1[iC][iCorr][iM][iS]/ev : 0);
+            hXiQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_11[iC][iCorr][iM][iS]/ev : 0);
+            hXiQ1Sq[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_1Sq[iC][iCorr][iM][iS]/ev : 0);
+            hXiQ2[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qXi_2[iC][iCorr][iM][iS]/ev : 0);
+            hSameKaonXiQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Same[iC][iCorr][iM][iS]/ev : 0);
+            hOppKaonXiQ11[iM][iCorr][iS]->SetBinContent(iC + 1, ev > 0 ? qKXi_11Opp[iC][iCorr][iM][iS]/ev : 0);
+          }
+        }
+        #ifdef CLOSURE_TEST
+          hKaonQ1_Gen[iM][iS]->Write();
+          hKaonQ11_Gen[iM][iS]->Write();
+          hKaonQ1Sq_Gen[iM][iS]->Write();
+          hKaonQ2_Gen[iM][iS]->Write();
+          hXiQ1_Gen[iM][iS]->Write();
+          hXiQ11_Gen[iM][iS]->Write();
+          hXiQ1Sq_Gen[iM][iS]->Write();
+          hXiQ2_Gen[iM][iS]->Write();
+          hSameKaonXiQ11_Gen[iM][iS]->Write();
+          hOppKaonXiQ11_Gen[iM][iS]->Write();
+          for (int iC = 0; iC < 2; ++iC)
+            hNKaonXi_Gen[iM][iC][iS]->Write();
+        #endif // CLOSURE_TEST
+        for (int iC = 0; iC < 2; ++iC){
+          hKaonQ1[iM][iC][iS]->Write();
+          hKaonQ11[iM][iC][iS]->Write();
+          hKaonQ1Sq[iM][iC][iS]->Write();
+          hKaonQ2[iM][iC][iS]->Write();
+          hXiQ1[iM][iC][iS]->Write();
+          hXiQ11[iM][iC][iS]->Write();
+          hXiQ1Sq[iM][iC][iS]->Write();
+          hXiQ2[iM][iC][iS]->Write();
+          hSameKaonXiQ11[iM][iC][iS]->Write();
+          hOppKaonXiQ11[iM][iC][iS]->Write();
+          hNKaonXi[iC][iM][iS]->Write();
+        }
+      }
+      hCent[iS]->Write();
+    }
+
+
+    o.cd();
+    #ifdef CLOSURE_TEST
+      for (int iM = 0; iM < 2; ++iM){
+        hRecKaon[iM]->Write();
+        hGenRecKaon[iM]->Write();
+        hGenRecXi[iM]->Write();
+        hRecXi[iM]->Write();
+        hGenXi[iM]->Write();
+      }
+    #endif
+    for (int iC = 0; iC < 2; ++iC){
+      for (int iE = 0; iE < kNEtaBins; ++iE){
+        hNsigmaTOF[iC][iE]->Write();
+        hNsigmaTPC[iC][iE]->Write();
+        hNsigmaITS[iC][iE]->Write();
+      }
+      hBDTOut[iC]->Write();
+      hMass[iC]->Write();
+    }
+  #endif // FILL_HIST
 
   o.cd();
-  #ifdef CLOSURE_TEST
-    for (int iM = 0; iM < 2; ++iM){
-      hRecKaon[iM]->Write();
-      hGenRecKaon[iM]->Write();
-      hGenRecXi[iM]->Write();
-      hRecXi[iM]->Write();
-      hGenXi[iM]->Write();
-    }
-  #endif
-  for (int iC = 0; iC < 2; ++iC){
-    hNsigmaTOF[iC]->Write();
-    hNsigmaTPC[iC]->Write();
-    hMass[iC]->Write();
+  for (int i{0}; i < kNTpcClsCuts * kNDcaCuts * kNChi2Cuts * kNPidCuts; ++i)
+  {
+    evtTuple[i]->Write();
   }
+
+  w.Stop();
+  w.Print();
 
   // close stream
   o.Close();

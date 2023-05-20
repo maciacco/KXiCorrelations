@@ -2,5 +2,5 @@ num="$1"
 
 root -b -l <<EOF
 .L ReadTreeEffCorr.cxx+
-ReadTreeEffCorr("tree/15o/AnalysisResults_$num","o$num")
+ReadTreeEffCorr("tree/dataset_full_merge/AnalysisResults_$num","o_$num")
 EOF

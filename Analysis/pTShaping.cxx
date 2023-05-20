@@ -26,6 +26,38 @@ const char* cent_string="0_90.root";
 
 constexpr bool reject = true;
 
+constexpr bool kUseBW = false;
+
+double LevyTsallis_Func(const double *x, const double *p) {
+  /* dN/dpt */
+
+  double pt = x[0];
+  double mass = p[0];
+  double mt = TMath::Sqrt(pt * pt + mass * mass);
+  double n = p[1];
+  double C = p[2];
+  double norm = p[3];
+
+  double part1 = (n - 1.) * (n - 2.);
+  double part2 = n * C * (n * C + mass * (n - 2.));
+  double part3 = part1 / part2;
+  double part4 = 1. + (mt - mass) / n / C;
+  double part5 = TMath::Power(part4, -n);
+  return pt * norm * part3 * part5;
+}
+
+TF1 * LevyTsallis(const Char_t *name, double mass, double n = 5., double C = 0.1, double norm = 1.) {
+
+  TF1 *fLevyTsallis = new TF1(name, LevyTsallis_Func, 0., 10., 4);
+  fLevyTsallis->SetParameters(mass, n, C, norm);
+  fLevyTsallis->SetParNames("mass", "n", "C", "norm");
+  fLevyTsallis->FixParameter(0, mass);
+  fLevyTsallis->SetParLimits(1, 1.e-3, 1.e3);
+  fLevyTsallis->SetParLimits(2, 1.e-3, 1.e3);
+  fLevyTsallis->SetParLimits(3, 1.e-6, 1.e6);
+  return fLevyTsallis;
+}
+
 TF1* fLastFunc;
 
 Double_t IntegrandBG(const double * x, const double* p){
@@ -133,7 +165,7 @@ double full_bw_max(TF1 *bw_array[], double max_steps = 1.e3, double max_pT = 10.
   return h.GetMaximum();
 }
 
-const char* kInFileMCName = "/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_MC.root";
+const char* kInFileMCName = "/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC22l5_noBin.root";
 const char* kInFileCentName = "/data/mciacco/HypCheckLambdaMass/data/StrangenessRatios_summary.root";
 const char* kOutFileName = "pTShapesLXiOm_";
 
@@ -142,12 +174,13 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
   ROOT::EnableImplicitMT(4);
   TFile inFileCent(inFileCentName);
   TFile outFile(Form("%s%s",outFileName,cent_string), "recreate");
-  ROOT::RDataFrame df("XiOmegaTree",inFileMCName);
+  ROOT::RDataFrame df("XiOmegaTreeTrain",inFileMCName);
   TH1D *hCent = (TH1D*)inFileCent.Get("Centrality_selected");
   int nEv = nCentSplit[centClass]; //double nEv = hCent->Integral(cent[centSplit[centClass][0]]+1,cent[centSplit[centClass][1]+1]);
   for (int iPart = 1; iPart < 2; ++iPart){
     int int_pow_part = int_pow(2,iPart);
     std::cout << "iPart = " << iPart << std::endl;
+    
     // build BW
     TString dir(Form("bw_%s",partNames[iPart]));
     outFile.mkdir(dir);
@@ -163,12 +196,19 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
       std::cout << "weight = " << nEvInRange/nEv << std::endl;
       blastWave[iC-centSplit[centClass][0]]->Write();
     }
-    TH1D *hBW=new TH1D("h","h",100000,0,10);
+
+    // build LT
+    TF1* levyTsallis = LevyTsallis("lt", kMass[iPart], 10.5, 0.34);
+
+    TH1D *hPtSpec=new TH1D("h","h",100000,0,10);
     for (int iB=1;iB<=100000;++iB){
-      hBW->SetBinContent(iB,full_bw(blastWave,iB/10000.));
+      if (kUseBW)
+        hPtSpec->SetBinContent(iB,full_bw(blastWave,iB/10000.));
+      else
+        hPtSpec->SetBinContent(iB,levyTsallis->Eval(iB/10000.));
     }
-    hBW->Write();
-    double bw_max = hBW->GetMaximum();
+    hPtSpec->Write();
+    double bw_max = hPtSpec->GetMaximum();
     // reweight trees
     std::cout << "Process tree..." << std::endl;
     auto dff = df.Define("index","gRandom->Rndm()+mass-mass").Filter("index < 1");
@@ -182,24 +222,24 @@ void pTShaping(const char *inFileMCName=kInFileMCName, const char *inFileCentNam
     std::cout << "Process tree (2)..." << std::endl;
     std::cout << "cut variable = " << cut_variable.data() << "; iPart = " << iPart << "; int_pow_part = " << int_pow_part << std::endl;
     if (reject){
-      auto reweight = [hTmp, normMin, bw_max, hBW](float pT){
+      auto reweight = [hTmp, normMin, bw_max, hPtSpec](float pT){
         int sz = nCentSplit[centClass];
-        double bw = hBW->GetBinContent(hBW->FindBin(pT));
+        double bw = hPtSpec->GetBinContent(hPtSpec->FindBin(pT));
         double hNormVal = hTmp->GetBinContent(hTmp->FindBin(pT));
         bool cut = gRandom->Rndm() < (bw*normMin/hNormVal/bw_max);
         return cut;
       };
-      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Filter(reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_%s",cent_string));
+      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Filter(reweight,{cut_variable.data()}).Snapshot("XiOmegaTreeTrain",Form("/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResultsTrain_%s",cent_string));
     }
     else {
-      auto reweight = [hTmp, normMin, bw_max, hBW](float pT){
+      auto reweight = [hTmp, normMin, bw_max, hPtSpec](float pT){
         int sz = nCentSplit[centClass];
-        double bw = hBW->GetBinContent(hBW->FindBin(pT));
+        double bw = hPtSpec->GetBinContent(hPtSpec->FindBin(pT));
         double hNormVal = hTmp->GetBinContent(hTmp->FindBin(pT));
         double weight=bw*normMin/hNormVal/bw_max;
         return weight;
       };
-      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Define("weightMC",reweight,{cut_variable.data()}).Snapshot("XiOmegaTree",Form("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_%s",cent_string));
+      dff.Filter(Form("std::abs(pdg)==%d", kXiPdg)).Define("weightMC",reweight,{cut_variable.data()}).Snapshot("XiOmegaTreeTrain",Form("/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResultsTrain_%s",cent_string));
     }
   }
 

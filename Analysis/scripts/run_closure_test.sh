@@ -1,5 +1,5 @@
 root -b -l <<EOF
-.L ReadTreeEffCorr.cxx+
-ReadTreeEffCorr("mc_tree/AnalysisResults_LHC21d6_strinj", "oMC_LHC21d6_strinj", true)
-.x Correlation.cxx("oMC_LHC21d6_strinj", "outMC_LHC21d6_strinj")
+//.L ReadTreeEffCorr.cxx+
+//ReadTreeEffCorr("pp/mc_train/AnalysisResults_mcGP", "oMC_mcGP", true)
+.x Correlation.cxx("oMC_mcGP", "outMC_mcGP")
 EOF

@@ -1,0 +1,18 @@
+import os
+
+os.system(f'alihadd  AnalysisResults_1.root AnalysisResults_merged_child0_run0.root AnalysisResults_merged_child0_run1.root')
+os.system(f'alihadd  AnalysisResults_2.root AnalysisResults_merged_child0_run2.root AnalysisResults_merged_child0_run3.root')
+os.system(f'alihadd  AnalysisResults_3.root AnalysisResults_merged_child0_run4.root AnalysisResults_merged_child0_run5.root')
+os.system(f'alihadd  AnalysisResults_4.root AnalysisResults_merged_child0_run6.root AnalysisResults_merged_child0_run7.root')
+os.system(f'alihadd  AnalysisResults_5.root AnalysisResults_merged_child0_run8.root AnalysisResults_merged_child0_run9.root')
+os.system(f'alihadd  AnalysisResults_6.root AnalysisResults_merged_child1_run0.root AnalysisResults_merged_child1_run1.root')
+os.system(f'alihadd  AnalysisResults_7.root AnalysisResults_merged_child1_run2.root AnalysisResults_merged_child1_run3.root')
+os.system(f'alihadd  AnalysisResults_8.root AnalysisResults_merged_child1_run4.root AnalysisResults_merged_child1_run5.root')
+os.system(f'alihadd  AnalysisResults_9.root AnalysisResults_merged_child1_run6.root AnalysisResults_merged_child1_run7.root')
+os.system(f'alihadd  AnalysisResults_10.root AnalysisResults_merged_child1_run8.root AnalysisResults_merged_child1_run9.root')
+os.system(f'alihadd  AnalysisResults_11.root AnalysisResults_merged_child1_run10.root AnalysisResults_merged_child1_run11.root')
+os.system(f'alihadd  AnalysisResults_12.root AnalysisResults_merged_child1_run12.root AnalysisResults_merged_child1_run13.root')
+os.system(f'alihadd  AnalysisResults_13.root AnalysisResults_merged_child1_run14.root AnalysisResults_merged_child1_run15.root')
+os.system(f'alihadd  AnalysisResults_14.root AnalysisResults_merged_child1_run16.root AnalysisResults_merged_child1_run17.root')
+os.system(f'alihadd  AnalysisResults_15.root AnalysisResults_merged_child1_run18.root AnalysisResults_merged_child0_run12.root')
+os.system(f'alihadd  AnalysisResults_16.root AnalysisResults_merged_child0_run10.root AnalysisResults_merged_child0_run11.root')

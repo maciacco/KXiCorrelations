@@ -13,6 +13,7 @@
 !*.md
 !Proton_PbP_copy
 !Proton_PbP_copy/*
+!*.C
 
 # even if they are inside subdirectories
 !*/

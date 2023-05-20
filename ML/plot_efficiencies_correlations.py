@@ -126,8 +126,9 @@ if TRAINING:
         for i_cent_bins in range(len(CENTRALITY_LIST)):
             cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-            df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
-
+            #df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
+            df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC22l5.root"))['XiOmegaTree'].arrays(library="pd")
+    
             if MAKE_PRESELECTION_EFFICIENCY and not MAKE_FEATURES_PLOTS and not MAKE_TRAIN_TEST_PLOT:
                 ##############################################################
                 # PRESELECTION EFFICIENCY
@@ -167,14 +168,16 @@ if TRAINING:
 
     del df_signal
 
-    df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_0_90.root"))['XiOmegaTree'].arrays(library="pd")
-
+    #df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_0_90.root"))['XiOmegaTree'].arrays(library="pd")
+    df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC22l5.root"))['XiOmegaTree'].arrays(library="pd")
     if MAKE_FEATURES_PLOTS and not MAKE_PRESELECTION_EFFICIENCY and not TRAIN:
         ######################################################
         # PLOT FEATURES DISTRIBUTIONS AND CORRELATIONS
         ######################################################
 
-        df_background = uproot.open(os.path.expandvars("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root"))['XiOmegaTree'].arrays(library="pd")
+        #df_background = uproot.open(os.path.expandvars("/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root"))['XiOmegaTree'].arrays(library="pd")
+        df_background = uproot.open(os.path.expandvars("/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC17pq_data.root"))['XiOmegaTree'].arrays(library="pd")
+        
         df_prompt_ct = df_signal.query(f'competingMass > 0.01 and (pdg==3312 or pdg==-3312) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69') # and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega and flag==1') # pt cut?
         df_background_ct = df_background.query(f'competingMass > 0.01 and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69') # and radius < 25 and radiusV0 < 25 and dcaV0prPV < 2.5 and dcaV0piPV < 2.5 and dcaV0PV < 2.5 and dcaBachPV < 2.5 and eta < 0.8 and eta > -0.8 and not isOmega') # pt cut?
         #print(df_prompt_ct.keys())

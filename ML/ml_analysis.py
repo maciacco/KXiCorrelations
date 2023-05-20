@@ -45,6 +45,7 @@ ROOT.gROOT.SetBatch()
 ROOT.EnableImplicitMT(10)
 
 # training
+ppPbPb = '_pp4'
 RECOMPUTE_DICT = True
 PLOT_DIR = 'plots'
 MAKE_TRAIN_TEST_PLOT = True
@@ -54,7 +55,7 @@ TRAIN = args.dotraining
 COMPUTE_SCORES_FROM_EFF = args.computescoreff
 TRAINING = args.train and (COMPUTE_SCORES_FROM_EFF or TRAIN)
 MERGE_CENTRALITY = args.mergecentrality
-CREATE_TRAIN_TEST = False
+CREATE_TRAIN_TEST = True
 
 # application
 APPLICATION = args.application
@@ -80,7 +81,7 @@ TRAINING_COLUMNS_LIST = params['TRAINING_COLUMNS']
 RANDOM_STATE = params['RANDOM_STATE']
 HYPERPARAMS = params['HYPERPARAMS']
 HYPERPARAMS_RANGES = params['HYPERPARAMS_RANGES']
-HYPERPARAMS_RANGES_LOW_PT = params['HYPERPARAMS_RANGES_LOW_PT']
+HYPERPARAMS_RANGES_HIGH_PT = params['HYPERPARAMS_RANGES_HIGH_PT']
 ##################################################################
 
 ROOT.gInterpreter.ProcessLine(".L help.h+")
@@ -102,19 +103,20 @@ if PRODUCE_DATASETS and not TRAIN:
 if TRAINING:
 
     # make plot directory
-    if not os.path.isdir(PLOT_DIR):
-        os.mkdir(PLOT_DIR)
+    if not os.path.isdir(f'{PLOT_DIR}{ppPbPb}'):
+        os.mkdir(f'{PLOT_DIR}{ppPbPb}')
 
     # make dataframe directory
-    if not os.path.isdir('df_test'):
-        os.mkdir('df_test')
+    if not os.path.isdir(f'df_test{ppPbPb}'):
+        os.mkdir(f'df_test{ppPbPb}')
 
     score_eff_arrays_dict = dict()
 
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-        df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root"))['XiOmegaTree'].arrays(library="pd")
+        df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC22l5.root"))['XiOmegaTree'].arrays(library="pd")
+        #df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResultsTrain_0_90.root"))['XiOmegaTreeTrain'].arrays(library="pd")
         df_signal.dcaV0piPV = df_signal.dcaV0piPV.round(1)
         df_signal.dcaV0prPV = df_signal.dcaV0prPV.round(1)
         df_signal.dcaBachPV = df_signal.dcaBachPV.round(1)
@@ -124,7 +126,9 @@ if TRAINING:
         # df_signal.dcaV0tracks = df_signal.dcaV0tracks.round(2)
         # df_signal.dcaV0PV = df_signal.dcaV0PV.round(3)
         # df_signal.tpcNsigmaV0Pr = df_signal.tpcNsigmaV0Pr.round(1)
-        df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root"))['XiOmegaTree'].arrays(library="pd")
+        
+        df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC17pq_data.root"))['XiOmegaTree'].arrays(library="pd")
+        #df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3_noBin.root"))['XiOmegaTreeTrain'].arrays(library="pd")
         df_background.dcaV0piPV = df_background.dcaV0piPV.round(1)
         df_background.dcaV0prPV = df_background.dcaV0prPV.round(1)
         df_background.dcaBachPV = df_background.dcaBachPV.round(1)
@@ -148,13 +152,20 @@ if TRAINING:
                 train_test_data = [pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()]
                 if CREATE_TRAIN_TEST and (COMPUTE_SCORES_FROM_EFF or TRAIN):
                     df_prompt_ct = df_signal.query(f'(pdg==3312 or pdg==-3312) and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and isReconstructed and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 2.5 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and flag==1 and not isOmega')
-                    df_background_ct = df_background.query(f'centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 2.5 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')
+                    df_background_ct = df_background.query(f'centrality > {cent_bins[0]-1} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and (mass < 1.31 or mass > 1.333) and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 2.5 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')
 
                     n_background = df_background_ct.shape[0]
                     n_prompt = df_prompt_ct.shape[0]
                     print(f"n_prompt = {n_prompt}")
-                    if n_background > 1.5*n_prompt:
-                        df_background_ct = df_background_ct.sample(frac=1.5*n_prompt/n_background)
+
+                    # PbPb training 
+                    # if n_background > n_prompt:
+                    #     df_background_ct = df_background_ct.sample(frac=n_prompt/n_background)
+                    
+                    # pp training
+                    if n_prompt > 0.8*n_background:
+                        df_prompt_ct = df_prompt_ct.sample(frac=0.8*n_background/n_prompt)
+                    
 
                     # define tree handlers
                     prompt_tree_handler = TreeHandler()
@@ -169,12 +180,12 @@ if TRAINING:
                     train_test_data[2].loc[:,'y_true'] = train_test_data[3]
                     n_promppt_test = train_test_data[2].query("y_true==1")
                     print(f"n_prompt_test = {n_promppt_test.shape[0]}")
-                    train_test_data[0].to_parquet(f'df_test/train_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip',compression='gzip')
-                    train_test_data[2].to_parquet(f'df_test/test_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip',compression='gzip')
+                    train_test_data[0].to_parquet(f'df_test{ppPbPb}/train_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip',compression='gzip')
+                    train_test_data[2].to_parquet(f'df_test{ppPbPb}/test_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip',compression='gzip')
                     # continue
                 else:
-                    train_test_data[0] = pd.read_parquet(f'df_test/train_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip')
-                    train_test_data[2] = pd.read_parquet(f'df_test/test_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip')
+                    train_test_data[0] = pd.read_parquet(f'df_test{ppPbPb}/train_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip')
+                    train_test_data[2] = pd.read_parquet(f'df_test{ppPbPb}/test_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}.parquet.gzip')
                     train_test_data[1] = train_test_data[0]['y_true']
                     train_test_data[3] = train_test_data[2]['y_true']
                 ##############################################################
@@ -198,37 +209,37 @@ if TRAINING:
                 print(
                 f'prompt candidates: {np.count_nonzero(train_test_data[1] == 1)}; background candidates: {np.count_nonzero(train_test_data[1] == 0)}; n_cand_bkg / n_cand_signal = {np.count_nonzero(train_test_data[1] == 0) / np.count_nonzero(train_test_data[1] == 1)}')
                 
-                if not os.path.isdir('models_test'):
-                    os.mkdir('models_test')
+                if not os.path.isdir(f'models_test{ppPbPb}'):
+                    os.mkdir(f'models_test{ppPbPb}')
                 bin_model = bin
                 if MERGE_CENTRALITY:
                     bin_model = f'all_0_90_{pt_bins[0]}_{pt_bins[1]}'
 
                 if OPTIMIZE and TRAIN:
-                    if pt_bins[0] > 1.4 and pt_bins[0] < 1.6:
-                        model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES_LOW_PT,'roc_auc', nfold=5, timeout=300)
+                    if pt_bins[0] > 1.4:
+                        model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES_HIGH_PT,'roc_auc', nfold=5, timeout=100)
                     else:
-                        model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES,'roc_auc', nfold=5, timeout=300)
+                        model_hdl.optimize_params_optuna(train_test_data, HYPERPARAMS_RANGES,'roc_auc', nfold=5, timeout=100)
 
-                isModelTrained = os.path.isfile(f'models_test/{bin_model}_optimized_trained')
+                isModelTrained = os.path.isfile(f'models_test{ppPbPb}/{bin_model}_optimized_trained')
                 print(f'isModelTrained {bin_model}: {isModelTrained}')
                 if TRAIN and not isModelTrained:
                     # weights={0:2,1:6,2:3}
                     # sample_weights = compute_sample_weight(class_weight=weights,y=train_test_data[0]['y_true'])
                     model_hdl.train_test_model(train_test_data, return_prediction=True, output_margin=False) #, sample_weight=sample_weights)
-                    model_file_name = str(f'models_test/{bin_model}_trained')
+                    model_file_name = str(f'models_test{ppPbPb}/{bin_model}_trained')
                     if OPTIMIZE:
-                        model_file_name = str(f'models_test/{bin_model}_optimized_trained')
+                        model_file_name = str(f'models_test{ppPbPb}/{bin_model}_optimized_trained')
                     model_hdl.dump_model_handler(model_file_name)
                 elif COMPUTE_SCORES_FROM_EFF and isModelTrained:
                     print('Model trained...')
                     if OPTIMIZED:
-                        model_hdl.load_model_handler(f'models_test/{bin_model}_optimized_trained')
+                        model_hdl.load_model_handler(f'models_test{ppPbPb}/{bin_model}_optimized_trained')
                     else:
-                        model_hdl.load_model_handler(f'models_test/{bin_model}_trained')
+                        model_hdl.load_model_handler(f'models_test{ppPbPb}/{bin_model}_trained')
                 else:
                     continue
-                model_file_name = str(f'models_test/{bin_model}.model')
+                model_file_name = str(f'models_test{ppPbPb}/{bin_model}.model')
                 model_hdl.dump_original_model(model_file_name,True)
 
                 pt_bins_df_index = int(pt_bins[0]/5)
@@ -237,8 +248,9 @@ if TRAINING:
                 print(bin_df)
                 # get only centrality selected
                 train_test_data_cent = [pd.DataFrame(), [], pd.DataFrame(), []]
-                train_test_data_cent[0] = train_test_data[0].query(f'matter {split_ineq_sign} and pt >= {pt_bins[0]} and pt < {pt_bins[1]}')
-                train_test_data_cent[2] = train_test_data[2].query(f'matter {split_ineq_sign} and pt >= {pt_bins[0]} and pt < {pt_bins[1]}')
+
+                train_test_data_cent[0] = train_test_data[0].query(f'(pt >= {pt_bins[0]} and pt < {pt_bins[1]}) or (pt <= -{pt_bins[0]} and pt > -{pt_bins[1]})') # matter {split_ineq_sign}
+                train_test_data_cent[2] = train_test_data[2].query(f'(pt >= {pt_bins[0]} and pt < {pt_bins[1]}) or (pt <= -{pt_bins[0]} and pt > -{pt_bins[1]})')
                 train_test_data_cent[1] = train_test_data_cent[0]['y_true']
                 train_test_data_cent[3] = train_test_data_cent[2]['y_true']
 
@@ -253,20 +265,20 @@ if TRAINING:
                 train_test_data_cent[2].loc[:,'model_output'] = test_y_score
 
                 # write
-                train_test_data_cent[0].to_parquet(f'df_test/train_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}_predict.parquet.gzip',compression='gzip')
-                train_test_data_cent[2].to_parquet(f'df_test/test_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}_predict.parquet.gzip',compression='gzip')
+                train_test_data_cent[0].to_parquet(f'df_test{ppPbPb}/train_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}_predict.parquet.gzip',compression='gzip')
+                train_test_data_cent[2].to_parquet(f'df_test{ppPbPb}/test_data_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}_predict.parquet.gzip',compression='gzip')
                 
                 # second condition needed because of issue with Qt libraries
                 if MAKE_TRAIN_TEST_PLOT:
-                    if not os.path.isdir(f'{PLOT_DIR}/train_test_out'):
-                        os.mkdir(f'{PLOT_DIR}/train_test_out')
+                    if not os.path.isdir(f'{PLOT_DIR}{ppPbPb}/train_test_out'):
+                        os.mkdir(f'{PLOT_DIR}{ppPbPb}/train_test_out')
                     out_figs = plot_utils.plot_output_train_test(model_hdl, train_test_data_cent, bins=50,
                                                     logscale=True, density=True, labels=leg_labels, output_margin=False)
-                    out_figs.savefig(f'{PLOT_DIR}/train_test_out/{bin_df}_out.pdf')
+                    out_figs.savefig(f'{PLOT_DIR}{ppPbPb}/train_test_out/{bin_df}_out.pdf')
 
-                    feat_imp = plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
-                    for i_label, label in enumerate(leg_labels):
-                       feat_imp[i_label].savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}_{label}.pdf')
+                    # feat_imp = plot_utils.plot_feature_imp(train_test_data_cent[0], train_test_data_cent[1], model_hdl)
+                    # for i_label, label in enumerate(leg_labels):
+                    #    feat_imp[i_label].savefig(f'{PLOT_DIR}/train_test_out/feature_imp_training_{bin_df}_{label}.pdf')
                     plot_utils.plot_roc_train_test(
                         train_test_data_cent[3],
                         test_y_score, train_test_data_cent[1],
@@ -284,10 +296,10 @@ if TRAINING:
 
                 # get the model hyperparameters
                 if DUMP_HYPERPARAMS and TRAIN:
-                    if not os.path.isdir('hyperparams'):
-                        os.mkdir('hyperparams')
+                    if not os.path.isdir(f'hyperparams{ppPbPb}'):
+                        os.mkdir(f'hyperparams{ppPbPb}')
                     model_params_dict = model_hdl.get_model_params()
-                    with open(f'hyperparams/model_params_{bin}.yml', 'w') as outfile:
+                    with open(f'hyperparams{ppPbPb}/model_params_{bin}.yml', 'w') as outfile:
                         yaml.dump(model_params_dict, outfile, default_flow_style=False)
 
                     # save roc-auc
@@ -295,14 +307,14 @@ if TRAINING:
                 ##############################################################
 
     if COMPUTE_SCORES_FROM_EFF and ( TRAIN or RECOMPUTE_DICT ):
-        pickle.dump(score_eff_arrays_dict, open("file_score_eff_dict", "wb"))
+        pickle.dump(score_eff_arrays_dict, open(f"file_score_eff_dict{ppPbPb}", "wb"))
 
 
 # apply model to data
 if APPLICATION:
-    if not os.path.isdir('df_test'):
-        os.mkdir('df_test')
-    score_eff_arrays_dict = pickle.load(open("file_score_eff_dict", "rb"))
+    if not os.path.isdir(f'df_test{ppPbPb}'):
+        os.mkdir(f'df_test{ppPbPb}')
+    score_eff_arrays_dict = pickle.load(open(f"file_score_eff_dict{ppPbPb}", "rb"))
 
     for split in SPLIT_LIST:
 
@@ -326,36 +338,36 @@ if APPLICATION:
                 if MERGE_CENTRALITY:
                     bin_model = f'all_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[-1]}'
                 if OPTIMIZED:
-                    model_hdl.load_model_handler(f'models_test/{bin_model}_optimized_trained') # *_optimized_trained
+                    model_hdl.load_model_handler(f'models_test{ppPbPb}/{bin_model}_optimized_trained') # *_optimized_trained
                 else:
                     print(bin_model)
-                    model_hdl.load_model_handler(f'models_test/{bin_model}_trained')
+                    model_hdl.load_model_handler(f'models_test{ppPbPb}/{bin_model}_trained')
 
                 eff_array = np.arange(0.10, MAX_EFF, 0.01)
                 if USE_REAL_DATA:
                     if USE_PD:
-                        #df_data = pd.read_parquet('df_test/data_dataset')
-                        df_data = uproot.open(f'/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root')['XiOmegaTree'].arrays(library="pd")
+                        #df_data = pd.read_parquet('df_test{ppPbPb}/data_dataset')
+                        df_data = uproot.open(f'/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3_noBin.root')['XiOmegaTreeTrain'].arrays(library="pd")
                         #df_data = df_data.append(df_data_r, ignore_index=True)
                         df_data_cent = df_data.query(
-                        f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')
+                        f'( (pt > {pt_bins[0]} and pt < {pt_bins[1]}) or (pt < -{pt_bins[0]} and pt > -{pt_bins[1]}) ) and mass < -1.2917100 and mass > -1.3517100') #f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]} and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega')
                         del df_data
 
                         data_y_score = model_hdl.predict(df_data_cent, output_margin=False)
                         df_data_cent.loc[:,'model_output'] = data_y_score
 
                         # df_data_cent = df_data_cent.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
-                        df_data_cent.to_parquet(f'df_test/{bin}.parquet.gzip', compression='gzip')
+                        df_data_cent.to_parquet(f'df_test{ppPbPb}/{bin}.parquet.gzip', compression='gzip')
                     else:
                         df_data = TreeHandler()
-                        df_data.get_handler_from_large_file(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3.root", "XiOmegaTree",
-                            preselection=f'matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega',
+                        df_data.get_handler_from_large_file(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3_noBin.root", "XiOmegaTreeTrain",
+                            preselection=f'( (pt > {pt_bins[0]} and pt < {pt_bins[1]}) or (pt < -{pt_bins[0]} and pt > -{pt_bins[1]}) ) and mass < -1.2917100 and mass > -1.3517100', #matter {split_ineq_sign} and centrality > {cent_bins[0]} and centrality < {cent_bins[1]}  and pt > {pt_bins[0]} and pt < {pt_bins[1]} and mass > 1.2917100 and mass < 1.3517100 and ct > 0. and ct < 20 and tpcClV0Pi > 69 and bachBarCosPA < 0.99995 and tpcClV0Pr > 69 and tpcClBach > 69 and radius < 51 and radiusV0 < 100 and dcaV0prPV < 12.7 and dcaV0piPV < 25 and dcaV0PV < 10.1 and dcaBachPV < 12.7 and eta < 0.8 and eta > -0.8 and not isOmega',
                             max_workers=4, model_handler=model_hdl, output_margin=False)
 
 
                         #df_data.apply_model_handler(model_hdl)
                         #df_data.apply_preselections(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
-                        df_data.write_df_to_parquet_files(bin,"df_test/")
+                        df_data.write_df_to_parquet_files(bin,f"df_test{ppPbPb}/")
                 else:
                     bin = f'{split}_{cent_bins[0]}_{cent_bins[1]}_{pt_bins[0]}_{pt_bins[1]}_mc_apply'
                     df_data = uproot.open(f'/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_{cent_bins[0]}_{cent_bins[1]}.root')['XiOmegaTree'].arrays(library="pd")
@@ -365,4 +377,4 @@ if APPLICATION:
                     df_data_cent.loc[:,'model_output'] = data_y_score.tolist()[:]
 
                     # df_data_cent = df_data_cent.query(f'model_output > {score_eff_arrays_dict[bin][len(eff_array)-1]}')
-                    df_data_cent.to_parquet(f'df_test/{bin}.parquet.gzip', compression='gzip')
+                    df_data_cent.to_parquet(f'df_test{ppPbPb}/{bin}.parquet.gzip', compression='gzip')

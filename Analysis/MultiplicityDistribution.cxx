@@ -6,7 +6,7 @@ void set_line_style(TF1* f);
 void set_text_style(TText* t);
 void set_text_style(TLegend* l);
 
-void MultiplicityDistribution(const char* inFileName = "o_merge_parallel", const char* outFileName = "Mult"){
+void MultiplicityDistribution(const char* inFileName = "o_17pq", const char* outFileName = "Mult17pq"){
   gStyle->SetOptStat(0);
   
   TFile f(Form("%s.root", inFileName));
@@ -42,7 +42,7 @@ void MultiplicityDistribution(const char* inFileName = "o_merge_parallel", const
       o.cd(Form("%s_mult", kPartLabel[iPart]));
       // hMultProjShift->Write();
 
-      TCanvas c(Form("cMult%s_%d", kPartLabel[iPart], iCent), Form("multiplicity %s", kPartLabel[iPart]));
+      TCanvas c(Form("cMult%s_%d", kPartLabel[iPart], iCent), Form("multiplicity %s", kPartLabel[iPart]), 500, 600);
       TLatex t;
       TLegend l(0.634085, 0.62087, 0.918546, 0.732174);
       c.SetLogy();
@@ -52,16 +52,16 @@ void MultiplicityDistribution(const char* inFileName = "o_merge_parallel", const
       set_line_style(&poisDraw);
       set_text_style(&t);
       set_text_style(&l);
-      hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 80 : 5);
-      hMultProjShift->GetYaxis()->SetRangeUser(2.e-9, 4);
+      hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 80 : 8);
+      hMultProjShift->GetYaxis()->SetRangeUser(2.e-12, 4);
       hMultProjShift->Draw("histoe");
       poisDraw.Draw("lsame");
-      t.DrawLatexNDC(0.65, 0.8, kCollidingSystemText);
-      t.DrawLatexNDC(0.65, 0.75, Form("V0M centrality %.0f-%.0f%%", kCentBins[iCent], kCentBins[iCent + 1]));
+      t.DrawLatexNDC(0.55, 0.8, kCollidingSystemText);
+      t.DrawLatexNDC(0.55, 0.75, Form("V0M centrality %.0f-%.0f%%", kCentBins[iCent], kCentBins[iCent + 1]));
       l.AddEntry(hMultProjShift, kParticleAntiparticleText[iPart], "pe");
       l.AddEntry(&poisDraw, "Poisson fit", "l");
       l.Draw("same");
-      c.Print(Form("%s_%d.png", kPartLabel[iPart], iCent));
+      c.Print(Form("%s_%d.pdf", kPartLabel[iPart], iCent));
       c.Write();
     }
   }
