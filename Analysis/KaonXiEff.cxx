@@ -3,7 +3,7 @@
 
 using namespace utils;
 
-void KaonXiEff(const char* inFileName = "oo_limit_lhc21d6_postCalib_1", const char* outFileName = "KaonXiEff_LHC21d6_postCalib_1"){
+void KaonXiEff(const char* inFileName = "oo_limit_lhc22l5_postCalib_1", const char* outFileName = "KaonXiEff_LHC22l5_postCalib_1"){
   gStyle->SetOptStat(0);
   TFile *fMC = TFile::Open(Form("%s/%s.root", kResDir, inFileName));
   TFile *fOut = TFile::Open(Form("%s/%s.root", kResDir, outFileName), "recreate");

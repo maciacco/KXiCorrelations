@@ -156,7 +156,7 @@ struct MiniEvent {
 constexpr const char* kResDir = "results";
 constexpr const char* kDataDir = "/data/mciacco/KXiCorrelations";
 //constexpr const char* kEffKFile = "KaonXiEff_LHC21l5_postCalib";
-constexpr const char* kEffKFile = "efficieny/KaonXiEff_LHC21d6_postCalib_1";
+constexpr const char* kEffKFile = "efficieny/KaonXiEff_LHC22l5_postCalib_1";
 //constexpr const char* kEffKFile = "KaonXiEff_LHC22l5_postCalib";
 constexpr const char* kEffXiFile = "PreselEff_0_90";
 constexpr const char* kEffBDTXiFile = "XiBDTEff";
@@ -169,7 +169,7 @@ constexpr int N_SAMPLE = 1;
 //constexpr int N_SUB_CENT = 10;
 constexpr int DELTA = 1;
 constexpr int kNCentBinsMed = 18;
-constexpr const char* kSubsampleFlag = "o_15_";
+constexpr const char* kSubsampleFlag = "o_17_";
 // constexpr double kCentBinsMed[kNCentBinsMed + 1] = {0., 5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60., 65., 70., 75., 80., 85., 90.};
 constexpr int kNCentBinsSmall = 100;
 constexpr double kCentBinsSmall[kNCentBinsSmall + 1] = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41., 42., 43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55., 56., 57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69., 70., 71., 72., 73., 74., 75., 76., 77., 78., 79., 80., 81., 82., 83., 84., 85., 86., 87., 88., 89., 90., 91., 92., 93., 94., 95., 96., 97., 98., 99., 100.};
@@ -185,11 +185,11 @@ constexpr const char* kPartLabel[2] = {"K", "Xi"};
 constexpr const char* kPartLabelExtend[2] = {"Kaon", "Xi"};
 constexpr const char* kXiChargeLabel[2] = {"Minus", "Plus"};
 constexpr const char* kPartLetterLabel[2] = {"K", "#Xi"};
-//constexpr int kNCentBins = 8;
+constexpr int kNCentBins = 8;
 //constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
-//constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 30., 40., 50., 70., 100.};
-constexpr int kNCentBins = 9;
-constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
+constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 30., 40., 50., 70., 100.};
+// constexpr int kNCentBins = 9;
+// constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
 //constexpr double kCentBinsSmall[kNCentBinsSmall + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.}; //100.};
 
 constexpr double kEtaCut = 0.8;
@@ -263,7 +263,7 @@ constexpr double kDummyBdtScoreXi = .5; // for code validation purposes
 
 constexpr int kTextFont = 44;
 constexpr int kTextSize = 20;
-constexpr int kMaxCent = 90;
+constexpr int kMaxCent = 100;
 
 constexpr const char* kCollidingSystemText = "Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV";
 constexpr const char* kParticleAntiparticleText[2] = {"K^{+}", "#Xi^{-}"}; // {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
