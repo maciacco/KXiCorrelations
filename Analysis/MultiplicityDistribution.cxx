@@ -6,7 +6,7 @@ void set_line_style(TF1* f);
 void set_text_style(TText* t);
 void set_text_style(TLegend* l);
 
-void MultiplicityDistribution(const char* inFileName = "o_17pq", const char* outFileName = "Mult17pq"){
+void MultiplicityDistribution(const char* inFileName = "out_old/o_17pq", const char* outFileName = "Mult17pq"){
   gStyle->SetOptStat(0);
   
   TFile f(Form("%s.root", inFileName));
@@ -52,7 +52,7 @@ void MultiplicityDistribution(const char* inFileName = "o_17pq", const char* out
       set_line_style(&poisDraw);
       set_text_style(&t);
       set_text_style(&l);
-      hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 80 : 8);
+      hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 20 : 8);
       hMultProjShift->GetYaxis()->SetRangeUser(2.e-12, 4);
       hMultProjShift->Draw("histoe");
       poisDraw.Draw("lsame");

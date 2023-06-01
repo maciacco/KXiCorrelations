@@ -22,8 +22,8 @@ void sameevent(int smpl = 0, int iVarMin = 0, int iVarMax = 1)
   for (int iVar = iVarMin; iVar < iVarMax; ++iVar){ 
 
     //TFile fin(Form("/data/mciacco/KXiCorrelations/output_sys_dir/18qr/o_%d.root"/* , kResDir */, sample + 1)); 
-    TFile *fin = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/17pq/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
-    TFile *fin2 = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/17pq/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
+    TFile *fin = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/18qr_new/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
+    TFile *fin2 = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/18qr_new/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
     if (!fin || !fin2 || fin->TestBit(TFile::kZombie) || fin2->TestBit(TFile::kZombie)){
       std::cout << "no input, skip" << std::endl;
       skippedVar += 1;
@@ -32,13 +32,12 @@ void sameevent(int smpl = 0, int iVarMin = 0, int iVarMax = 1)
       delete fin2;
       continue;
     }
-    TFile fout(Form("%s/output_sys_dir/output_sys_17pq_%d_%d.root", kResDir, sample, iVar), "recreate");
+    TFile fout(Form("%s/output_sys_dir/output_sys_18qr_new_%d_%d.root", kResDir, sample, iVar), "recreate");
     std::cout << iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ) << "\t" << iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ) << std::endl;
     // continue;
-    TNtuple *tuple_qmoment = (TNtuple*)fin->Get(Form("evtTuple_%d", iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts )));
-    TNtuple *tuple_qmoment2 = (TNtuple*)fin2->Get(Form("evtTuple_%d", iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts )));
-    tuple_qmoment->SetCacheSize(0);
-    tuple_qmoment2->SetCacheSize(0);
+    TNtuple *tuple_qmoment = (TNtuple*)fin->Get(Form("evtTuple_%d_%d", iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ), sample ));
+    TNtuple *tuple_qmoment2 = (TNtuple*)fin2->Get(Form("evtTuple_%d_%d", iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ), sample ));
+
     if (!tuple_qmoment || !tuple_qmoment2)
     {
       std::cout << "no input, skip" << std::endl;
@@ -48,6 +47,8 @@ void sameevent(int smpl = 0, int iVarMin = 0, int iVarMax = 1)
       delete fin2;
       continue;
     }
+    tuple_qmoment->SetCacheSize(0);
+    tuple_qmoment2->SetCacheSize(0);
     int evt[10] = {0};
     int centrality;
           

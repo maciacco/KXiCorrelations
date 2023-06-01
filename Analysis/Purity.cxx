@@ -6,7 +6,7 @@ double purity_error(double sig, double bkg, double sig_err, double bkg_err, doub
 
 bool fitMass = true;
 
-void Purity(const char* inFileName = "o_merge_parallel_18qr_postCalib", const char* outFileName = "Purity"){
+void Purity(const char* inFileName = "out_purity_var_2_var_0", const char* outFileName = "Purity_18_var2"){
   gStyle->SetOptStat(0);
 
   // killing RooFit output
@@ -187,7 +187,7 @@ void Purity(const char* inFileName = "o_merge_parallel_18qr_postCalib", const ch
               tofFrame->Draw();
               TLatex t;
               t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
-              //cTOF.Write();
+              cTOF.Write();
             }
             hMeanTOF[iM]->SetBinContent(iCent, iP, iE + 1, tofMu.getVal());
             hSigmaTOF[iM]->SetBinContent(iCent, iP, iE + 1, tofSigma.getVal());

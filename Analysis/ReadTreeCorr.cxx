@@ -15,7 +15,7 @@
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
 
-void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisResults_LHC22l5" /* "mc_tree/dataset_after_calib/merged/AnalysisResults_LHC21l5_postCalib" */, const char* ofname = "oo_limit_lhc22l5_postCalib_1"){ // pp/mc_train/dataset_after_calib/AnalysisResults_LHC22l5 mc_tree/dataset_after_calib/merged/AnalysisResults_LHC22l5_postCalib mc_tree/AnalysisResults_mc; pp/mc_train/AnalysisResults_1, oo_limit_pp
+void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisResults_LHC22l5" /* "mc_tree/dataset_after_calib/merged/AnalysisResults_LHC21l5_postCalib" */, const char* ofname = "oo_limit_lhc22l5_postCalib_2"){ // pp/mc_train/dataset_after_calib/AnalysisResults_LHC22l5 mc_tree/dataset_after_calib/merged/AnalysisResults_LHC22l5_postCalib mc_tree/AnalysisResults_mc; pp/mc_train/AnalysisResults_1, oo_limit_pp
   
   TStopwatch w;
   w.Start();
@@ -45,7 +45,7 @@ void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisR
   TH3D *hGenXi[2][kXiCut];
   TH3D *hRecKaon[2][kKCut];
   TH3D *hRecXi[2][kXiCut];
-  //TH3D *hBDTOut[2];
+  TH3D *hBDTOut[2][kXiCut];
   double ptBins[kNBinsPt + 1];
   for (int iB = 0; iB < kNBinsPt + 1; ++iB){
     ptBins[iB] = kMinPt + kDeltaPt * iB;
@@ -70,7 +70,7 @@ void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisR
       if (iVar < kNMassCuts * kNBdtCuts){
         hGenXi[iC][iVar] = new TH3D(Form("h%sGenXi_%d", kAntiMatterLabel[iC], iVar), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPtXi, ptBinsXi);
         hRecXi[iC][iVar] = new TH3D(Form("h%sRecXi_%d", kAntiMatterLabel[iC], iVar), ";Centrality (%);#eta;#it{p}_{T} (GeV/#it{c})", kNCentBins, kCentBins, kNEtaBins, etaBins, kNBinsPtXi, ptBinsXi);
-        //hBDTOut[iC] = new TH3D(Form("h%sBDTOutXi", kAntiMatterLabel[iC]), ";Centrality (%);#it{p}_{T} (GeV/#it{c});BDT out", kNCentBins, kCentBins, kNBinsPtXi, ptBinsXi, 1000, bdtBins);
+        hBDTOut[iC][iVar] = new TH3D(Form("h%sBDTOutXi_%d", kAntiMatterLabel[iC], iVar), ";Centrality (%);#it{p}_{T} (GeV/#it{c});BDT out", kNCentBins, kCentBins, kNBinsPtXi, ptBinsXi, 1000, bdtBins);
       }
     }
   }
@@ -87,8 +87,8 @@ void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisR
         if (iVar < kNMassCuts * kNBdtCuts){
           hGenXi[iC][iVar]->Reset();
           hRecXi[iC][iVar]->Reset();
+          hBDTOut[iC][iVar]->Reset();
         }
-        //hBDTOut[iC]->Reset();
       }
     }
     for (Long64_t i = 0; i < nEntries; ++i){
@@ -161,7 +161,7 @@ void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisR
               }
               int im = xi->at(iXi).fPt > 0 ? 1 : 0;
               hRecXi[im][iVar]->Fill(c->fCent, xi->at(iXi).fEta, std::abs(xi->at(iXi).fPt));
-              //hBDTOut[im]->Fill(c->fCent, std::abs(xi->at(iXi).fPt), xi->at(iXi).fBdtOut);
+              hBDTOut[im][iVar]->Fill(c->fCent, std::abs(xi->at(iXi).fPt), xi->at(iXi).fBdtOut);
             }
           }
         }
@@ -177,8 +177,8 @@ void ReadTreeCorr(const char* fname = "pp/mc_train/dataset_after_calib/AnalysisR
         if (iVar < kNMassCuts * kNBdtCuts){
           hGenXi[iC][iVar]->Write();
           hRecXi[iC][iVar]->Write();
+          hBDTOut[iC][iVar]->Write();
         }
-        //hBDTOut[iC]->Write();
       }
     }
   }

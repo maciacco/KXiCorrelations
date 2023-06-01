@@ -3,18 +3,20 @@
 void PlotResultsC2C1NetXi(){
   gStyle->SetOptStat(0);
 
-  TFile fpp("out_pp_afterCalib.root"); // 17pq
-  TFile f("out_15o_postCalib.root"); // 15o
-  TFile f2("out_18qr_postCalib.root"); // 18qr
-  auto h = (TH1D*)f.Get("hNetVarXiCentEffCorrCBWC_Corr");
-  auto h_c1a = (TH1D*)f.Get("hAAvgXiCentEffCorrCBWC_Corr");
-  auto h_c1m = (TH1D*)f.Get("hMAvgXiCentEffCorrCBWC_Corr");
-  auto h2 = (TH1D*)f2.Get("hNetVarXiCentEffCorrCBWC_Corr");
-  auto h2_c1a = (TH1D*)f2.Get("hAAvgXiCentEffCorrCBWC_Corr");
-  auto h2_c1m = (TH1D*)f2.Get("hMAvgXiCentEffCorrCBWC_Corr");
-  auto hpp = (TH1D*)fpp.Get("hNetVarXiCentEffCorrCBWC_Corr");
-  auto hpp_c1a = (TH1D*)fpp.Get("hAAvgXiCentEffCorrCBWC_Corr");
-  auto hpp_c1m = (TH1D*)fpp.Get("hMAvgXiCentEffCorrCBWC_Corr");
+  TFile fpp("out_prova_sys_17_new_c2c1.root"); // 17pq
+  TFile f("out_prova_sys_18_new_c2c1.root"); // 15o+18qr
+  // TFile fpp("out_pp_afterCalib.root"); // 17pq
+  // TFile f("out_15o_postCalib.root"); // 15o
+  // TFile f2("out_18qr_postCalib.root"); // 18qr
+  auto gpp_stat = (TGraphErrors*)fpp.Get("gRho");
+  auto gpp_sys = (TGraphErrors*)fpp.Get("gRhoSys");
+  gpp_stat->SetName("gRhoStat_pp");
+  gpp_sys->SetName("gRhoSys_pp");
+  auto gPbPb_stat = (TGraphErrors*)f.Get("gRho");
+  auto gPbPb_sys = (TGraphErrors*)f.Get("gRhoSys");
+  gPbPb_stat->SetName("gRhoStat_PbPb");
+  gPbPb_sys->SetName("gRhoSys_PbPb");
+
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#eta#GT;C_{2}(#Delta#Xi)/(C_{1}(#Xi^{+})+C_{1}(#Xi^{-}))", 1, 1, 2500, 1, 0.72, 1.06);
   //TLegend leg(0.16395348837209303, 0.60399548902823, 0.7395348837209302, 0.9167587400421383);
@@ -30,12 +32,12 @@ void PlotResultsC2C1NetXi(){
   TGraphErrors gPYTHIA_ANGANTYR;
   TGraphErrors gHIJING;
 
-  h_c1a->Add(h_c1m);
-  h->Divide(h_c1a);
-  h2_c1a->Add(h2_c1m);
-  h2->Divide(h2_c1a);
-  hpp_c1a->Add(hpp_c1m);
-  hpp->Divide(hpp_c1a);
+  // h_c1a->Add(h_c1m);
+  // h->Divide(h_c1a);
+  // h2_c1a->Add(h2_c1m);
+  // h2->Divide(h2_c1a);
+  // hpp_c1a->Add(hpp_c1m);
+  // hpp->Divide(hpp_c1a);
 
   // canvas
   cResult.SetLogx();
@@ -45,21 +47,34 @@ void PlotResultsC2C1NetXi(){
   cResult.SetRightMargin(0.02);
   cResult.SetTopMargin(0.05);
 
-  for (int iB = 1; iB < h2->GetNbinsX(); ++iB){
-    double x = h->GetBinContent(iB);
-    double y = h2->GetBinContent(iB);
-    double errx = h->GetBinError(iB);
-    double erry = h2->GetBinError(iB);
-    gData.AddPoint(mult_shm_PbPb[iB - 1], (/* x/pow(errx, 2) +  */y/pow(erry, 2)) / (/* 1./pow(errx, 2) + */ 1./pow(erry, 2)));
-    gData.SetPointError(iB - 1, 0, 1. / sqrt((/* 1./pow(errx, 2) + */ 1./pow(erry, 2))));
+  for (int iB = 0; iB < 8; ++iB){
+    gPbPb_sys->SetPointError(iB, mult_shm_PbPb[iB] * 5.e-2, gPbPb_sys->GetErrorY(iB));
+    gPbPb_stat->SetPointX(iB, mult_shm_PbPb[iB]);
+    gPbPb_sys->SetPointX(iB, mult_shm_PbPb[iB]);
+  }
+  //gPbPb_stat->Fit("pol0", "R", "", 40, 2000);
+
+  for (int iB = 0; iB < 7; ++iB){
+    gpp_sys->SetPointError(iB, mult_pp[iB] * 5.e-2, gpp_sys->GetErrorY(iB));
+    gpp_stat->SetPointX(iB, mult_pp[iB]);
+    gpp_sys->SetPointX(iB, mult_pp[iB]);
   }
 
-  for (int iB = 1; iB < hpp->GetNbinsX() + 1; ++iB){
-    double y = hpp->GetBinContent(iB);
-    double erry = hpp->GetBinError(iB);
-    gData_pp.AddPoint(mult_pp[iB - 1], y);
-    gData_pp.SetPointError(iB - 1, 0, erry);
-  }
+  // for (int iB = 1; iB < h2->GetNbinsX(); ++iB){
+  //   double x = h->GetBinContent(iB);
+  //   double y = h2->GetBinContent(iB);
+  //   double errx = h->GetBinError(iB);
+  //   double erry = h2->GetBinError(iB);
+  //   gData.AddPoint(mult_shm_PbPb[iB - 1], (/* x/pow(errx, 2) +  */y/pow(erry, 2)) / (/* 1./pow(errx, 2) + */ 1./pow(erry, 2)));
+  //   gData.SetPointError(iB - 1, 0, 1. / sqrt((/* 1./pow(errx, 2) + */ 1./pow(erry, 2))));
+  // }
+
+  // for (int iB = 1; iB < hpp->GetNbinsX() + 1; ++iB){
+  //   double y = hpp->GetBinContent(iB);
+  //   double erry = hpp->GetBinError(iB);
+  //   gData_pp.AddPoint(mult_pp[iB - 1], y);
+  //   gData_pp.SetPointError(iB - 1, 0, erry);
+  // }
 
   for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
     int index = kNPointsPbPb - iP - 2 + kNPointspp;
@@ -97,18 +112,46 @@ void PlotResultsC2C1NetXi(){
     gPYTHIA_ANGANTYR.SetPointError(iP, 0, pythia_angantyr_c2c1[iP][1]);
   }
 
-  // set colors and style
-  gData.SetLineWidth(2);
-  gData.SetMarkerStyle(20);
-  gData.SetMarkerSize(1.2);
-  gData.SetLineColor(kRed);
-  gData.SetMarkerColor(kRed);
+  // // set colors and style
+  // gData.SetLineWidth(2);
+  // gData.SetMarkerStyle(20);
+  // gData.SetMarkerSize(1.2);
+  // gData.SetLineColor(kRed);
+  // gData.SetMarkerColor(kRed);
 
-  gData_pp.SetLineWidth(2);
-  gData_pp.SetMarkerStyle(21);
-  gData_pp.SetMarkerSize(1.2);
-  gData_pp.SetLineColor(kRed);
-  gData_pp.SetMarkerColor(kRed);
+  // gData_pp.SetLineWidth(2);
+  // gData_pp.SetMarkerStyle(21);
+  // gData_pp.SetMarkerSize(1.2);
+  // gData_pp.SetLineColor(kRed);
+  // gData_pp.SetMarkerColor(kRed);
+
+
+  // set colors and style
+  gPbPb_stat->SetLineWidth(2);
+  gPbPb_stat->SetMarkerStyle(20);
+  gPbPb_stat->SetMarkerSize(1.2);
+  gPbPb_stat->SetLineColor(kRed);
+  gPbPb_stat->SetMarkerColor(kRed);
+  gPbPb_sys->SetLineWidth(2);
+  gPbPb_sys->SetFillColor(41);
+  gPbPb_sys->SetFillStyle(3010);
+  gPbPb_sys->SetMarkerStyle(20);
+  gPbPb_sys->SetMarkerSize(1.2);
+  gPbPb_sys->SetLineColor(kRed);
+  gPbPb_sys->SetMarkerColor(kRed);
+
+  gpp_stat->SetLineWidth(2);
+  gpp_stat->SetMarkerStyle(21);
+  gpp_stat->SetMarkerSize(1.2);
+  gpp_stat->SetLineColor(kRed);
+  gpp_stat->SetMarkerColor(kRed);
+  gpp_sys->SetLineWidth(2);
+  gpp_sys->SetFillColor(41);
+  gpp_sys->SetFillStyle(3010);
+  gpp_sys->SetMarkerStyle(21);
+  gpp_sys->SetMarkerSize(1.2);
+  gpp_sys->SetLineColor(kRed);
+  gpp_sys->SetMarkerColor(kRed);
 
   gSHM.SetLineWidth(2);
   gSHM.SetLineColor(kBlue + 1);
@@ -145,14 +188,14 @@ void PlotResultsC2C1NetXi(){
   leg.SetTextFont(44);
   leg.SetTextSize(25);
   //leg.SetNColumns(2);
-  leg.AddEntry(&gData, "ALICE WIP, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "pe");
-  leg.AddEntry(&gData_pp, "ALICE WIP, pp #sqrt{#it{s}}=5.02 TeV", "pe");
+  leg.AddEntry(gPbPb_stat, "ALICE WIP, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "pe");
+  leg.AddEntry(gpp_stat, "ALICE WIP, pp #sqrt{#it{s}}=5.02 TeV", "pe");
   leg.AddEntry(&gSHM, "Thermal-FIST: #gamma_{s} CSM, 3 d#it{V}/d#it{y}", "f");
   leg.AddEntry(&gHIJING, "HIJING, Pb-Pb #sqrt{#it{s}_{NN}}=5 TeV", "f");
   leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb-Pb #sqrt{#it{s}_{NN}}=5 TeV", "f");
   leg.AddEntry(&gPYTHIA_CRQCD, "PYTHIA, CRQCD, pp #sqrt{#it{s}_{NN}}=5 TeV", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA, CRMPI, rope off, pp #sqrt{#it{s}_{NN}}=5 TeV", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA, CRMPI, rope on, pp #sqrt{#it{s}_{NN}}=5 TeV", "f");
+  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA, CRMPI, pp #sqrt{#it{s}_{NN}}=5 TeV", "f");
+  leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA, CRMPI, Rope Had., pp #sqrt{#it{s}_{NN}}=5 TeV", "f");
 
   cResult.cd();
   frame.Draw();
@@ -163,8 +206,12 @@ void PlotResultsC2C1NetXi(){
   gPYTHIA_CRQCD.Draw("samee3l");
   gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
-  gData.Draw("pesame");
-  gData_pp.Draw("pesame");
+
+  gPbPb_sys->Draw("e5same");
+  gpp_sys->Draw("e5same");
+  gPbPb_stat->Draw("pesame");
+  gpp_stat->Draw("pesame");
+
   leg.Draw("same");
   TFile o("out_merge_parallel_avg_2.root", "recreate");
   o.cd();
@@ -173,5 +220,5 @@ void PlotResultsC2C1NetXi(){
   cResult.Print("c.pdf");
   o.Close();
   f.Close();
-  f2.Close();
+  //f2.Close();
 }

@@ -5,9 +5,9 @@ const int kNCentBinsAnalysis = 9;
 
 void AnalysisSysPbPbCombined()
 {
-  TFile *fin = new TFile("out_prova_sys_15.root");
-  TFile *fin2 = new TFile("out_prova_sys_18.root");
-  TFile f("out_sys_PbPb.root", "recreate");
+  TFile *fin = new TFile("out_prova_sys_15_new.root");
+  TFile *fin2 = new TFile("out_prova_sys_18_new.root");
+  TFile f("out_sys_PbPb_new.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TGraphErrors gRho;
   gRho.SetName("gRho");
@@ -18,7 +18,7 @@ void AnalysisSysPbPbCombined()
   TCanvas cSys("cSys", "cSys");
   cSys.Divide(3, 3);
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
-    hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 120, -0.06, 0.);
+    hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 100, -0.05, -0.01);
   }
   for(int iVar = 0; iVar < 2025; ++iVar)
   {
@@ -64,8 +64,8 @@ void AnalysisSysPbPbCombined()
     gRhoSys.SetPointError(i, 2, hSys[i]->GetStdDev());
     hSys[i]->SetTitle(Form("%d-%d", i * 10, (i + 1) * 10));
     cSys.cd(i + 1);
-    hSys[i]->Fit("gaus", "LM+");
-    hSys[i]->Draw("pe");
+    //hSys[i]->Fit("gaus", "LM+");
+    hSys[i]->Draw("histo");
   }
   gRho.Write();
   gRhoSys.Write();

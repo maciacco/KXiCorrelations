@@ -1,8 +1,8 @@
 #include "../utils/Config.h"
 
-void BDTEffMap(const char* inFileName = "oo_limit_lhc21l5_nocuts", const char* outFileName = "bdt_eff_map_lhc21l5_nocuts"){
+void BDTEffMap(const char* inFileName = "results/oo_limit_lhc22l5_postCalib_1", const char* outFileName = "bdt_eff_map_lhc22l5_postCalib"){
   TFile f(Form("%s.root", inFileName));
-  auto h = (TH3D*)f.Get("subsample_1/hABDTOutXi");
+  auto h = (TH3D*)f.Get("subsample_1_var_7/hABDTOutXi");
   TFile o(Form("%s.root", outFileName), "recreate");
 
   TH1D *hEffBDT[8];

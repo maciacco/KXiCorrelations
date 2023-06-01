@@ -13,6 +13,7 @@
 #include <TNtuple.h>
 #include <TStopwatch.h>
 
+#define FILL_HIST
 //#define CLOSURE_TEST
 
 #ifdef __CINT__
@@ -22,7 +23,7 @@
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
 
-void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o15_", const int iVarMin = 0, const int iVarMax = 135, const int tree_number = 1)
+void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o15_", const int iVarMin = 0, const int iVarMax = 1, const int tree_number = 1)
 {
 
   TStopwatch w;
@@ -152,13 +153,13 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
         for (int iS = 0; iS < N_SAMPLE; ++iS){
           for (int iVar{iVarMin}; iVar < iVarMax; ++iVar){
             if (fEffK){
-              hEffK[iC][iCent][iEta][iS][iVar - iVarMin] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[0], iCent, iEta, iVar));
+              hEffK[iC][iCent][iEta][iS][iVar - iVarMin] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[0], iCent, 0, iVar));
             }
           }
           // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
           for (int iVar{iVarMin}; iVar < kNMassCuts * kNBdtCuts; ++iVar){
             if (fEffXi){
-              hEffXi[iC][iCent][iEta][iS][iVar - iVarMin] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[1], iCent, iEta, iVar)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
+              hEffXi[iC][iCent][iEta][iS][iVar - iVarMin] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[1], iCent, 0, iVar)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
             }
           }
         }
@@ -301,12 +302,12 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
 
     for (int iVar{iVarMin}; iVar < iVarMax; ++iVar)
     {
-      int iTpcClsCut = (iVar / 1) % kNTpcClsCuts;
-      int iPidCut = (iVar / kNTpcClsCuts) % kNPidCuts;
-      int iDcaCut = (iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
-      int iChi2Cut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
-      int iMassCut = iTpcClsCut;
-      int iBdtScoreCut = iPidCut;
+      int iTpcClsCut = 1;//(iVar / 1) % kNTpcClsCuts;
+      int iPidCut = 2;//(iVar / kNTpcClsCuts) % kNPidCuts;
+      int iDcaCut = 1;//(iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
+      int iChi2Cut = 1;//(iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
+      int iMassCut = 1;//iTpcClsCut;
+      int iBdtScoreCut = 2;//iPidCut;
       //if (!(i%10000)) std::cout << "iTpcClsCut = " << iTpcClsCut << ", iDcaCut = " << iDcaCut << ", iChi2Cut = " << iChi2Cut << ", iPidCut = " << iPidCut << std::endl;
 
       #ifdef CLOSURE_TEST
@@ -368,7 +369,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
             double eff_ = fEffK ? hEffK[im_][ic - 1][ie_ - 1][iS]->GetBinContent(hEffK[im_][ic - 1][ie_ - 1][iS]->FindBin(std::abs(k_tmp.fPtMC))) : kDummyEffK;
             if (!k_tmp.fIsReconstructed || k_tmp.fFlag != 1) continue;
             int im_tmp = k_tmp.fPt > 0 ? 1 : 0;
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hRecKaon[im_tmp]->Fill(cent, std::abs(k_tmp.fPt), 1./eff_);
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hRecKaon[im_tmp]->Fill(cent, std::abs(k_tmp.fPt), 1./eff_);
           #endif // CLOSURE_TEST
           int im = k_tmp.fPt > 0 ? 1 : 0;
           int ie = hEtaTmp.FindBin(k_tmp.fEta);
@@ -384,7 +385,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
           qK_2_tmp[im][1] += q2;
           nK[im] += 1;
           #ifdef FILL_HIST
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1){
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2){
               hNsigmaITS[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaITS);
               hNsigmaTPC[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTPC);
               hNsigmaTOF[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTOF);
@@ -394,7 +395,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
       }
       for (int iM = 0; iM < 2; ++iM){
         #ifdef CLOSURE_TEST
-          if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hGenRecKaon[iM]->Fill(cent, nK_gen[iM], nK[iM]);
+          if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hGenRecKaon[iM]->Fill(cent, nK_gen[iM], nK[iM]);
         #endif
         for (int iCorr = 0; iCorr < 2; ++iCorr){
           double q1_sq = qK_1_tmp[iM][iCorr] * qK_1_tmp[iM][iCorr];
@@ -420,7 +421,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
             qXi_1_gen_tmp[im_MC] += 1.;
             qXi_2_gen_tmp[im_MC] += 1.;
             nXi_gen[im_MC] += 1;
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hGenXi[im_MC]->Fill(cent, std::abs(xi_tmp.fPtMC));
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hGenXi[im_MC]->Fill(cent, std::abs(xi_tmp.fPtMC));
           #endif // CLOSURE_TEST
           if (
               std::abs(xi_tmp.fEta) < kEtaCut &&
@@ -446,7 +447,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
             int ie = hEtaTmp.FindBin(xi_tmp.fEta);
             //std::cout << "xi: " << cent << "\t" << xi_tmp.fPt << "\t" << bdtEff << std::endl;
             #ifdef CLOSURE_TEST
-              if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hRecXi[im]->Fill(cent, std::abs(xi_tmp.fPt));
+              if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hRecXi[im]->Fill(cent, std::abs(xi_tmp.fPt));
             #endif // CLOSURE_TEST
             //std::cout << hEffXi[im][ic - 1][ie - 1][iS]->GetName() << std::endl;
             double eff = fEffXi ? hEffXi[im][ic - 1][ie - 1][iS][iVar - iVarMin]->GetBinContent(hEffXi[im][ic - 1][ie - 1][iS][iVar - iVarMin]->FindBin(std::abs(xi_tmp.fPt))) : kDummyEffXi;
@@ -458,13 +459,13 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
             qXi_1_tmp_update[im][1] += (1./eff/bdtEff);
             qXi_2_tmp[im][1] += (1./eff/eff/bdtEff/bdtEff);
             nXi[im] += 1;
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hMass[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fMass);
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hBDTOut[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fBdtOut);
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hMass[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fMass);
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hBDTOut[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fBdtOut);
           }
         }
         for (int iM = 0; iM < 2; ++iM){
           #ifdef CLOSURE_TEST
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1) hGenRecXi[iM]->Fill(cent, nXi_gen[iM], nXi[iM]);
+            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hGenRecXi[iM]->Fill(cent, nXi_gen[iM], nXi[iM]);
           #endif
           for (int iCorr = 0; iCorr < 2; ++iCorr){
             qXi_1_sq_tmp[iM][iCorr] += (qXi_1_tmp_update[iM][iCorr] * qXi_1_tmp_update[iM][iCorr]);
@@ -474,7 +475,7 @@ void ReadTreeEffCorr(const char* fname = "tree_data_full/part_merging_True/%s_An
       }
 
       #ifdef FILL_HIST
-        if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 1)
+        if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2)
         {
           for (int iM = 0; iM < 2; ++iM){
             #ifdef CLOSURE_TEST

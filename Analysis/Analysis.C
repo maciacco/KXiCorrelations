@@ -1,29 +1,34 @@
 #include "../utils/Config.h"
-const int kNSample = 32;
+const int kNSample = 30;
 const int kKcut = 68;
 const int kXiCut = 8;
 const int kNCentBinsAnalysis = 9;
 
 void Analysis()
 {
-  TFile f("out_prova_sys_18.root", "recreate");
+  TFile f("out_prova_sys_15_new.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TGraphErrors gRho;
   gRho.SetName("gRho");
   gRho.SetTitle(";Centrality (%);#rho_{#Delta#XiDeltaK}");
   TGraphErrors gRhoSys;
   gRhoSys.SetName("gRhoSys");
+  TCanvas cSys("cSys", "cSys");
+  cSys.Divide(3, 3);
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
-    hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 1000, -0.1, 0.1);
+    hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 100, -0.08, 0.02);
   }
   for(int iVar = 0; iVar < 2025; ++iVar)
   {
+    double iB0 = 0.;
+    double iB1 = 0.;
     double nSkip = 0;
     double c11_pp[kNSample][10], c11_pn[kNSample][10], c11_np[kNSample][10], c11_nn[kNSample][10], c11_pn_kk[kNSample][10], c11_pn_xixi[kNSample][10], c1xi_p[kNSample][10], c1xi_n[kNSample][10], c2xi_p[kNSample][10], c2xi_n[kNSample][10], c1k_p[kNSample][10], c1k_n[kNSample][10], c2k_p[kNSample][10], c2k_n[kNSample][10], c2k_pn[kNSample][10], c2xi_pn[kNSample][10];
     for(int sample = 0; sample < kNSample; sample++)
     {
-      TFile *fin = new TFile(Form("%s/output_sys_dir/18qr/output_sys_18qr_%d_%d.root", kResDir, sample, iVar));
-      if (!fin) {nSkip++; continue;}
+      //if ((iVar%135)/15/3 == 2) continue;
+      TFile *fin = new TFile(Form("%s/output_sys_dir/output_sys_15o_new_%d_%d.root", kResDir, sample, iVar));
+      if (!fin) {nSkip++; fin->Close(); delete fin; continue;}
       //TFile *fin_same=new TFile(Form("o%d.root",sample));
 
       TProfile *q1xikaon_pp = (TProfile*)fin->Get(Form("var_%d/q1_xi_kaon_pp", iVar));
@@ -46,8 +51,11 @@ void Analysis()
       TProfile *q1squarekaon_n = (TProfile*)fin->Get(Form("var_%d/q1square_kaon_n", iVar));
 
       if (!q1xikaon_pp || !q1xikaon_pn || !q1xikaon_np || !q1xikaon_nn || !q1xixi_pn || !q1kk_pn || !q1xi_n || !q1xi_p || !q2xi_n || !q2xi_p || !q1squarexi_n || !q1squarexi_p || !q1kaon_n || !q1kaon_p || !q2kaon_n || !q2kaon_p || !q1squarekaon_n || !q1squarekaon_p){
-        nSkip++; continue;
+        nSkip++; fin->Close(); delete fin; continue;
       }
+
+      iB0 += q1xikaon_pp->GetBinEntries(1);
+      iB1 += q1xikaon_pp->GetBinEntries(2);
 
       for(int i=1;i<=kNCentBinsAnalysis;i++)
       {
@@ -70,6 +78,9 @@ void Analysis()
         //cout<<c1xi[sample][i-1]<<"\t"<<c2xi[sample][i-1]<<"\t"<<c2k[sample][i-1]<<"\t";
         //cout<<c11[sample][i-1]<<"\n";
       }
+
+      fin->Close();
+      delete fin;
     }
     
     TGraphErrors g;
@@ -92,6 +103,7 @@ void Analysis()
 
       g.AddPoint(i * 10. - 5., rhomean);
       hSys[i - 1]->Fill(rhomean);
+      //if (rhomean < -0.01 && i == 6) cout << iVar << std::endl;
       g.SetPointError(i - 1, 0, TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))));
       if (iVar == 1012){
         gRho.AddPoint(i * 10. - 5., rhomean);
@@ -104,12 +116,17 @@ void Analysis()
     c.cd();
     //g.Draw();
     f.cd();
-    g.Write();
+     g.Write();
    // c.Write();
   }
+
   for (int i{0}; i < 8; ++i){
     hSys[i]->Write();
     gRhoSys.SetPointError(i, 2, hSys[i]->GetStdDev());
+    hSys[i]->SetTitle(Form("mult. class %d", i));
+    cSys.cd(i + 1);
+    //hSys[i]->Fit("gaus", "LM+");
+    hSys[i]->Draw("");
   }
   gRho.Write();
   gRhoSys.Write();
@@ -118,5 +135,6 @@ void Analysis()
   gRhoSys.Draw("ape5");
   gRho.Draw("pesame");
   c.Write();
+  cSys.Write();
   f.Close();
 }
