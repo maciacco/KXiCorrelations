@@ -3,7 +3,7 @@
 
 using namespace utils;
 
-void KaonXiEff(const char* inFileName = "oo_limit_lhc22l5_postCalib_2", const char* outFileName = "KaonXiEff_LHC22l5_postCalib_2"){
+void KaonXiEff(const char* inFileName = "oo_limit_lhc20f11_postCalib_finalBinning", const char* outFileName = "KaonXiEff_LHC20f11_postCalib_finalBinning"){
   gStyle->SetOptStat(0);
   TFile *fMC = TFile::Open(Form("%s/%s.root", kResDir, inFileName));
   TFile *fOut = TFile::Open(Form("%s/%s.root", kResDir, outFileName), "recreate");
@@ -40,7 +40,7 @@ void KaonXiEff(const char* inFileName = "oo_limit_lhc22l5_postCalib_2", const ch
               hEff[iC][iE]->Write();
               ce.cd();
               hEff[iC][iE]->GetYaxis()->SetRangeUser(0., iP == 1 ? 0.15 : 1.);
-              hEff[iC][iE]->GetXaxis()->SetRangeUser(0., iP == 1 ? 4. : 1.5);
+              hEff[iC][iE]->GetXaxis()->SetRangeUser(iP == 1 ? 1. : .2, iP == 1 ? 3. : 1.);
               leg.AddEntry(hEff[iC][iE], Form("%.0f-%.0f%%", kCentBins[iC], kCentBins[iC + 1]));
               hEff[iC][iE]->Draw(iC == 0 && iE == 0 ? "pe" : "pesame");
               //hGenProj->Write();

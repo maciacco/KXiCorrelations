@@ -1,4 +1,4 @@
-#include "../utils/Config.h"
+#include "../utils/Config_tests.h"
 #include "../utils/Utils.h"
 #include "../utils/RooGausDExp.h"
 
@@ -7,7 +7,7 @@ double purity_error(double sig, double bkg, double sig_err, double bkg_err, doub
 bool fitMass = true;
 bool kSaveFits = false;
 
-void Calibration(const char* inFileName = "o_lhc17pq_new_calib", const char* outFileName = "LHC17pq_new_calib"){
+void Calibration(const char* inFileName = "o_lhc22l5_fast_var_0", const char* outFileName = "LHC22l5_fast_calib"){
   gStyle->SetOptStat(0);
 
   // killing RooFit output
@@ -81,7 +81,7 @@ void Calibration(const char* inFileName = "o_lhc17pq_new_calib", const char* out
           ITSModel->plotOn(ITSFrame, RooFit::Name("model"));
           ITSModel->plotOn(ITSFrame, RooFit::Name("model"), RooFit::Components("ITSSignalPDF"), RooFit::LineColor(kRed));
           //ITSModel->plotOn(ITSFrame, RooFit::Name("model"), RooFit::Components("ITSBackgroundPDF"), RooFit::LineColor(kGreen));
-          ITSSignal.setRange("signalRange", kNsigmaITScutAsym[0], kNsigmaITScutAsym[1]);
+          ITSSignal.setRange("signalRange", kNsigmaITScutAsymP[0], kNsigmaITScutAsymP[1]);
 
           if (kSaveFits){
             //std::cout << "pt = (" << iP << "), purity = " << purity << ", sigIntegral = " << sigIntegral << ", bkgIntegral = " << bkgIntegral << std::endl;
@@ -114,7 +114,7 @@ void Calibration(const char* inFileName = "o_lhc17pq_new_calib", const char* out
           tpcModel->plotOn(tpcFrame, RooFit::Name("model"));
           tpcModel->plotOn(tpcFrame, RooFit::Name("model"), RooFit::Components("tpcSignalPDF"), RooFit::LineColor(kRed));
           //tpcModel->plotOn(tpcFrame, RooFit::Name("model"), RooFit::Components("tpcBackgroundPDF"), RooFit::LineColor(kGreen));
-          tpcSignal.setRange("signalRange", kNsigmaTPCcutAsym[0], kNsigmaTPCcutAsym[1]);
+          tpcSignal.setRange("signalRange", kNsigmaTPCcutAsymP[0], kNsigmaTPCcutAsymP[1]);
 
           if (kSaveFits){
             //std::cout << "pt = (" << iP << "), purity = " << purity << ", sigIntegral = " << sigIntegral << ", bkgIntegral = " << bkgIntegral << std::endl;
@@ -147,7 +147,7 @@ void Calibration(const char* inFileName = "o_lhc17pq_new_calib", const char* out
           tofModel->plotOn(tofFrame, RooFit::Name("model"));
           tofModel->plotOn(tofFrame, RooFit::Name("model"), RooFit::Components("tofSignalPDF"), RooFit::LineColor(kRed));
           tofModel->plotOn(tofFrame, RooFit::Name("model"), RooFit::Components("tofBackgroundPDF"), RooFit::LineColor(kGreen));
-          tofSignal.setRange("signalRange", kNsigmaTOFcutAsym[0], kNsigmaTOFcutAsym[1]);
+          tofSignal.setRange("signalRange", kNsigmaTOFcutAsymP[0], kNsigmaTOFcutAsymP[1]);
 
           if (kSaveFits){
             // std::cout << "pt = (" << iP << "), purity = " << purity << std::endl;

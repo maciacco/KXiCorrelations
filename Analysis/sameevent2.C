@@ -22,8 +22,8 @@ void sameevent2(int smpl = 0, int iVarMin = 0, int iVarMax = 1)
   for (int iVar = iVarMin; iVar < iVarMax; ++iVar){ 
 
     //TFile fin(Form("/data/mciacco/KXiCorrelations/output_sys_dir/18qr/o_%d.root"/* , kResDir */, sample + 1)); 
-    TFile *fin = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/15o_new/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
-    TFile *fin2 = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/15o_new/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
+    TFile *fin = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/16qt_3/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
+    TFile *fin2 = TFile::Open(Form("/data/mciacco/KXiCorrelations/output_sys_dir/16qt_3/o_%d_var_%d.root"/* , kResDir */, sample + 1, iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ))); 
     if (!fin || !fin2 || fin->TestBit(TFile::kZombie) || fin2->TestBit(TFile::kZombie)){
       std::cout << "no input, skip" << std::endl;
       skippedVar += 1;
@@ -32,7 +32,7 @@ void sameevent2(int smpl = 0, int iVarMin = 0, int iVarMax = 1)
       delete fin2;
       continue;
     }
-    TFile fout(Form("%s/output_sys_dir/output_sys_15o_new_%d_%d.root", kResDir, sample, iVar), "recreate");
+    TFile fout(Form("%s/output_sys_dir/16qt_3/output_sys_16qt_3_%d_%d.root", kResDir, sample, iVar), "recreate");
     std::cout << iVar % ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ) << "\t" << iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ) << std::endl;
     // continue;
     TNtuple *tuple_qmoment = (TNtuple*)fin->Get(Form("evtTuple_%d_%d", iVar / ( kNTpcClsCuts * kNDcaCuts * kNPidCuts * kNChi2Cuts ), sample ));

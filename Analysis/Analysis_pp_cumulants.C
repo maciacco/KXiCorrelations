@@ -2,7 +2,8 @@
 const int kNSample = 30;
 const int kKcut = 67;
 const int kXiCut = 7;
-const int kNCentBinsAnalysis = 8;
+const int kNCentBinsAnalysis = 9;
+const int kMultClasses[][2] = {{0, 5}, {5, 10}, {10, 20}, {20, 30}, {30, 40}, {40, 50}, {50, 70}, {70, 100}};
 
 void remove_outlier(TH1D* h, double reject_level = 3.){
   double mean = h->GetMean();
@@ -14,9 +15,10 @@ void remove_outlier(TH1D* h, double reject_level = 3.){
   }
 }
 
-void Analysis_pp_c2c1()
+void Analysis_pp_cumulants()
 {
-  TFile f("out_prova_sys_17_2_c2c1.root", "recreate");
+  gStyle->SetOptStat(1101);
+  TFile f("out_sys_17_cumulants.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TH1D *hStat[kNCentBinsAnalysis];
   TGraphErrors gRho;
@@ -24,27 +26,33 @@ void Analysis_pp_c2c1()
   gRelativeStat.SetName("gRelativeStat");
   gRelativeStat.SetTitle(";Centrality (%);relative stat");
   gRho.SetName("gRho");
-  gRho.SetTitle(";Centrality (%);C_{2}{#Delta#Xi} / C_{1}(#bar{#Xi}^{+}+#Xi^{-})");
+  gRho.SetTitle(";Centrality (%);#rho_{#Delta#XiDeltaK}");
   TGraphErrors gRhoSys;
   gRhoSys.SetName("gRhoSys");
   TCanvas cSys("cSys", "cSys");
   cSys.Divide(3, 3);
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
-    hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", 1000000, 0., 2.);
+    hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries",/*  200, -0.05, 0. */100000, -1.0, 1.0);
   }
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
-    hStat[i] = new TH1D(Form("hStat_%d", i), ";C_{2}/C_{1};Entries", 10000000, -10., 10.);
+    hStat[i] = new TH1D(Form("hStat_%d", i), ";#rho;Entries", 500, -0.5, 0.5);
   }
-  for(int iVar = 0; iVar <1350; ++iVar)
+  for(int iVar = 0; iVar </* 405 */450; ++iVar)
   {
-    //if (iVar % 135 != 0) continue;
+    if ( (((iVar%30)/30.) > 0.005)  && kC2c1 ) continue;
+    // if (((iVar/15)%3)==0) continue;
+    //if ((iVar/15)%2==1) continue;
+   // if ((iVar/135)%3 == 2) continue;
+    //if ((iVar/90)%3 == 0) continue;
+   // if (((iVar%45)/45.) > 0.01) continue;
+    //if ((iVar/135/3)%5 > 2) continue;
     double iB0 = 0.;
     double iB1 = 0.;
     double nSkip = 0;
     double c11_pp[kNSample][10], c11_pn[kNSample][10], c11_np[kNSample][10], c11_nn[kNSample][10], c11_pn_kk[kNSample][10], c11_pn_xixi[kNSample][10], c1xi_p[kNSample][10], c1xi_n[kNSample][10], c2xi_p[kNSample][10], c2xi_n[kNSample][10], c1k_p[kNSample][10], c1k_n[kNSample][10], c2k_p[kNSample][10], c2k_n[kNSample][10], c2k_pn[kNSample][10], c2xi_pn[kNSample][10];
     for(int sample = 0; sample < kNSample; sample++)
     {
-      TFile *fin = new TFile(Form("%s/output_sys_dir/output_sys_17pq_2_%d_%d.root", kResDir, sample, iVar));
+      TFile *fin = new TFile(Form("%s/output_sys_dir/output_sys_17pq_3_%d_%d.root", kResDir, sample, iVar));
       if (!fin) {std::cout << "skip = " << iVar << std::endl; nSkip++; fin->Close(); delete fin; continue;}
       //TFile *fin_same=new TFile(Form("o%d.root",sample));
 
@@ -67,7 +75,7 @@ void Analysis_pp_c2c1()
       TProfile *q1squarekaon_p = (TProfile*)fin->Get(Form("var_%d/q1square_kaon_p", iVar));
       TProfile *q1squarekaon_n = (TProfile*)fin->Get(Form("var_%d/q1square_kaon_n", iVar));
 
-      double xbins[] = {0., 10., 20., 30., 40., 50., 70., 100.};
+      double xbins[] = {0., 5., 10., 20., 30., 40., 50., 70., 100.};
       q1xikaon_pp = (TProfile*)q1xikaon_pp->Rebin(7, Form("var_%d/q1_xi_kaon_pp", iVar), xbins);
       q1xikaon_pn = (TProfile*)q1xikaon_pn->Rebin(7, Form("var_%d/q1_xi_kaon_pn", iVar), xbins);
       q1xikaon_np = (TProfile*)q1xikaon_np->Rebin(7, Form("var_%d/q1_xi_kaon_np", iVar), xbins);
@@ -128,17 +136,22 @@ void Analysis_pp_c2c1()
       double rhorms = 0.0;
       for(int sample = 0; sample < kNSample; sample++)
       {
-        double c1_tot_inv = 1. / (c1xi_p[sample][i-1] + c1xi_n[sample][i-1]);
-        rhomean = rhomean + ( (c2xi_pn[sample][i-1]) * c1_tot_inv );
-        if (iVar == 712) hStat[i - 1]->Fill((c2xi_pn[sample][i-1]) * c1_tot_inv );
+        if (kRho) rhomean = rhomean + ( (c1xi_p[sample][i-1] + c1xi_n[sample][i-1]) / (c1k_p[sample][i-1] + c1k_n[sample][i-1]) )/* ( (c11_pp[sample][i-1] + c11_nn[sample][i-1] - c11_pn[sample][i-1] - c11_np[sample][i-1]) / sqrt(c2xi_pn[sample][i-1] * c2k_pn[sample][i-1]) ) */;
+        else if (kC2c1) rhomean = rhomean + ( ( c2xi_pn[sample][i-1] ) / ( c1xi_n[sample][i-1] + c1xi_p[sample][i-1] ));
+        //if (iVar == 712) hStat[i - 1]->Fill((c11_pp[sample][i-1] + c11_nn[sample][i-1] - c11_pn[sample][i-1] - c11_np[sample][i-1]) / sqrt(c2xi_pn[sample][i-1] * c2k_pn[sample][i-1]));
+        if (iVar == (kC2c1 ? 210 : 232)) hStat[i - 1]->Fill(( c2xi_pn[sample][i-1] ) / ( c1xi_n[sample][i-1] + c1xi_p[sample][i-1] ));
       }
       rhomean = rhomean / ( kNSample - nSkip);
+
+      // if (i == 5 && rhomean < -0.012){
+      //   std::cout << "var = " << iVar << std::endl;
+      // }
 
       // cout << rhomean << "\t";
       for(int sample = 0; sample < kNSample; sample++)
       {
-        double c1_tot_inv = 1. / (c1xi_p[sample][i-1] + c1xi_n[sample][i-1]);
-        rhorms = rhorms + TMath::Power(rhomean - ( (c2xi_pn[sample][i-1] * c1_tot_inv)  ), 2.0);
+        if (kRho) rhorms = rhorms + TMath::Power(rhomean - ( (c1xi_p[sample][i-1] + c1xi_n[sample][i-1]) / (c1k_p[sample][i-1] + c1k_n[sample][i-1]) )/* ( (c11_pp[sample][i-1] + c11_nn[sample][i-1] - c11_pn[sample][i-1] - c11_np[sample][i-1]) / sqrt(c2xi_pn[sample][i-1] * c2k_pn[sample][i-1]) ) */, 2.0);
+        else if (kC2c1) rhorms = rhorms + TMath::Power(rhomean - ( ( c2xi_pn[sample][i-1] ) / ( c1xi_n[sample][i-1] + c1xi_p[sample][i-1] )), 2.0);
       }
       // cout << TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))) << "\n";
 
@@ -149,13 +162,13 @@ void Analysis_pp_c2c1()
       //   rhorms = 1. / (1. / iB0 + 1. / iB1) / (1. / iB0 + 1. / iB1) * ( rhorms * (1. / iB1) * (1. / iB1) + (g.GetErrorY(0) * g.GetErrorY(0)) * ( kNSample - nSkip) * (( kNSample - nSkip) - 1) * (1. / iB0) * (1. / iB0));
       // }
 
-      g.AddPoint(i * 10. - 5., rhomean);
+      g.AddPoint(0.5 * (kMultClasses[i - 1][1] + kMultClasses[i - 1][0]), rhomean);
       hSys[i - 1]->Fill(rhomean);
-      //if (rhomean < -0.01 && i == 6) cout << iVar << std::endl;
+      //if (rhomean < -0.023 && i == 2) cout << iVar << std::endl;
       g.SetPointError(i - 1, 0, i == 2 ? TMath::Sqrt(rhorms / (( kNSample - nSkip) * ( ( kNSample - nSkip) - 1))) : TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))));
-      if (iVar == 712){
-        gRho.AddPoint(i * 10. - 5., rhomean);
-        gRhoSys.AddPoint(i * 10. - 5., rhomean);
+      if (iVar == (kC2c1 ? 210 : 232)){
+        gRho.AddPoint(0.5 * (kMultClasses[i - 1][1] + kMultClasses[i - 1][0]), rhomean);
+        gRhoSys.AddPoint(0.5 * (kMultClasses[i - 1][1] + kMultClasses[i - 1][0]), rhomean);
         gRho.SetPointError(i - 1, 0, i == 2 ? TMath::Sqrt(rhorms / ( ( kNSample - nSkip) * (( kNSample - nSkip) - 1))) : TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))));
         gRelativeStat.AddPoint(i, i == 2 ? TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))) / std::abs(rhomean) : TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))) / std::abs(rhomean));
       }
@@ -165,10 +178,10 @@ void Analysis_pp_c2c1()
     c.cd();
     //g.Draw();
     f.cd();
-    // g.Write();
+    g.Write();
     
     // g.RemovePoint(0);
-    // if (iVar == 712){
+    // if (iVar == (kC2c1 ? 210 : 232)){
     //   gRho.RemovePoint(0);
     //   gRhoSys.RemovePoint(0);
     //   gRelativeStat.RemovePoint(0);
@@ -176,15 +189,36 @@ void Analysis_pp_c2c1()
    // c.Write();
   }
 
-  for (int i{0}; i < 7; ++i){
+  TLine *line[kNCentBinsAnalysis];
+  for (int i{0}; i < 8; ++i){
+    line[i] = new TLine(gRho.GetPointY(i), 0, gRho.GetPointY(i), hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()));
     remove_outlier(hSys[i]);
+    //hSys[i]->SetStats(0);
+    hSys[i]->SetFillStyle(3004);
+    hSys[i]->SetLineWidth(2);
+    hSys[i]->SetLineColor(kBlue);
+    hSys[i]->SetFillColor(kBlue);
+    hSys[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 5.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 5.*hSys[i]->GetStdDev());
     hSys[i]->Write();
     gRhoSys.SetPointError(i, 2, hSys[i]->GetStdDev());
-    hSys[i]->SetTitle(Form("mult. class %d", i));
+    hSys[i]->SetTitle(Form("mult. class %d-%d%%", kMultClasses[i][0], kMultClasses[i][1]));
     cSys.cd(i + 1);
     //hSys[i]->Fit("gaus", "LM+");
-    hSys[i]->Draw("");
+    hSys[i]->Draw("histo");
+    cSys.Update();
     hStat[i]->Write();
+    //hSys[i]->Fit("gaus", "LM+");
+    TPaveStats *ps = (TPaveStats*)hSys[i]->FindObject("stats");
+    ps->SetTextFont(44);
+    ps->SetTextSize(10);
+    ps->SetX1NDC(0.6515426497277677);
+    ps->SetY1NDC(0.5675675675675675);
+    ps->SetX2NDC(0.9818511796733213);
+    ps->SetY2NDC(0.933933933933934);
+    line[i]->SetLineWidth(2);
+    line[i]->SetLineStyle(7);
+    line[i]->SetLineColor(kRed);
+    line[i]->Draw("same");
   }
 
   
@@ -193,9 +227,21 @@ void Analysis_pp_c2c1()
   gRelativeStat.Write();
   TCanvas c("c", "c");
   c.cd();
+  gRhoSys.SetLineWidth(2);
+  gRho.SetLineWidth(2);
+  gRho.SetMarkerStyle(20);
+  gRho.SetMarkerSize(1.1);
+  gRhoSys.SetLineColor(kRed);
+  gRho.SetMarkerColor(kRed);
+  gRho.SetLineColor(kRed);
   gRhoSys.Draw("ape5");
+  gRhoSys.GetXaxis()->SetTitle("Multiplicity (%)");
+  if (kC2c1) gRhoSys.GetYaxis()->SetTitle("C_{2}(#Xi^{-}-#Xi^{+})/C_{1}(#Xi^{-}+#Xi^{+})");
+  else if (kRho) gRhoSys.GetYaxis()->SetTitle("#rho(#Delta#Xi#DeltaK)");
   gRho.Draw("pesame");
+  c.Print("c1xin_pp.pdf");
   c.Write();
   cSys.Write();
+  cSys.Print(kC2c1 ? "cSys_pp_c2c1.pdf" : "cSys_pp.pdf");
   f.Close();
 }

@@ -7,13 +7,13 @@
 #include <TCanvas.h>
 #include <TMath.h>
 #include <Riostream.h>
-#include "../utils/Config.h"
+#include "../utils/Config_tests.h"
 #include <TRandom3.h>
 #include <TROOT.h>
 #include <TNtuple.h>
 #include <TStopwatch.h>
 
-//#define FILL_HIST
+#define FILL_HIST
 //#define CLOSURE_TEST
 
 #ifdef __CINT__
@@ -22,10 +22,10 @@
 #pragma link C++ class std::vector<MiniXi>+;
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
- 
-void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o15_", const int iVarMin = 0, const int iVarMax = 135, const int tree_number = 1)
+
+void ReadTreeEffCorrDefault(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o15_", const double bdtCut = 0.3, const int iVarMin = 0, const int iVarMax = 1, const int tree_number = 1)
 {
-  TTree::SetMaxTreeSize( 1000000000000LL ); // 1 TB
+
   TStopwatch w;
   w.Start();
 
@@ -36,7 +36,22 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
   //TFile o(Form("%s.root"/* , kResDir */, ofname), "recreate");
   TFile fBdtmap(Form("results/%s.root", kBdtmapName));
 
-  double bdtScoreCuts[kNBinsPtXi][kNBdtCuts];
+  // double bdtScoreCuts[kNBinsPtXi][kNBdtCuts];
+  // for (int i{0}; i < kNBinsPtXi; ++i){
+  //   auto h = (TH1D*)fBdtmap.Get(Form("hEffBDT_%d", i + 1));
+  //   for (int j{0}; j < kNBdtCuts; ++j){
+  //     for (int iB{1}; iB < h->GetNbinsX(); ++iB){
+  //       double eff_shift = 0.; //(i == 2 ? 0. : (i == 3 ? 1. : 2.));
+  //       if ( std::abs(h->GetBinContent(iB) - bdtCut - eff_shift * k_eff_shift) < 0.005 ){
+  //         bdtScoreCuts[i][j] = h->GetXaxis()->GetBinLowEdge(iB);
+  //         std::cout << bdtCut + eff_shift * k_eff_shift << "\t" << bdtScoreCuts[i][j] << std::endl;
+  //         break;
+  //       }
+  //     }
+  //   }
+  // }
+
+    double bdtScoreCuts[kNBinsPtXi][kNBdtCuts];
   for (int i{0}; i < kNBinsPtXi; ++i){
     auto h = (TH1D*)fBdtmap.Get(Form("hEffBDT_%d", i + 1));
     for (int j{0}; j < kNBdtCuts; ++j){
@@ -52,11 +67,9 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
   }
 
   const int nF = iVarMax - iVarMin;
-  TFile *o[N_SAMPLE][nF];
-  for (int i_sample{0}; i_sample < N_SAMPLE; ++i_sample){
-    for (int i{iVarMin}; i < iVarMax; ++i){
-      o[i_sample][i - iVarMin] = new TFile(Form("%s%d_var_%d.root"/* , kResDir */, ofname, i_sample + 1, i), "recreate");
-    }
+  TFile *o[nF];
+  for (int i{iVarMin}; i < iVarMax; ++i){
+    o[i - iVarMin] = new TFile(Form("%s_var_%d.root"/* , kResDir */, ofname, i), "recreate");
   }
 
   #ifndef CLOSURE_TEST
@@ -123,19 +136,17 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
   TH1D *hEffXi[2][kNCentBins][kNEtaBins][N_SAMPLE][kXiCut]; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
   TH3F *hBDTEffXi; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT -> SEPARATELY FOR CHARGES)
 
-  TNtuple *evtTuple[N_SAMPLE][nF];
+  TNtuple *evtTuple[nF];
   
-  for (int i_sample{0}; i_sample < N_SAMPLE; ++i_sample){
-    for (int i{iVarMin}; i < iVarMax; ++i)
-    {
-      if (i < kNMassCuts * kNBdtCuts){
-        evtTuple[i_sample][i - iVarMin] = new TNtuple(Form("evtTuple_%d_%d", i, i_sample), Form("evtTuple_%d_%d", i, i_sample), "cent:q1kP:q1kN:q2kP:q2kN:q1xiP:q1xiN:q2xiP:q2xiN");
-      }
-      else{
-        evtTuple[i_sample][i - iVarMin] = new TNtuple(Form("evtTuple_%d_%d", i, i_sample), Form("evtTuple_%d_%d", i, i_sample), "cent:q1kP:q1kN:q2kP:q2kN");
-      }
-      evtTuple[i_sample][i - iVarMin]->SetDirectory(o[i_sample][i - iVarMin]);
+  for (int i{iVarMin}; i < iVarMax; ++i)
+  {
+    if (i < kNMassCuts * kNBdtCuts){
+      evtTuple[i - iVarMin] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN:q1xiP:q1xiN:q2xiP:q2xiN");
     }
+    else{
+      evtTuple[i - iVarMin] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN");
+    }
+    evtTuple[i - iVarMin]->SetDirectory(o[i - iVarMin]);
   }
 
   for (int iS = 0; iS < N_SAMPLE; ++iS){
@@ -173,13 +184,13 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
         for (int iS = 0; iS < N_SAMPLE; ++iS){
           for (int iVar{iVarMin}; iVar < iVarMax; ++iVar){
             if (fEffK){
-              hEffK[iC][iCent][iEta][iS][iVar - iVarMin] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[0], iCent, 0, iVar));
+              hEffK[iC][iCent][iEta][iS][iVar - iVarMin] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, 22, kAntiMatterLabel[iC], kPartLabel[0], iCent, 0, 22));
             }
           }
           // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
           for (int iVar{iVarMin}; iVar < kNMassCuts * kNBdtCuts; ++iVar){
             if (fEffXi){
-              hEffXi[iC][iCent][iEta][iS][iVar - iVarMin] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, iVar, kAntiMatterLabel[iC], kPartLabel[1], iCent, 0, iVar)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
+              hEffXi[iC][iCent][iEta][iS][iVar - iVarMin] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, 7, kAntiMatterLabel[iC], kPartLabel[1], iCent, 0, 7)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
             }
           }
         }
@@ -299,7 +310,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
     if (!(i%1000000)) std::cout << "n_ev = " << i << std::endl;
     
     Long64_t tentry = t->LoadTree(e);
-    
+
     if (be->GetEntry(tentry) < 0 || bk->GetEntry(tentry) < 0 || bxi->GetEntry(tentry) < 0) continue;
 
     float cent = c->fCent;
@@ -321,12 +332,12 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
 
     for (int iVar{iVarMin}; iVar < iVarMax; ++iVar)
     {
-      int iTpcClsCut = (iVar / 1) % kNTpcClsCuts;
-      int iPidCut = (iVar / kNTpcClsCuts) % kNPidCuts;
-      int iDcaCut = (iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
-      int iChi2Cut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
-      int iMassCut = (iVar / 1 ) % kNMassCuts;
-      int iBdtScoreCut = (iVar / kNMassCuts) % kNBdtCuts;
+      int iTpcClsCut = 1;//(iVar / 1) % kNTpcClsCuts;
+      int iPidCut = 2;//(iVar / kNTpcClsCuts) % kNPidCuts;
+      int iDcaCut = 0;//(iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
+      int iChi2Cut = 1;//(iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
+      int iMassCut = 1;//iTpcClsCut;
+      int iBdtScoreCut = 2;//iPidCut;
       //if (!(i%10000)) std::cout << "iTpcClsCut = " << iTpcClsCut << ", iDcaCut = " << iDcaCut << ", iChi2Cut = " << iChi2Cut << ", iPidCut = " << iPidCut << std::endl;
 
       #ifdef CLOSURE_TEST
@@ -363,8 +374,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
           nK_gen[im_MC] += 1;
         #endif // CLOSURE_TEST
         if (
-            ( ( (k_tmp.fCutBitMap & kCutDCA[1]) == kCutDCA[1]) || ((k_tmp.fCutBitMap & kCutDCA2[1]) == kCutDCA2[1])) &&
-            ( ( ( ((k_tmp.fCutBitMap & kCutDCA[iDcaCut]) == kCutDCA[iDcaCut]) || ((k_tmp.fCutBitMap & kCutDCA2[iDcaCut]) == kCutDCA2[iDcaCut]) ) && kRequireDCAcut[iDcaCut] && std::abs(k_tmp.fPt) > kDCAcutPt) || (!kRequireDCAcut[iDcaCut] || std::abs(k_tmp.fPt) < kDCAcutPt) ) &&
+            ( ( ( ((k_tmp.fCutBitMap & kCutDCA[iDcaCut]) == kCutDCA[iDcaCut]) || ((k_tmp.fCutBitMap & kCutDCA2[iDcaCut]) == kCutDCA2[iDcaCut]) ) && kRequireDCAcut[iDcaCut] ) || !kRequireDCAcut[iDcaCut] ) &&
             ( ( ((k_tmp.fCutBitMap & kCutTPCcls[iTpcClsCut]) == kCutTPCcls[iTpcClsCut] || (k_tmp.fCutBitMap & kCutTPCcls2[iTpcClsCut]) == kCutTPCcls2[iTpcClsCut]) && kRequireTPCclsCut[iTpcClsCut] ) || !kRequireTPCclsCut[iTpcClsCut]) &&
             ( ( ((k_tmp.fCutBitMap & kCutChi2[iChi2Cut]) == kCutChi2[iChi2Cut] || (k_tmp.fCutBitMap & kCutChi22[iChi2Cut]) == kCutChi22[iChi2Cut]) && kRequireChi2Cut[iChi2Cut] ) || !kRequireChi2Cut[iChi2Cut] ) &&
             std::abs(k_tmp.fPt) > kPtLowLimitK && std::abs(k_tmp.fPt) < kTOFptCut &&
@@ -386,10 +396,10 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
           #ifdef CLOSURE_TEST
             int im_ = k_tmp.fPt > 0 ? 1 : 0;
             int ie_ = hEtaTmp.FindBin(k_tmp.fEtaMC);
-            double eff_ = fEffK ? hEffK[im_][ic - 1][ie_ - 1][iS]->GetBinContent(hEffK[im_][ic - 1][ie_ - 1][iS]->FindBin(std::abs(k_tmp.fPtMC))) : kDummyEffK;
+            double eff_ = fEffK ? hEffK[im_][ic - 1][ie_ - 1][iS][iVar - iVarMin]->GetBinContent(hEffK[im_][ic - 1][ie_ - 1][iS][iVar - iVarMin]->FindBin(std::abs(k_tmp.fPtMC))) : kDummyEffK;
             if (!k_tmp.fIsReconstructed || k_tmp.fFlag != 1) continue;
             int im_tmp = k_tmp.fPt > 0 ? 1 : 0;
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hRecKaon[im_tmp]->Fill(cent, std::abs(k_tmp.fPt), 1./eff_);
+            if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hRecKaon[im_tmp]->Fill(cent, std::abs(k_tmp.fPt), 1./eff_);
           #endif // CLOSURE_TEST
           int im = k_tmp.fPt > 0 ? 1 : 0;
           int ie = hEtaTmp.FindBin(k_tmp.fEta);
@@ -405,7 +415,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
           qK_2_tmp[im][1] += q2;
           nK[im] += 1;
           #ifdef FILL_HIST
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2){
+            if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true){
               hNsigmaITS[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaITS);
               hNsigmaTPC[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTPC);
               hNsigmaTOF[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaTOF);
@@ -415,7 +425,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
       }
       for (int iM = 0; iM < 2; ++iM){
         #ifdef CLOSURE_TEST
-          if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hGenRecKaon[iM]->Fill(cent, nK_gen[iM], nK[iM]);
+          if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hGenRecKaon[iM]->Fill(cent, nK_gen[iM], nK[iM]);
         #endif
         for (int iCorr = 0; iCorr < 2; ++iCorr){
           double q1_sq = qK_1_tmp[iM][iCorr] * qK_1_tmp[iM][iCorr];
@@ -441,7 +451,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
             qXi_1_gen_tmp[im_MC] += 1.;
             qXi_2_gen_tmp[im_MC] += 1.;
             nXi_gen[im_MC] += 1;
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hGenXi[im_MC]->Fill(cent, std::abs(xi_tmp.fPtMC));
+            if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hGenXi[im_MC]->Fill(cent, std::abs(xi_tmp.fPtMC));
           #endif // CLOSURE_TEST
           if (
               std::abs(xi_tmp.fEta) < kEtaCut &&
@@ -453,11 +463,11 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
               //if (xi_tmp.fBdtOut < kBdtScoreCuts[iBdtScoreCut]) continue;
               int ptBin = hMass[0]->GetYaxis()->FindBin(std::abs(xi_tmp.fPt));
               if (xi_tmp.fBdtOut < bdtScoreCuts[ptBin - 1][iBdtScoreCut]) continue;
-              //if (xi_tmp.fBdtOut < kBdtScoreCuts[iBdtScoreCut]) continue;
+              //if (xi_tmp.fBdtOut < 0.98) continue; // <----------- MODIFIED
             }
             if ((xi_tmp.fRecFlag & BIT(0)) != 1 || (xi_tmp.fRecFlag & BIT(1)) != 2) continue;
             #ifdef CLOSURE_TEST
-              if (!xi_tmp.fIsReconstructed || xi_tmp.fFlag != 1) continue;
+              if (!xi_tmp.fIsReconstructed /* || xi_tmp.fFlag != 1 */) continue;
             #endif // CLOSURE_TEST
             double bdtEff = 1.;
             if (!isMC && !kUseBdtInMC){
@@ -470,7 +480,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
             int ie = hEtaTmp.FindBin(xi_tmp.fEta);
             //std::cout << "xi: " << cent << "\t" << xi_tmp.fPt << "\t" << bdtEff << std::endl;
             #ifdef CLOSURE_TEST
-              if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hRecXi[im]->Fill(cent, std::abs(xi_tmp.fPt));
+              if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hRecXi[im]->Fill(cent, std::abs(xi_tmp.fPt));
             #endif // CLOSURE_TEST
             //std::cout << hEffXi[im][ic - 1][ie - 1][iS]->GetName() << std::endl;
             double eff = fEffXi ? hEffXi[im][ic - 1][ie - 1][iS][iVar - iVarMin]->GetBinContent(hEffXi[im][ic - 1][ie - 1][iS][iVar - iVarMin]->FindBin(std::abs(xi_tmp.fPt))) : kDummyEffXi;
@@ -482,13 +492,13 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
             qXi_1_tmp_update[im][1] += (1./eff/bdtEff);
             qXi_2_tmp[im][1] += (1./eff/eff/bdtEff/bdtEff);
             nXi[im] += 1;
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hMass[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fMass);
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hBDTOut[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fBdtOut);
+            if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hMass[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fMass);
+            if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hBDTOut[im]->Fill(cent, std::abs(xi_tmp.fPt), xi_tmp.fBdtOut);
           }
         }
         for (int iM = 0; iM < 2; ++iM){
           #ifdef CLOSURE_TEST
-            if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2) hGenRecXi[iM]->Fill(cent, nXi_gen[iM], nXi[iM]);
+            if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true) hGenRecXi[iM]->Fill(cent, nXi_gen[iM], nXi[iM]);
           #endif
           for (int iCorr = 0; iCorr < 2; ++iCorr){
             qXi_1_sq_tmp[iM][iCorr] += (qXi_1_tmp_update[iM][iCorr] * qXi_1_tmp_update[iM][iCorr]);
@@ -498,7 +508,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
       }
 
       #ifdef FILL_HIST
-        if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2)
+        if (/* iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2 */true)
         {
           for (int iM = 0; iM < 2; ++iM){
             #ifdef CLOSURE_TEST
@@ -537,24 +547,24 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
       #endif // FILL_HIST
 
       if (iVar < kNMassCuts * kNBdtCuts)
-        evtTuple[iS][iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1], qXi_1_tmp[0][1], qXi_1_tmp[1][1], qXi_2_tmp[0][1], qXi_2_tmp[1][1]);
+        evtTuple[iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1], qXi_1_tmp[0][1], qXi_1_tmp[1][1], qXi_2_tmp[0][1], qXi_2_tmp[1][1]);
       else
-        evtTuple[iS][iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1]);
+        evtTuple[iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1]);
     }
   }
 
 
   for (int i{iVarMin}; i < iVarMax; ++i)
   {
-    for (int iS = 0; iS < N_SAMPLE; ++iS){
-      #ifdef FILL_HIST
+    #ifdef FILL_HIST
+      for (int iS = 0; iS < N_SAMPLE; ++iS){
         if (isMC || (!isMC && kUseIndex)){
-          o[iS][i - iVarMin]->mkdir(Form("subsample_%s%d", kSubsampleFlag, iS + 1));
-          o[iS][i - iVarMin]->cd(Form("subsample_%s%d", kSubsampleFlag, iS + 1));
+          o[i - iVarMin]->mkdir(Form("subsample_%s%d", kSubsampleFlag, iS + 1));
+          o[i - iVarMin]->cd(Form("subsample_%s%d", kSubsampleFlag, iS + 1));
         }
         else {
-          o[iS][i - iVarMin]->mkdir(Form("subsample_%s", ofname));
-          o[iS][i - iVarMin]->cd(Form("subsample_%s", ofname));
+          o[i - iVarMin]->mkdir(Form("subsample_%s", ofname));
+          o[i - iVarMin]->cd(Form("subsample_%s", ofname));
         }
         for (int iM = 0; iM < 2; ++iM){
           for (int iC = 0; iC < kNCentBinsSmall; ++iC){
@@ -614,37 +624,36 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
           }
         }
         hCent[iS]->Write();
+      }
 
-        o[iS][i - iVarMin]->cd();
-        #ifdef CLOSURE_TEST
-          for (int iM = 0; iM < 2; ++iM){
-            hRecKaon[iM]->Write();
-            hGenRecKaon[iM]->Write();
-            hGenRecXi[iM]->Write();
-            hRecXi[iM]->Write();
-            hGenXi[iM]->Write();
-          }
-        #endif
-        for (int iC = 0; iC < 2; ++iC){
-          for (int iE = 0; iE < kNEtaBins; ++iE){
-            hNsigmaTOF[iC][iE]->Write();
-            hNsigmaTPC[iC][iE]->Write();
-            hNsigmaITS[iC][iE]->Write();
-          }
-          hBDTOut[iC]->Write();
-          hMass[iC]->Write();
+
+      o[i - iVarMin]->cd();
+      #ifdef CLOSURE_TEST
+        for (int iM = 0; iM < 2; ++iM){
+          hRecKaon[iM]->Write();
+          hGenRecKaon[iM]->Write();
+          hGenRecXi[iM]->Write();
+          hRecXi[iM]->Write();
+          hGenXi[iM]->Write();
         }
-      #endif // FILL_HIST
+      #endif
+      for (int iC = 0; iC < 2; ++iC){
+        for (int iE = 0; iE < kNEtaBins; ++iE){
+          hNsigmaTOF[iC][iE]->Write();
+          hNsigmaTPC[iC][iE]->Write();
+          hNsigmaITS[iC][iE]->Write();
+        }
+        hBDTOut[iC]->Write();
+        hMass[iC]->Write();
+      }
+    #endif // FILL_HIST
 
-      o[iS][i - iVarMin]->cd();
-      evtTuple[iS][i - iVarMin]->Write();
-    }
+    o[i - iVarMin]->cd();
+    evtTuple[i - iVarMin]->Write();
   }
 
-  for (int iS{0}; iS < N_SAMPLE; ++iS){
-    for (int i{iVarMin}; i < iVarMax; ++i){
-      o[iS][i - iVarMin]->Close();
-    }
+  for (int i{iVarMin}; i < iVarMax; ++i){
+    o[i - iVarMin]->Close();
   }
 
   w.Stop();

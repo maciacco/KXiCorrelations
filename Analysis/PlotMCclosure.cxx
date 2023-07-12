@@ -4,7 +4,7 @@ Color_t colors1[] = {kRed, kBlue};
 const char* kCorrLabelUnderscore[] = {"", ""};
 constexpr const char* kPartHash[] = {"", "#"};
 
-void PlotMCclosure(const char* inFileName = "outMC_mcGP", const char* outFileName = "mcClosure_mcGP"){
+void PlotMCclosure(const char* inFileName = "mcClosure_pPb", const char* outFileName = "mcClosure_pPb_plots"){
   gStyle->SetOptStat(0);
 
   // corrected cumulants
@@ -101,11 +101,11 @@ void PlotMCclosure(const char* inFileName = "outMC_mcGP", const char* outFileNam
   leg.SetTextFont(44);
   leg.SetTextSize(25);
   for (int iGR = 0; iGR < 2; ++iGR){
-    h[iGR] = (TH1D*)in.Get(Form("hOppCorrCentEffCorrCBWC_%s%s", kCorrLabelUnderscore[iGR], kCorrLabel[iGR == 0 ? 2 : 1]));
+    h[iGR] = (TH1D*)in.Get(Form("hNetCorrCentEffCorrCBWC_%s%s", kCorrLabelUnderscore[iGR], kCorrLabel[iGR == 0 ? 2 : 1]));
     if (iGR == 0){
       h[iGR]->GetYaxis()->SetTitle(Form("#rho_{#Delta%s%s #Delta%s%s}", kPartHash[1], kPartLabel[1], kPartHash[0], kPartLabel[0]));
     }
-    h[iGR]->GetYaxis()->SetRangeUser(-0.2, 0.2);
+    h[iGR]->GetYaxis()->SetRangeUser(-0.05, 0.);
     h[iGR]->SetLineWidth(2);
     h[iGR]->SetMarkerStyle(20);
     h[iGR]->SetMarkerSize(1.1);
@@ -117,20 +117,20 @@ void PlotMCclosure(const char* inFileName = "outMC_mcGP", const char* outFileNam
   }
   out.cd();
   leg.Draw("same");
-  c.Print("hOppCorrCentEffCorrCBWC.pdf");
+  c.Print("hNetCorrCentEffCorrCBWC.pdf");
   c.Write();
 
   TH1D hh(*h[0]);
-  hh.SetName("hOppCorrCentEffCorrCBWC_ratio");
+  hh.SetName("hNetCorrCentEffCorrCBWC_ratio");
   hh.SetTitle(";V0M Multiplicity Percentile (%);gen - rec");
   hh.Add(h[0], h[1], 1., -1.);
   hh.Fit("pol0");
-  hh.GetYaxis()->SetRangeUser(-0.1,0.1);
+  hh.GetYaxis()->SetRangeUser(-0.02,0.02);
   //hh.Write();
   cRatio.cd();
   hh.Draw();
   cRatio.Write();
-  cRatio.Print("hOppCorrCentEffCorrCBWC_Ratio.pdf");
+  cRatio.Print("hNetCorrCentEffCorrCBWC_Ratio.pdf");
 
   in.Close();
   out.Close();

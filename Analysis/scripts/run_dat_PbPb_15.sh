@@ -4,7 +4,7 @@ num2="$2"
 
 root -b -l <<EOF
 .L ReadTreeEffCorr2.cxx+
-ReadTreeEffCorr2("tree/dataset_after_calib_15o/AnalysisResults_LHC15o_postCalib", "/data/mciacco/KXiCorrelations/output_sys_dir/15o_new/o_", $num1, $num2)
+ReadTreeEffCorr2("tree/dataset_after_calib_15o/AnalysisResults_LHC15o_postCalib", "/data/mciacco/KXiCorrelations/output_sys_dir/15o_3/o_", $num1, $num2)
 EOF
 
 

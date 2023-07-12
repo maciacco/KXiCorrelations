@@ -6,7 +6,16 @@ double purity_error(double sig, double bkg, double sig_err, double bkg_err, doub
 
 bool fitMass = true;
 
-void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* outFileName = "Purity_18qr_purity"){
+void PuritySys(const int iVar = 0, const char* inFileName = "o_lhc18qr_purity_cuts_var", const char* outFileName = "Purity_18qr_var_"){
+  int iTpcClsCut = (iVar / 1) % kNTpcClsCuts;
+  int iPidCut = (iVar / kNTpcClsCuts) % kNPidCuts;
+  int iDcaCut = (iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
+  int iChi2Cut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
+  int iMassCut = (iVar / 1) % kNMassCuts;
+  int iBdtScoreCut = (iVar / 3) % kNBdtCuts;
+
+  if (iVar > 14) fitMass = false;
+
   gStyle->SetOptStat(0);
 
   // killing RooFit output
@@ -14,8 +23,8 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
   RooMsgService::instance().setSilentMode(true);
   gErrorIgnoreLevel = kError; // Suppressing warning outputs
   
-  TFile f(Form("%s.root", inFileName));
-  TFile o(Form("%s.root", outFileName), "recreate");
+  TFile f(Form("%s_%d.root", inFileName, iVar));
+  TFile o(Form("purity_study/%s_%d.root", outFileName, iVar), "recreate");
 
   TH3F *hMeanTPC[2];
   TH3F *hSigmaTPC[2];
@@ -29,17 +38,17 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
   }
   for (int iE = 0; iE < kNEtaBins; ++iE){
     for (int iM = 0; iM < 2; ++iM){
-      TH3F *hNsigmaTPC = (TH3F*)f.Get(Form("h%sNsigmaTPC_%d", kAntiMatterLabel[iM], iE));
-      TH3F *hNsigmaTOF = (TH3F*)f.Get(Form("h%sNsigmaTOF_%d", kAntiMatterLabel[iM], iE));
-      TH3F *hMass = (TH3F*)f.Get(Form("h%sMass", kAntiMatterLabel[iM]));
+      TH3F *hNsigmaTPC = (TH3F*)f.Get(Form("h%sNsigmaTPC_%d_%d", kAntiMatterLabel[iM], iE, iVar));
+      TH3F *hNsigmaTOF = (TH3F*)f.Get(Form("h%sNsigmaTOF_%d_%d", kAntiMatterLabel[iM], iE, iVar));
+      TH3F *hMass = (TH3F*)f.Get(Form("h%sMass_%d", kAntiMatterLabel[iM], iVar));
       TH1D *hPurity[kNCentBins];
       TH1D *hPurityXi[kNCentBins];
-      TCanvas cPurity(Form("%sPurity_K_%d", kAntiMatterLabel[iM], iE), Form("%sPurity_K", kAntiMatterLabel[iM]));
-      TCanvas cPurityXi(Form("%sPurity_Xi_%d", kAntiMatterLabel[iM], iE), Form("%sPurity_Xi", kAntiMatterLabel[iM]));
-      TLegend lPurity(0.2, 0.2, 0.6, 0.5);
+      TCanvas cPurity(Form("%sPurity_K_%d_%d_%d_%d_%d", kAntiMatterLabel[iM], iE, iTpcClsCut, iPidCut, iDcaCut, iChi2Cut), Form("%sPurity_K", kAntiMatterLabel[iM]));
+      TCanvas cPurityXi(Form("%sPurity_Xi_%d_%d_%d", kAntiMatterLabel[iM], iE, iMassCut, iBdtScoreCut), Form("%sPurity_Xi", kAntiMatterLabel[iM]));
+      TLegend lPurity(0.2, 0.2, 0.4, 0.5);
       lPurity.SetTextFont(44);
       lPurity.SetTextSize(25);
-      TLegend lPurityXi(0.2, 0.2, 0.6, 0.5);
+      TLegend lPurityXi(0.2, 0.2, 0.4, 0.5);
       lPurityXi.SetTextFont(44);
       lPurityXi.SetTextSize(25);
 
@@ -95,7 +104,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             roo_model.plotOn(massFrame, RooFit::Name("model"), RooFit::Components("background"), RooFit::LineColor(kGreen));
             roo_model.plotOn(massFrame, RooFit::Name("model"));
             
-            roo_m->setRange("signalRange", 1.32171 - 0.0045, 1.32171 + 0.0045/* 1.316, 1.328 */);
+            roo_m->setRange("signalRange", 1.32171 - ( 0.003 + 0.0015 * iMassCut), 1.32171 + ( 0.003 + 0.0015 * iMassCut)/* 1.316, 1.328 */);
             
             double sigIntegralTOF = (((RooAbsPdf *)(roo_model.pdfList().at(0)))->createIntegral(RooArgSet(*roo_m), RooFit::NormSet(RooArgSet(*roo_m)), RooFit::Range("signalRange")))->getVal();
             double bkgIntegralTOF = (((RooAbsPdf *)(roo_model.pdfList().at(1)))->createIntegral(RooArgSet(*roo_m), RooFit::NormSet(RooArgSet(*roo_m)), RooFit::Range("signalRange")))->getVal();
@@ -135,7 +144,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             tpcModel->plotOn(tpcFrame, RooFit::Name("model"));
             tpcModel->plotOn(tpcFrame, RooFit::Name("model"), RooFit::Components("tpcSignalPDF"), RooFit::LineColor(kRed));
             tpcModel->plotOn(tpcFrame, RooFit::Name("model"), RooFit::Components("tpcBackgroundPDF"), RooFit::LineColor(kGreen));
-            tpcSignal.setRange("signalRange", kNsigmaTPCcutAsymP[0], kNsigmaTPCcutAsymP[1]);
+            tpcSignal.setRange("signalRange", kNsigmaTPCcutAsymP[0] - (-1. + 0.5 * iPidCut), kNsigmaTPCcutAsymP[1] - 1. + 0.5 * iPidCut);
             double sigIntegral = (((RooAbsPdf *)(tpcModel->pdfList().at(0)))->createIntegral(RooArgSet(tpcSignal), RooFit::NormSet(RooArgSet(tpcSignal)), RooFit::Range("signalRange")))->getVal();
             double bkgIntegral = (((RooAbsPdf *)(tpcModel->pdfList().at(1)))->createIntegral(RooArgSet(tpcSignal), RooFit::NormSet(RooArgSet(tpcSignal)), RooFit::Range("signalRange")))->getVal();
             double bkgTPC = tpcNBkg.getVal() * bkgIntegral;
@@ -149,7 +158,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
               cTPC.cd();
               tpcFrame->Draw();
               t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
-              cTPC.Write();
+              // cTPC.Write();
             }
             hMeanTPC[iM]->SetBinContent(iCent, iP, iE + 1, tpcMu.getVal());
             hSigmaTPC[iM]->SetBinContent(iCent, iP, iE + 1, tpcSigma.getVal());
@@ -174,7 +183,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             tofModel->plotOn(tofFrame, RooFit::Name("model"));
             tofModel->plotOn(tofFrame, RooFit::Name("model"), RooFit::Components("tofSignalPDF"), RooFit::LineColor(kRed));
             tofModel->plotOn(tofFrame, RooFit::Name("model"), RooFit::Components("tofBackgroundPDF"), RooFit::LineColor(kGreen));
-            tofSignal.setRange("signalRange", kNsigmaTOFcutAsymP[0], kNsigmaTOFcutAsymP[1]);
+            tofSignal.setRange("signalRange", kNsigmaTOFcutAsymP[0] - (- 1. + 0.5 * iPidCut), kNsigmaTOFcutAsymP[1] - 1. + 0.5 * iPidCut);
             double sigIntegralTOF = (((RooAbsPdf *)(tofModel->pdfList().at(0)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
             double bkgIntegralTOF = (((RooAbsPdf *)(tofModel->pdfList().at(1)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
             double bkgTOF = tofNBkg.getVal() * bkgIntegralTOF;
@@ -188,7 +197,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
               tofFrame->Draw();
               TLatex t;
               t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
-              cTOF.Write();
+              // cTOF.Write();
             }
             hMeanTOF[iM]->SetBinContent(iCent, iP, iE + 1, tofMu.getVal());
             hSigmaTOF[iM]->SetBinContent(iCent, iP, iE + 1, tofSigma.getVal());
@@ -204,7 +213,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
         hPurity[iCent - 1]->SetLineColor(colors[iCent - 1]);
         //hPurity[iCent - 1]->Write();
         hPurity[iCent - 1]->GetXaxis()->SetRangeUser(0., 1.);
-        hPurity[iCent - 1]->GetYaxis()->SetRangeUser(0., 1.1);
+        hPurity[iCent - 1]->GetYaxis()->SetRangeUser(0.8, 1.05);
         cPurity.cd();
         hPurity[iCent - 1]->Draw(iCent == 1 ? "pe x0" : "pe x0 same");
         lPurity.AddEntry(hPurity[iCent - 1], Form("%.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
@@ -215,7 +224,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
         hPurityXi[iCent - 1]->SetLineColor(colors[iCent - 1]);
         //hPurityXi[iCent - 1]->Write();
         hPurityXi[iCent - 1]->GetXaxis()->SetRangeUser(0., 3.);
-        hPurityXi[iCent - 1]->GetYaxis()->SetRangeUser(0., 1.1);
+        hPurityXi[iCent - 1]->GetYaxis()->SetRangeUser(0.8, 1.05);
         cPurityXi.cd();
         hPurityXi[iCent - 1]->Draw(iCent == 1 ? "pe x0" : "pe x0 same");
         lPurityXi.AddEntry(hPurityXi[iCent - 1], Form("%.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
@@ -225,11 +234,13 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
       cPurity.cd();
       lPurity.Draw("same");
       cPurity.Write();
-      cPurity.Print(Form("%spurity_%d.pdf", kAntiMatterLabel[iM], iE));
-      cPurityXi.cd();
-      lPurityXi.Draw("same");
-      cPurityXi.Print(Form("%spurityXi_%d.pdf", kAntiMatterLabel[iM], iE));
-      cPurityXi.Write();
+      cPurity.Print(Form("purity_study/%spurity_%d_%d_%d_%d_%d.pdf", kAntiMatterLabel[iM], iE, iTpcClsCut, iPidCut, iDcaCut, iChi2Cut));
+      if (fitMass) {
+        cPurityXi.cd();
+        lPurityXi.Draw("same");
+        cPurityXi.Print(Form("purity_study/%spurityXi_%d_%d_%d.pdf", kAntiMatterLabel[iM], iE, iMassCut, iBdtScoreCut));
+        cPurityXi.Write();
+      }
       // hNsigmaTPC->Write();
       // hNsigmaTOF->Write();
       // hMass->Write();

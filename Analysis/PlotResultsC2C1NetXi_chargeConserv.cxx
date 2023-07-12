@@ -1,6 +1,6 @@
 #include "../utils/Config.h"
 
-void PlotResultsC2C1NetXi(){
+void PlotResultsC2C1NetXi_chargeConserv(){
   gStyle->SetOptStat(0);
 
   TFile fpp("out_sys_17_finalBinning_c2c1.root"); // 17pq
@@ -23,16 +23,22 @@ void PlotResultsC2C1NetXi(){
   gPbPb_sys->SetName("gRhoSys_PbPb");
 
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
+  TFile fSHM_B("models/PbPb_CESHM_T155MeV_onlybaryonconservation_vc3.0.root");
+  TFile fSHM_S("models/PbPb_CESHM_T155MeV_onlystrangeconservation_vc3.0.root");
+  TFile fSHM_BS("models/PbPb_CESHM_T155MeV_baryonplusstrangeconservation_vc3.0.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{C}_{2}(#Xi^{-}-#Xi^{+})/#it{C}_{1}(#Xi^{-}+#Xi^{+})", 1, 1.5, 2500, 1, 0.93, 1.04);
-  TLegend leg(0.15, 0.67, 0.7, 0.82);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{C}_{2}(#Xi^{-}-#Xi^{+})/#it{C}_{1}(#Xi^{-}+#Xi^{+})", 1, 30, 2500, 1, 0.935, 1.04);
+  TLegend leg(0.15, 0.72, 0.4, 0.87);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.82, 0.5, 0.92);
+  TLegend leg2(0.162, 0.87, 0.7, 0.92);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
   TGraphErrors gSHM;
+  TGraphErrors *gSHM_BS;
+  TGraphErrors *gSHM_B;
+  TGraphErrors *gSHM_S;
   TGraphErrors gPYTHIA;
   TGraphErrors gPYTHIA_CRMPI_ROPOFF;
   TGraphErrors gPYTHIA_CRMPI_ROPON;
@@ -140,6 +146,13 @@ void PlotResultsC2C1NetXi(){
     gPYTHIA_ANGANTYR_PPB.SetPointError(iP, 0, pythia_angantyr_pPb_c2c1[iP][1]);
   }
 
+
+  gSHM_BS = (TGraphErrors*)fSHM_BS.Get("Grc2byc1xi");
+
+  gSHM_B = (TGraphErrors*)fSHM_B.Get("Grc2byc1xi");
+
+  gSHM_S = (TGraphErrors*)fSHM_S.Get("Grc2byc1xi");
+
   // // set colors and style
   // gData.SetLineWidth(2);
   // gData.SetMarkerStyle(20);
@@ -196,6 +209,21 @@ void PlotResultsC2C1NetXi(){
   gSHM.SetFillColor(kOrange - 3);
   gSHM.SetFillStyle(3002);
 
+  gSHM_BS->SetLineWidth(2);
+  gSHM_BS->SetLineColor(kOrange - 3);
+  gSHM_BS->SetFillColor(kOrange - 3);
+  gSHM_BS->SetFillStyle(3002);
+
+  gSHM_B->SetLineWidth(2);
+  gSHM_B->SetLineColor(kMagenta);
+  gSHM_B->SetFillColor(kMagenta);
+  gSHM_B->SetFillStyle(3002);
+
+  gSHM_S->SetLineWidth(2);
+  gSHM_S->SetLineColor(kAzure - 7);
+  gSHM_S->SetFillColor(kAzure - 7);
+  gSHM_S->SetFillStyle(3002);
+
   // gPYTHIA_ANGANTYR.SetLineWidth(2);
   // gPYTHIA_ANGANTYR.SetLineColor(kOrange);
   // gPYTHIA_ANGANTYR.SetFillColor(kOrange);
@@ -238,66 +266,73 @@ void PlotResultsC2C1NetXi(){
   leg.SetTextSize(23);
   leg2.SetTextFont(44);
   leg2.SetTextSize(23);
-  leg.SetNColumns(2);
+  //leg.SetNColumns(2);
   leg2.SetNColumns(3);
-  leg.SetColumnSeparation(0.4);
-  leg2.SetColumnSeparation(0.1);
-  leg2.SetHeader("ALICE Preliminary");
+  //leg.SetColumnSeparation(0.4);
+  leg2.SetColumnSeparation(0.2);
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
-  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "f");
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA MPI, pp", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
+  //leg.AddEntry(&gHIJING, "HIJING Pb-Pb", "f");
+  //leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C}=3d#it{V}/d#it{y}", "f");
+  // leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA MPI, pp", "f");
+  // leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "f");
-  leg2.AddEntry(gpp_stat, "pp", "pe");
-  leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
-  leg2.AddEntry(gPbPb_stat, "Pb#minusPb", "pe");
+  // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
+  // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
+  leg.SetHeader("TheFIST CE SHM, #it{T} = 155 MeV, #it{V}_{C} = 3d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS, "B + S conservation");
+  leg.AddEntry(gSHM_B, "B conservation");
+  leg.AddEntry(gSHM_S, "S conservation");
+  // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
+  // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
+  leg2.AddEntry(gPbPb_stat, "ALICE Preliminary, Pb#minusPb", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
-  TLine l(1.5/* 30 */, 1, 2500, 1);
+  TLine l(30, 1, 2500, 1);
   l.SetLineWidth(2);
   l.SetLineStyle(kDashed);
 
   cResult.cd();
   frame.Draw();
-  gSHM.Draw("samee3l");
+  //gSHM.Draw("samee3l");
   // gPYTHIA.Draw("samee3l");
-  gHIJING.Draw("samee3l");
+  // gHIJING.Draw("samee3l");
   //gPYTHIA_ANGANTYR.Draw("samee3l");
   //gEPOS_pPb.Draw("samee3l");
-  gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
-  gPYTHIA_CRQCD->Draw("samee3l");
-  gPYTHIA_CRMPI_ROPON.Draw("samee3l");
-  gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
+  // gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
+  // gPYTHIA_CRQCD->Draw("samee3l");
+  // gPYTHIA_CRMPI_ROPON.Draw("samee3l");
+  // gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
+
+  gSHM_BS->Draw("samee3l");
+  gSHM_B->Draw("samee3l");
+  gSHM_S->Draw("samee3l");
 
   leg.Draw("same");
   leg2.Draw("same");
 
   gPbPb_sys->Draw("e5same");
   gPbPb_stat->Draw("pesame");
-  gpp_sys->Draw("e5same");
-  gpp_stat->Draw("pesame");
-  gpPb_sys->Draw("e5same");
-  gpPb_stat->Draw("pesame");
+  // gpp_sys->Draw("e5same");
+  // gpp_stat->Draw("pesame");
+  // gpPb_sys->Draw("e5same");
+  // gpPb_stat->Draw("pesame");
   l.Draw("same");
 
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(/* 35 */2.5, 0.945, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(35, 0.95, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
-  t.DrawLatex(2.5, 0.940, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(2.5, 0.935, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(35, 0.945, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(35, 0.94, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 
-  TFile o("final_plot_c2c1.root", "recreate");
+  TFile o("final_plot_c2c1_chrgeConserv.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1.pdf");
+  cResult.Print("cC2C1_chargeConserv.pdf");
   o.Close();
   f.Close();
   //f2.Close();

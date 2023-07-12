@@ -24,7 +24,7 @@ void PlotResults(){
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 1.5, 2500, 1, -0.056, 0.005);
   TLegend leg(0.15, 0.15, 0.7, 0.35);
-  TLegend leg2(0.162, 0.35, 0.5, 0.45);
+  TLegend leg2(0.162, 0.35, 0.7, 0.40);
   //(0.16395348837209303, 0.650399548902823, 0.7395348837209302, 0.9167587400421383);
 
   TGraphErrors gSHM;
@@ -272,22 +272,21 @@ void PlotResults(){
   leg.SetNColumns(2);
   leg2.SetNColumns(3);
   leg.SetColumnSeparation(0.4);
-  leg2.SetHeader("ALICE Preliminary");
-  leg2.SetColumnSeparation(0.1); // 0.2
+  leg2.SetColumnSeparation(0.2);
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
-  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "f");
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "f");
+  leg.AddEntry(&gHIJING, "HIJING Pb-Pb", "f");
+  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C}=3d#it{V}/d#it{y}", "f");
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA MPI, pp", "f");
   leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "f");
+  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb-Pb", "f");
   // leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "f");
-  leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
-  leg2.AddEntry(gpp_stat, "pp", "pe");
-  leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
-  leg2.AddEntry(gPbPb_stat, "Pb#minusPb", "pe");
+  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
+  leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p-Pb w/ rapidity boost", "f");
+  leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
+  leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
+  leg2.AddEntry(gPbPb_stat, "ALICE, Pb-Pb", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
@@ -324,7 +323,7 @@ void PlotResults(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(2.5, -0.004, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(2.5, -0.004, "#sqrt{#it{s}_{NN}}=5.02 TeV, |#it{#eta}|<0.8");
   t.DrawLatex(70, -0.004, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
   t.DrawLatex(70, -0.007, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 

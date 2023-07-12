@@ -45,7 +45,7 @@ ROOT.gROOT.SetBatch()
 ROOT.EnableImplicitMT(10)
 
 # training
-ppPbPb = '_pp4'
+ppPbPb = '_pp5'
 RECOMPUTE_DICT = True
 PLOT_DIR = 'plots'
 MAKE_TRAIN_TEST_PLOT = True
@@ -115,11 +115,12 @@ if TRAINING:
     for i_cent_bins in range(len(CENTRALITY_LIST)):
         cent_bins = CENTRALITY_LIST[i_cent_bins]
 
-        df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC22l5.root"))['XiOmegaTree'].arrays(library="pd")
+        #df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pPb/mc_tree/trainingMC/AnalysisResults_mc_train.root"))['XiOmegaTree'].arrays(library="pd")
+        df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/mc_train/dataset_after_calib/AnalysisResults_LHC22l5_fast.root"))['XiOmegaTree'].arrays(library="pd")
         #df_signal = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResultsTrain_0_90.root"))['XiOmegaTreeTrain'].arrays(library="pd")
-        df_signal.dcaV0piPV = df_signal.dcaV0piPV.round(1)
-        df_signal.dcaV0prPV = df_signal.dcaV0prPV.round(1)
-        df_signal.dcaBachPV = df_signal.dcaBachPV.round(1)
+        #df_signal.dcaV0piPV = df_signal.dcaV0piPV.round(1)
+        #df_signal.dcaV0prPV = df_signal.dcaV0prPV.round(1)
+        #df_signal.dcaBachPV = df_signal.dcaBachPV.round(1)
         # df_signal.cosPA = df_signal.cosPA.round(6)
         # df_signal.cosPAV0 = df_signal.cosPAV0.round(6)
         # df_signal.dcaBachV0 = df_signal.dcaBachV0.round(2)
@@ -127,11 +128,12 @@ if TRAINING:
         # df_signal.dcaV0PV = df_signal.dcaV0PV.round(3)
         # df_signal.tpcNsigmaV0Pr = df_signal.tpcNsigmaV0Pr.round(1)
         
+        #df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pPb/trainingDat/AnalysisResults_data_train.root"))['XiOmegaTree'].arrays(library="pd")
         df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/pp/tree_train/AnalysisResults_LHC17pq_data.root"))['XiOmegaTree'].arrays(library="pd")
         #df_background = uproot.open(os.path.expandvars(f"/data/mciacco/KXiCorrelations/tree_train/AnalysisResults_data_qr_test_pass3_noBin.root"))['XiOmegaTreeTrain'].arrays(library="pd")
-        df_background.dcaV0piPV = df_background.dcaV0piPV.round(1)
-        df_background.dcaV0prPV = df_background.dcaV0prPV.round(1)
-        df_background.dcaBachPV = df_background.dcaBachPV.round(1)
+        #df_background.dcaV0piPV = df_background.dcaV0piPV.round(1)
+        #df_background.dcaV0prPV = df_background.dcaV0prPV.round(1)
+        #df_background.dcaBachPV = df_background.dcaBachPV.round(1)
         # df_background.cosPA = df_background.cosPA.round(6)
         # df_background.cosPAV0 = df_background.cosPAV0.round(6)
         # df_background.dcaBachV0 = df_background.dcaBachV0.round(2)
@@ -158,12 +160,16 @@ if TRAINING:
                     n_prompt = df_prompt_ct.shape[0]
                     print(f"n_prompt = {n_prompt}")
 
+                    # pPb training 
+                    # if n_background > n_prompt:
+                    #     df_background_ct = df_background_ct.sample(frac=n_prompt/n_background)
+
                     # PbPb training 
                     # if n_background > n_prompt:
                     #     df_background_ct = df_background_ct.sample(frac=n_prompt/n_background)
                     
                     # pp training
-                    if n_prompt > 0.8*n_background:
+                    if n_prompt > n_background:
                         df_prompt_ct = df_prompt_ct.sample(frac=0.8*n_background/n_prompt)
                     
 
@@ -283,7 +289,7 @@ if TRAINING:
                         train_test_data_cent[3],
                         test_y_score, train_test_data_cent[1],
                         train_y_score, labels=leg_labels)
-                    plt.savefig(f'{PLOT_DIR}/train_test_out/roc_train_test_{bin_df}.pdf')
+                    plt.savefig(f'{PLOT_DIR}{ppPbPb}/train_test_out/roc_train_test_{bin_df}.pdf')
                     plt.close('all')
 
                 if COMPUTE_SCORES_FROM_EFF:

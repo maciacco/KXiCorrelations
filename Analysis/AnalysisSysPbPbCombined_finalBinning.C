@@ -19,34 +19,35 @@ void remove_outlier(TH1D* h, double reject_level = 3.){
 const bool kRho = false;
 const bool kC2c1 = true;
 
-void AnalysisSysPbPbCombined()
+void AnalysisSysPbPbCombined_finalBinning()
 {
-  gStyle->SetOptStat(1101);
-  TFile *fin = new TFile(kC2c1 ? "out_sys_15_new_c2c1_1.root" : "out_sys_15_new_1.root");
-  TFile *fin2 = new TFile(kC2c1 ? "out_sys_18_new_c2c1_1.root" : "out_sys_18_new_1.root");
-  TFile f(kC2c1 ? "out_sys_PbPb_new_c2c1_3.root" : "out_sys_PbPb_new_3.root", "recreate");
+  gStyle->SetOptStat(0);
+  TFile *fin = new TFile(kC2c1 ? "out_sys_15o_finalBinning_c2c1.root" : "out_sys_15o_finalBinning_.root");
+  TFile *fin2 = new TFile(kC2c1 ? "out_sys_18qr_finalBinning_c2c1.root" : "out_sys_18qr_finalBinning_.root");
+  TFile f(kC2c1 ? "out_sys_PbPb_finalBinning_c2c1.root" : "out_sys_PbPb_finalBinning.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TGraphErrors gRho;
   gRho.SetName("gRho");
   gRho.SetTitle(";Centrality (%);#rho_{#Delta#Xi#DeltaK}");
   TGraphErrors gRhoSys;
-  TH2D hFrame("hFrame", ";Centrality (%);#rho_{#Delta#Xi#DeltaK}", 1, 0, 90, 1, -0.055, -0.01);
+  TH2D hFrame("hFrame", ";Centrality (%);#rho_{#Delta#Xi#DeltaK}", 1, 0, 90, 1, (kC2c1 ? 0.93 : -0.045), (kC2c1 ? 1.04 : -0.02));
   //TH2D hFrame("hFrame", ";Centrality (%);C_{2}/C_{1}", 1, 0, 90, 1, 0., 1.5);
   gRhoSys.SetName("gRhoSys");
-  TCanvas cSys("cSys", "cSys");
-  cSys.Divide(3, 3);
+  TCanvas cSys("cSys", "cSys", 600, 400);
+  cSys.Divide(3, 2);
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
-    if (kRho) hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", i == 0 ? 200 : 100, -0.05, -0.01);
-    if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", 600, 0.7, 1.3);
+    if (kRho) hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 45, -1, -1/* 160, -0.05, -0.01 */);
+    if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", 6, -1, -1);
   }
   for(int iVar = 0; iVar < 1350; ++iVar)
   {
     if (kRho){
-      if ((iVar/3/5)%2!=1) continue;
-      if ((iVar/3/5/2/3/3)%5>3) continue;
+      //if ((iVar/3/5)%2!=1) continue;
+      //if ((iVar/3/5/2/2/3)%11>9) continue;
     }
     //if ((iVar/3/5/2)%3==0) continue;
-    else if (((iVar%90)/90.) > 0.005 && kC2c1) continue;
+    else if (((iVar%60)/60.) > 0.001 && kC2c1) continue;
+
     TGraphErrors *g1 = (TGraphErrors*)fin->Get(Form("g_%d", iVar));
     g1->SetName(Form("g_%d_1", iVar));
     TGraphErrors *g2 = (TGraphErrors*)fin2->Get(Form("g_%d", iVar));
@@ -67,21 +68,10 @@ void AnalysisSysPbPbCombined()
       g.AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
       g.SetPointError(i - 1, 0, rhorms);
 
-      if (i == 2 && rhomean < -0.035) {
-        // int iTpcClsCut = (iVar / 1) % kNTpcClsCuts;
-        // int iPidCut = (iVar / kNTpcClsCuts) % kNPidCuts;
-        // int iDcaCut = (iVar / kNTpcClsCuts / kNPidCuts) % kNDcaCuts;
-        // int iChi2Cut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts) % kNChi2Cuts;
-        // int iMassCut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts / kNChi2Cuts) % kNMassCuts;
-        // int iBdtScoreCut = (iVar / kNTpcClsCuts / kNPidCuts / kNDcaCuts / kNChi2Cuts / kNMassCuts) % kNBdtCuts;
-        // cout << iVar << "\t" << iTpcClsCut << "\t" << iPidCut << "\t" << iDcaCut << "\t" << iChi2Cut << "\t" << iMassCut << "\t" << iBdtScoreCut << endl;
-        // cout << iVar << "\t" << iTpcClsCut << "\t" << iPidCut << "\t" << iDcaCut << "\t" << iChi2Cut << "\t" << iMassCut << "\t" << iBdtScoreCut << endl;
-      }
-
       // cout << TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))) << "\n";
 
       hSys[i - 1]->Fill(rhomean);
-      if (iVar == (kC2c1 ? 630 : 712)){
+      if (iVar == (kC2c1 ? 960 : 1012)){
         gRho.AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
         gRhoSys.AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
         gRho.SetPointError(i - 1, 0, rhorms);
@@ -96,29 +86,40 @@ void AnalysisSysPbPbCombined()
    // c.Write();
   }
   TLine *line[kNCentBinsAnalysis];
+  TH1D* hSysFrame[kNCentBinsAnalysis];
   for (int i{0}; i < kNCentBinsAnalysis - 1; ++i){
     line[i] = new TLine(gRho.GetPointY(i), 0, gRho.GetPointY(i), hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()));
+    hSysFrame[i] = new TH1D(Form("hSysFrame_%d", i), kC2c1 ? ";#it{C}_{2}/#it{C}_{1};Entries" : ";#it{#rho};Entries", 10000000, -10, 10);
     remove_outlier(hSys[i]);
     //hSys[i]->SetStats(0);
     hSys[i]->SetFillStyle(3004);
     hSys[i]->SetLineWidth(2);
     hSys[i]->SetLineColor(kBlue);
     hSys[i]->SetFillColor(kBlue);
-    hSys[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 5.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 5.*hSys[i]->GetStdDev());
+    hSysFrame[i]->SetMaximum(hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()) + hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()) * 0.05);
+    if (kRho) hSysFrame[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 5.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 5.*hSys[i]->GetStdDev());
+    if (kC2c1) hSysFrame[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 3.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 3.*hSys[i]->GetStdDev());
     hSys[i]->Write();
     gRhoSys.SetPointError(i, 2, hSys[i]->GetStdDev());
-    hSys[i]->SetTitle(Form("%.0f-%.0f%%",  kCentClasses[i], kCentClasses[i + 1]));
+    hSysFrame[i]->SetTitle(Form("%.0f-%.0f%%",  kCentClasses[i], kCentClasses[i + 1]));
     cSys.cd(i + 1);
-    hSys[i]->Draw("histo");
+    hSysFrame[i]->Draw("");
+    hSys[i]->Draw("histosame");
     cSys.Update();
     //hSys[i]->Fit("gaus", "LM+");
-    TPaveStats *ps = (TPaveStats*)hSys[i]->FindObject("stats");
-    ps->SetTextFont(44);
-    ps->SetTextSize(10);
-    ps->SetX1NDC(0.6515426497277677);
-    ps->SetY1NDC(0.5675675675675675);
-    ps->SetX2NDC(0.9818511796733213);
-    ps->SetY2NDC(0.933933933933934);
+    // TPaveStats *ps = (TPaveStats*)hSys[i]->FindObject("stats");
+    // ps->SetTextFont(44);
+    // ps->SetTextSize(10);
+    // ps->SetX1NDC(0.6515426497277677);
+    // ps->SetY1NDC(0.5675675675675675);
+    // ps->SetX2NDC(0.9818511796733213);
+    // ps->SetY2NDC(0.933933933933934);
+    TLatex t;
+    t.SetTextFont(44);
+    t.SetTextSize(8);
+    t.SetNDC();
+    t.DrawLatex(0.7, 0.8, Form("#mu = %.5f", hSys[i]->GetMean()));
+    t.DrawLatex(0.7, 0.75, Form("#sigma = %.5f", hSys[i]->GetRMS()));
     line[i]->SetLineWidth(2);
     line[i]->SetLineStyle(7);
     line[i]->SetLineColor(kRed);

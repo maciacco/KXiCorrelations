@@ -23,6 +23,21 @@ HYPERPARAMS:
   # n_estimators: 181
   seed: 42
 
+HYPERPARAMS_RANGES_PPB:
+  # booster parameters
+  n_estimators: !!python/tuple [100,1300] # [100,900]
+  max_depth: !!python/tuple [2,5]
+  learning_rate: !!python/tuple [0.05,.3]
+  gamma: !!python/tuple [0.2, 1.2]
+  subsample: !!python/tuple [0.5, 0.9]
+  colsample_bytree: !!python/tuple [0.5, 0.9]
+  # learning_rate: !!python/tuple [0.01, 0.3] # learning rate
+  # n_estimators: !!python/tuple [50, 500] # number of boosting trees
+  # gamma: !!python/tuple [0.3, 1.1] # specifies the minimum loss reduction required to make a split
+  # min_child_weight: !!python/tuple [1, 12]
+  # subsample: !!python/tuple [0.5, 0.9] # denotes the fraction of observations to be randomly samples for each tree
+  # colsample_bytree: !!python/tuple [0.5, 0.9] # denotes the fraction of columns to be randomly samples for each tree
+
 HYPERPARAMS_RANGES:
   # booster parameters
   n_estimators: !!python/tuple [100,900] # [100,900]
