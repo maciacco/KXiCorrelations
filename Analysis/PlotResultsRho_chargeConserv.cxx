@@ -23,15 +23,15 @@ void PlotResultsRho_chargeConserv(){
   gPbPb_sys->SetName("gRhoSys_PbPb");
 
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
-  TFile fSHM_B("models/PbPb_CESHM_T155MeV_onlybaryonconservation_vc3.0.root");
-  TFile fSHM_S("models/PbPb_CESHM_T155MeV_onlystrangeconservation_vc3.0.root");
-  TFile fSHM_BS("models/PbPb_CESHM_T155MeV_baryonplusstrangeconservation_vc3.0.root");
+  TFile fSHM_B("models/Output_Final_B_vc3.0_CE.root");
+  TFile fSHM_S("models/Output_Final_S_vc3.0_CE.root");
+  TFile fSHM_BS("models/Output_Final_BS_vc3.0_CE.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.056, 0.03);
-  TLegend leg(0.15, 0.72, 0.4, 0.87);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.056, 0.04);
+  TLegend leg(0.162, 0.74, 0.4, 0.89);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.87, 0.7, 0.92);
+  TLegend leg2(0.162, 0.89, 0.7, 0.94);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
@@ -58,10 +58,10 @@ void PlotResultsRho_chargeConserv(){
   // canvas
   cResult.SetLogx();
   frame.GetYaxis()->SetNdivisions(210);
-  frame.GetYaxis()->SetTitleOffset(1.2);
-  cResult.SetLeftMargin(0.13);
+  frame.GetYaxis()->SetTitleOffset(1.3);
+  cResult.SetLeftMargin(0.14);
   cResult.SetRightMargin(0.02);
-  cResult.SetTopMargin(0.05);
+  cResult.SetTopMargin(0.03);
 
   for (int iB = 0; iB < 6; ++iB){
     gPbPb_sys->SetPointError(iB, mult_shm_PbPb_[iB] * 7.e-2, gPbPb_sys->GetErrorY(iB));

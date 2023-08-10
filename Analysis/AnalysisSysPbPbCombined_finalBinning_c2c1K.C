@@ -16,45 +16,51 @@ void remove_outlier(TH1D* h, double reject_level = 3.){
   }
 }
 
-const bool kRho = true;
-const bool kC2c1 = false;
+const bool kRho = false;
+const bool kC2c1 = true;
 
-void AnalysisSysPbPbCombined_finalBinning()
+void AnalysisSysPbPbCombined_finalBinning_c2c1K()
 {
   gStyle->SetOptStat(0);
-  TFile *fin = new TFile(kC2c1 ? "out_sys_15o_finalBinning_c2c1.root" : "out_sys_15o_finalBinning_.root");
-  TFile *fin2 = new TFile(kC2c1 ? "out_sys_18qr_finalBinning_c2c1.root" : "out_sys_18qr_finalBinning_.root");
-  TFile f(kC2c1 ? "out_sys_PbPb_finalBinning_c2c1.root" : "out_sys_PbPb_finalBinning.root", "recreate");
+  TFile *fin = new TFile(kC2c1 ? "out_sys_15o_finalBinning_c2c1_k.root" : "out_sys_15o_finalBinning_.root");
+  TFile *fin2 = new TFile(kC2c1 ? "out_sys_18qr_finalBinning_c2c1_k.root" : "out_sys_18qr_finalBinning_.root");
+  TFile f(kC2c1 ? "out_sys_PbPb_finalBinning_c2c1_k.root" : "out_sys_PbPb_finalBinning.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TGraphErrors gRho;
   gRho.SetName("gRho");
   gRho.SetTitle(";Centrality (%);#rho_{#Delta#Xi#DeltaK}");
   TGraphErrors gRhoSys;
-  TH2D hFrame("hFrame", ";Centrality (%);#rho_{#Delta#Xi#DeltaK}", 1, 0, 90, 1, (kC2c1 ? 0.93 : -0.045), (kC2c1 ? 1.04 : -0.02));
+  TCanvas c("c", "c");
+  c.cd();
+  TH2D hFrame("hFrame", ";Centrality (%);#rho_{#Delta#Xi#DeltaK}", 1, 0, 90, 1, (kC2c1 ? 0.82 : -0.045), (kC2c1 ? 1.0 : -0.02));
+  hFrame.SetStats(0);
+  hFrame.Draw();
   //TH2D hFrame("hFrame", ";Centrality (%);C_{2}/C_{1}", 1, 0, 90, 1, 0., 1.5);
   gRhoSys.SetName("gRhoSys");
   TCanvas cSys("cSys", "cSys", 600, 400);
   cSys.Divide(3, 2);
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
-    if (kRho) hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 45, -2, -1/* 160, -0.05, -0.01 */);
-    if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", 6, -1, -1);
+    if (kRho) hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 45, -1, -1/* 160, -0.05, -0.01 */);
+    if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", /* 10, -1, -1 */1000, 0.8, 1.0);
   }
-  for(int iVar = 0; iVar < 1800; ++iVar)
+
+  TGraphErrors *g[60];
+  for(int iVar = 0; iVar < 60; ++iVar)
   {
     if (kRho){
       //if ((iVar/3/5)%2!=1) continue;
       //if ((iVar/3/5/2/2/3)%11>9) continue;
     }
     //if ((iVar/3/5/2)%3==0) continue;
-    else if (((iVar%60)/60.) > 0.001 && kC2c1) continue;
+    // else if (((iVar%60)/60.) > 0.001 && kC2c1) continue;
 
     TGraphErrors *g1 = (TGraphErrors*)fin->Get(Form("g_%d", iVar));
     g1->SetName(Form("g_%d_1", iVar));
     TGraphErrors *g2 = (TGraphErrors*)fin2->Get(Form("g_%d", iVar));
     g2->SetName(Form("g_%d_2", iVar));
     
-    TGraphErrors g;
-    g.SetName(Form("g_%d", iVar));
+    g[iVar] = new TGraphErrors();
+    g[iVar]->SetName(Form("g_%d", iVar));
 
     for(int i = 1; i < kNCentBinsAnalysis; i++)
     {
@@ -65,24 +71,26 @@ void AnalysisSysPbPbCombined_finalBinning()
 
       double rhomean = (x/pow(errx, 2) + y/pow(erry, 2)) / (1./pow(errx, 2) + 1./pow(erry, 2));
       double rhorms = 1. / sqrt((1./pow(errx, 2) + 1./pow(erry, 2)));
-      g.AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
-      g.SetPointError(i - 1, 0, rhorms);
+      g[iVar]->AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
+      g[iVar]->SetPointError(i - 1, 0, rhorms);
 
       // cout << TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))) << "\n";
 
       hSys[i - 1]->Fill(rhomean);
-      if (iVar == (kC2c1 ? 960 : 1012)){
+      if (iVar == (kC2c1 ? 52 : 1012)){
         gRho.AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
         gRhoSys.AddPoint(0.5 * (kCentClasses[i - 1] + kCentClasses[i]), rhomean);
         gRho.SetPointError(i - 1, 0, rhorms);
       }
     }
 
-    TCanvas c(Form("c_%d", iVar), Form("c_%d", iVar));
+    //TCanvas c(Form("c_%d", iVar), Form("c_%d", iVar));
     c.cd();
-    //g.Draw();
+    g[iVar]->SetLineWidth(2);
+    g[iVar]->SetLineColor(kAzure + 2);
+    g[iVar]->Draw("samepl");
     f.cd();
-    g.Write();
+    g[iVar]->Write();
    // c.Write();
   }
   TLine *line[kNCentBinsAnalysis];
@@ -90,7 +98,7 @@ void AnalysisSysPbPbCombined_finalBinning()
   for (int i{0}; i < kNCentBinsAnalysis - 1; ++i){
     line[i] = new TLine(gRho.GetPointY(i), 0, gRho.GetPointY(i), hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()));
     hSysFrame[i] = new TH1D(Form("hSysFrame_%d", i), kC2c1 ? ";#it{C}_{2}/#it{C}_{1};Entries" : ";#it{#rho};Entries", 10000000, -10, 10);
-    remove_outlier(hSys[i]);
+    //remove_outlier(hSys[i]);
     //hSys[i]->SetStats(0);
     hSys[i]->SetFillStyle(3004);
     hSys[i]->SetLineWidth(2);
@@ -127,7 +135,7 @@ void AnalysisSysPbPbCombined_finalBinning()
   }
   gRho.Write();
   gRhoSys.Write();
-  TCanvas c("c", "c");
+  gRhoSys.SetFillStyle(0);
   gRhoSys.SetLineColor(kRed);
   gRhoSys.SetLineWidth(2);
   gRho.SetLineColor(kRed);
@@ -135,12 +143,13 @@ void AnalysisSysPbPbCombined_finalBinning()
   gRho.SetMarkerColor(kRed);
   gRho.SetMarkerStyle(20);
   gRho.SetMarkerSize(1.5);
-  c.cd();
-  hFrame.SetStats(0);
-  hFrame.Draw();
+  // c.cd();
+  // hFrame.SetStats(0);
+  // hFrame.Draw();
   gRhoSys.GetXaxis()->SetTitle("Centrality (%)");
   gRhoSys.GetYaxis()->SetTitle("#rho(#Delta#Xi#DeltaK)");
   //gRhoSys.GetYaxis()->SetTitle("C2/C1");
+  c.cd();
   gRhoSys.Draw("pe5same");
   gRho.Draw("pesame");
   c.Write();

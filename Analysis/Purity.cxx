@@ -6,8 +6,9 @@ double purity_error(double sig, double bkg, double sig_err, double bkg_err, doub
 
 bool fitMass = true;
 
-void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* outFileName = "Purity_18qr_purity"){
+void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* outFileName = "Purity_18qr_purity_plots"){
   gStyle->SetOptStat(0);
+  TGaxis::SetMaxDigits(3);
 
   // killing RooFit output
   RooMsgService::instance().setGlobalKillBelow(RooFit::ERROR);
@@ -66,7 +67,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
           }
           double purity = 0., error = 0.;
           if (fitMass){
-            RooRealVar *roo_m = new RooRealVar("m", "#it{M} (#Lambda + #pi^{-})", 1.305, 1.34, "GeV/#it{c}^{2}");
+            RooRealVar *roo_m = new RooRealVar("m", iM == 1 ? "#it{M} (#Lambda + #pi^{-})" : "#it{M} (#bar{#Lambda} + #pi^{+})", 1.305, 1.34, "GeV/#it{c}^{2}");
             //roo_m->setBins(25);
             hMassProj->Rebin(2);
             RooDataHist roo_data("data", "data", RooArgSet(*roo_m), hMassProj);
@@ -89,10 +90,11 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             for (int i = 0; i < 3; ++i) roo_model.fitTo(roo_data, RooFit::Save());
             const char* nameMass = Form("f%sMass_%.0f_%.0f_%.1f_%.1f", kAntiMatterLabel[iM], hMass->GetXaxis()->GetBinLowEdge(iCent), hMass->GetXaxis()->GetBinUpEdge(iCent), hMass->GetYaxis()->GetBinLowEdge(iP), hMass->GetYaxis()->GetBinUpEdge(iP));
             RooPlot *massFrame = (RooPlot*)roo_m->frame(RooFit::Name(nameMass), RooFit::Title(" "));
+            massFrame->SetTitle("");
             roo_data.plotOn(massFrame, RooFit::Name("data"));
             roo_model.plotOn(massFrame, RooFit::Name("model"));
-            roo_model.plotOn(massFrame, RooFit::Name("model"), RooFit::Components("signal"), RooFit::LineColor(kRed));
-            roo_model.plotOn(massFrame, RooFit::Name("model"), RooFit::Components("background"), RooFit::LineColor(kGreen));
+            //roo_model.plotOn(massFrame, RooFit::Name("signal"), RooFit::Components("signal"), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));
+            roo_model.plotOn(massFrame, RooFit::Name("background"), RooFit::Components("background"), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));
             roo_model.plotOn(massFrame, RooFit::Name("model"));
             
             roo_m->setRange("signalRange", 1.32171 - 0.0045, 1.32171 + 0.0045/* 1.316, 1.328 */);
@@ -105,18 +107,45 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             error = purity_error(sigTOF, bkgTOF, roo_n_signal.getError() * sigIntegralTOF, roo_n_background.getError() * bkgIntegralTOF);
             std::cout << "mass : purity = " << purity << std::endl; 
             
-            TCanvas cMass(nameMass, nameMass);
+            TCanvas cMass(nameMass, nameMass, 500, 500);
+            cMass.SetTopMargin(0.06);
+            cMass.SetRightMargin(0.04);
+            cMass.SetLeftMargin(0.11);
             cMass.cd();
+            massFrame->GetYaxis()->SetTitleOffset(1.);
             massFrame->Draw();
             TLatex t;
-            t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
+            t.SetTextFont(44);
+            t.SetTextSize(16);
+            t.DrawLatexNDC(0.15, 0.74, Form("Purity = %.3f", purity));
+            t.DrawLatexNDC(0.15, 0.88, "ALICE Performance");
+            t.DrawLatexNDC(0.62, 0.88, Form("V0M Centrality %.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+            t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+            t.DrawLatexNDC(0.62, 0.81, Form("%.1f #leq #it{p}_{T}(#Xi) < %.1f GeV/#it{c}", hMass->GetYaxis()->GetBinLowEdge(iP), hMass->GetYaxis()->GetBinUpEdge(iP)));
+            t.SetTextSize(45);
+            t.DrawLatexNDC(0.7, 0.6, iM == 0? "#bar{#Xi}^{+}" : "#Xi^{-}");
+            
+            TLegend l(0.15, 0.51, 0.3, 0.72);
+            l.SetTextFont(44);
+            l.SetTextSize(16);
+            l.AddEntry("data", "data", "pe");
+            l.AddEntry("model", "total fit", "l");
+            //l.AddEntry("signal", "signal", "l");
+            l.AddEntry("background", "background", "l");
+            l.Draw("same");
+            // TLine leftline(1.32171 - 0.0045, 0., 1.32171 - 0.0045, hMassProj->GetBinContent(hMassProj->GetMaximumBin()) * 0.45);
+            // TLine rightline(1.32171 + 0.0045, 0., 1.32171 + 0.0045, hMassProj->GetBinContent(hMassProj->GetMaximumBin()) * 0.45);
+            // leftline.Draw("same");
+            // rightline.Draw("same");
+
             cMass.Write();
             hPurityXi[iCent - 1]->SetBinContent(hPurityXi[iCent - 1]->FindBin(hMass->GetYaxis()->GetBinCenter(iP)), purity);
             hPurityXi[iCent - 1]->SetBinError(hPurityXi[iCent - 1]->FindBin(hMass->GetYaxis()->GetBinCenter(iP)), error);
             //massFrame->Write();
+            if (iCent == 1 && iP == 5) cMass.Print(Form("c_mass_%d.pdf", iM));
           }
           if ((hNsigmaTPC->GetYaxis()->GetBinCenter(iP) < kTPCptCut && hNsigmaTPC->GetYaxis()->GetBinCenter(iP) > kPtLowLimitK) /* || kComputeNSigmaMap */){
-            RooRealVar tpcSignal("tpcSignal", "n#sigma_{K}", -4., 4., "a.u.");
+            RooRealVar tpcSignal("tpcSignal", "n#sigma_{K}^{TPC}", -4. /*3.5*/, 4., "a.u.");
             RooDataHist tpcDataHist("tpcDataHist", "tpcDataHist", RooArgList(tpcSignal), hNsigmaTPCProj);
             RooRealVar tpcMu("#mu", "tpcMu", -2., 2.);
             RooRealVar tpcSigma("#sigma", "tpcSigma", 0.2, 5.);
@@ -131,10 +160,12 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             for (int i = 0; i < 4; ++i) tpcModel->fitTo(tpcDataHist, RooFit::Save());
             const char* nameTPC = Form("f%sNsigmaTPC_%.0f_%.0f_%.1f_%.1f", kAntiMatterLabel[iM], hNsigmaTPC->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTPC->GetXaxis()->GetBinUpEdge(iCent), hNsigmaTPC->GetYaxis()->GetBinLowEdge(iP), hNsigmaTPC->GetYaxis()->GetBinUpEdge(iP));
             RooPlot *tpcFrame = (RooPlot*)tpcSignal.frame(RooFit::Name(nameTPC));
+            tpcFrame->SetTitle("");
             tpcDataHist.plotOn(tpcFrame, RooFit::Name("data"));
             tpcModel->plotOn(tpcFrame, RooFit::Name("model"));
-            tpcModel->plotOn(tpcFrame, RooFit::Name("model"), RooFit::Components("tpcSignalPDF"), RooFit::LineColor(kRed));
-            tpcModel->plotOn(tpcFrame, RooFit::Name("model"), RooFit::Components("tpcBackgroundPDF"), RooFit::LineColor(kGreen));
+            //tpcModel->plotOn(tpcFrame, RooFit::Name("signal"), RooFit::Components("tpcSignalPDF"), RooFit::LineColor(k), RooFit::LineStyle(kDashed));
+            tpcModel->plotOn(tpcFrame, RooFit::Name("background"), RooFit::Components("tpcBackgroundPDF"), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));
+            tpcModel->plotOn(tpcFrame, RooFit::Name("model"));
             tpcSignal.setRange("signalRange", kNsigmaTPCcutAsymP[0], kNsigmaTPCcutAsymP[1]);
             double sigIntegral = (((RooAbsPdf *)(tpcModel->pdfList().at(0)))->createIntegral(RooArgSet(tpcSignal), RooFit::NormSet(RooArgSet(tpcSignal)), RooFit::Range("signalRange")))->getVal();
             double bkgIntegral = (((RooAbsPdf *)(tpcModel->pdfList().at(1)))->createIntegral(RooArgSet(tpcSignal), RooFit::NormSet(RooArgSet(tpcSignal)), RooFit::Range("signalRange")))->getVal();
@@ -144,18 +175,41 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             error = purity_error(sigTPC, bkgTPC, tpcNSignal.getError() * sigIntegral, tpcNBkg.getError() * bkgIntegral);
             if (purity > 1.e-12){
               std::cout << "pt = (" << iP << "), purity = " << purity << ", sigIntegral = " << sigIntegral << ", nbkg = " << tpcNSignal.getVal() << ", bkgIntegral = " << bkgIntegral << ", nbkg = " << tpcNBkg.getVal() << std::endl;
-              TCanvas cTPC(nameTPC, nameTPC);
+              TCanvas cTPC(nameTPC, nameTPC, 500, 500);
+              cTPC.SetTopMargin(0.06);
+              cTPC.SetRightMargin(0.04);
+              cTPC.SetLeftMargin(0.11);
               TLatex t;
+              t.SetTextFont(44);
+              t.SetTextSize(16);
               cTPC.cd();
+              tpcFrame->GetYaxis()->SetTitleOffset(1.);
               tpcFrame->Draw();
-              t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
+              t.DrawLatexNDC(0.15, 0.74, Form("Purity = %.3f", purity));
+              t.DrawLatexNDC(0.15, 0.88, "ALICE Performance");
+              t.DrawLatexNDC(0.62, 0.88, Form("V0M Centrality %.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+              t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+              t.DrawLatexNDC(0.62, 0.81, Form("%.1f #leq #it{p}_{T}(K) < %.1f GeV/#it{c}", hNsigmaTPC->GetYaxis()->GetBinLowEdge(iP), hNsigmaTPC->GetYaxis()->GetBinUpEdge(iP)));
+              t.SetTextSize(45);
+              t.DrawLatexNDC(0.7, 0.6, iM == 0? "K^{-}" : "K^{+}");
+
+              TLegend l(0.15, 0.51, 0.3, 0.72);
+              l.SetTextFont(44);
+              l.SetTextSize(16);
+              l.AddEntry("data", "data", "pe");
+              l.AddEntry("model", "total fit", "l");
+              //l.AddEntry("signal", "signal", "l");
+              l.AddEntry("background", "background", "l");
+              l.Draw("same");
+
               cTPC.Write();
+              if (iCent == 1 && iP == 3) cTPC.Print(Form("c_TPC_%d.pdf", iM));
             }
             hMeanTPC[iM]->SetBinContent(iCent, iP, iE + 1, tpcMu.getVal());
             hSigmaTPC[iM]->SetBinContent(iCent, iP, iE + 1, tpcSigma.getVal());
           }
           if ((hNsigmaTOF->GetYaxis()->GetBinCenter(iP) > kTPCptCut && hNsigmaTOF->GetYaxis()->GetBinCenter(iP) < kTOFptCut) /* || kComputeNSigmaMap */){
-            RooRealVar tofSignal("tofSignal", "n#sigma_{K}", -5., 5., "a.u.");
+            RooRealVar tofSignal("tofSignal", "n#sigma_{K}^{TOF}", -5., 5., "a.u.");
             RooDataHist tofDataHist("tofDataHist", "tofDataHist", RooArgList(tofSignal), hNsigmaTOFProj);
             RooRealVar tofMu("#mu", "tofMu", -2., 2.);
             RooRealVar tofSigma("#sigma", "tofSigma", 0.5, 1.5);
@@ -170,10 +224,12 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             for (int i = 0; i < 4; ++i) tofModel->fitTo(tofDataHist, RooFit::Save());
             const char* nameTOF = Form("f%sNsigmaTOF_%.0f_%.0f_%.1f_%.1f", kAntiMatterLabel[iM], hNsigmaTOF->GetXaxis()->GetBinLowEdge(iCent), hNsigmaTOF->GetXaxis()->GetBinUpEdge(iCent), hNsigmaTOF->GetYaxis()->GetBinLowEdge(iP), hNsigmaTOF->GetYaxis()->GetBinUpEdge(iP));
             RooPlot *tofFrame = (RooPlot*)tofSignal.frame(RooFit::Name(nameTOF));
+            tofFrame->SetTitle("");
             tofDataHist.plotOn(tofFrame, RooFit::Name("data"));
             tofModel->plotOn(tofFrame, RooFit::Name("model"));
-            tofModel->plotOn(tofFrame, RooFit::Name("model"), RooFit::Components("tofSignalPDF"), RooFit::LineColor(kRed));
-            tofModel->plotOn(tofFrame, RooFit::Name("model"), RooFit::Components("tofBackgroundPDF"), RooFit::LineColor(kGreen));
+            //tofModel->plotOn(tofFrame, RooFit::Name("signal"), RooFit::Components("tofSignalPDF"), RooFit::LineColor(k), RooFit::LineStyle(kDashed));
+            tofModel->plotOn(tofFrame, RooFit::Name("background"), RooFit::Components("tofBackgroundPDF"), RooFit::LineColor(kRed), RooFit::LineStyle(kDashed));
+            tofModel->plotOn(tofFrame, RooFit::Name("model"));
             tofSignal.setRange("signalRange", kNsigmaTOFcutAsymP[0], kNsigmaTOFcutAsymP[1]);
             double sigIntegralTOF = (((RooAbsPdf *)(tofModel->pdfList().at(0)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
             double bkgIntegralTOF = (((RooAbsPdf *)(tofModel->pdfList().at(1)))->createIntegral(RooArgSet(tofSignal), RooFit::NormSet(RooArgSet(tofSignal)), RooFit::Range("signalRange")))->getVal();
@@ -183,11 +239,34 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             error = purity_error(sigTOF, bkgTOF, tofNSignal.getError() * sigIntegralTOF, tofNBkg.getError() * bkgIntegralTOF);
             if (purity > 1.e-12){
               // std::cout << "pt = (" << iP << "), purity = " << purity << std::endl;
-              TCanvas cTOF(nameTOF, nameTOF);
+              TCanvas cTOF(nameTOF, nameTOF, 500, 500);
+              cTOF.SetTopMargin(0.06);
+              cTOF.SetRightMargin(0.04);
+              cTOF.SetLeftMargin(0.11);
               cTOF.cd();
+              tofFrame->GetYaxis()->SetTitleOffset(1.);
               tofFrame->Draw();
               TLatex t;
-              t.DrawLatexNDC(0.7, 0.7, Form("Purity = %.3f", purity));
+              t.SetTextFont(44);
+              t.SetTextSize(16);
+              t.DrawLatexNDC(0.15, 0.74, Form("Purity = %.3f", purity));
+              t.DrawLatexNDC(0.15, 0.88, "ALICE Performance");
+              t.DrawLatexNDC(0.62, 0.88, Form("V0M Centrality %.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+              t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+              t.DrawLatexNDC(0.62, 0.81, Form("%.1f #leq #it{p}_{T}(K) < %.1f GeV/#it{c}", hNsigmaTOF->GetYaxis()->GetBinLowEdge(iP), hNsigmaTOF->GetYaxis()->GetBinUpEdge(iP)));
+              t.SetTextSize(45);             
+              t.DrawLatexNDC(0.7, 0.6, iM == 0? "K^{-}" : "K^{+}");
+
+              TLegend l(0.15, 0.51, 0.3, 0.72);
+              l.SetTextFont(44);
+              l.SetTextSize(16);
+              l.AddEntry("data", "data", "pe");
+              l.AddEntry("model", "total fit", "l");
+              //l.AddEntry("signal", "signal", "l");
+              l.AddEntry("background", "background", "l");
+              l.Draw("same");
+
+              if (iCent == 1 && iP == 7) cTOF.Print(Form("c_TOF_%d.pdf", iM));
               cTOF.Write();
             }
             hMeanTOF[iM]->SetBinContent(iCent, iP, iE + 1, tofMu.getVal());

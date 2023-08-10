@@ -1,6 +1,7 @@
 #include "../utils/Config.h"
+#include "../utils/Utils.h"
 
-void PlotResultsC2C1NetXi_chargeConserv(){
+void PlotResultsC2C1NetXi_volumes(){
   gStyle->SetOptStat(0);
 
   TFile fpp("out_sys_17_finalBinning_c2c1.root"); // 17pq
@@ -23,20 +24,27 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   gPbPb_sys->SetName("gRhoSys_PbPb");
 
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
-  TFile fSHM_B("models/Output_Final_B_vc3.0_CE.root");
-  TFile fSHM_S("models/Output_Final_S_vc3.0_CE.root");
-  TFile fSHM_BS("models/Output_Final_BS_vc3.0_CE.root");
+  TFile fSHM_BS_1("models/Output_Final_BS_vc1.0_CE.root");
+  TFile fSHM_BS_2("models/Output_Final_BS_vc2.0_CE.root");
+  TFile fSHM_BS_3("models/Output_Final_BS_vc3.0_CE.root");
+  TFile fSHM_BS_4("models/Output_Final_BS_vc4.0_CE.root");
+  TFile fSHM_BS_1_5("models/Output_Final_BS_vc1.5_CE.root");
+  TFile fSHM_BS_2_5("models/Output_Final_BS_vc2.5_CE.root");
+  TFile fSHM_BS_3_5("models/Output_Final_BS_vc3.5_CE.root");
+  TFile fSHM_BS_2_6("models/Output_Final_BS_vc2.6_CE.root");
+  TFile fSHM_BS_2_8("models/Output_Final_BS_vc2.8_CE.root");
+  TFile fSHM_BS_3_2("models/Output_Final_BS_vc3.2_CE.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#Xi^{-} - #Xi^{+})/#it{#kappa}_{1}(#Xi^{-} + #Xi^{+})", 1, 30, 2500, 1, 0.94, 1.03);
-  TLegend leg(0.162, 0.74, 0.4, 0.89);
+  TLegend leg(0.162, 0.7025, 0.7, 0.89);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
   TLegend leg2(0.162, 0.89, 0.7, 0.94);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
   TGraphErrors gSHM;
-  TGraphErrors *gSHM_BS;
+  TGraphErrors *gSHM_BS[10];
   TGraphErrors *gSHM_B;
   TGraphErrors *gSHM_S;
   TGraphErrors gPYTHIA;
@@ -146,12 +154,25 @@ void PlotResultsC2C1NetXi_chargeConserv(){
     gPYTHIA_ANGANTYR_PPB.SetPointError(iP, 0, pythia_angantyr_pPb_c2c1[iP][1]);
   }
 
+  gSHM_BS[0] = (TGraphErrors*)fSHM_BS_1.Get("Grc2byc1xi");
 
-  gSHM_BS = (TGraphErrors*)fSHM_BS.Get("Grc2byc1xi");
+  gSHM_BS[1] = (TGraphErrors*)fSHM_BS_1_5.Get("Grc2byc1xi");
 
-  gSHM_B = (TGraphErrors*)fSHM_B.Get("Grc2byc1xi");
+  gSHM_BS[2] = (TGraphErrors*)fSHM_BS_2.Get("Grc2byc1xi");
 
-  gSHM_S = (TGraphErrors*)fSHM_S.Get("Grc2byc1xi");
+  gSHM_BS[3] = (TGraphErrors*)fSHM_BS_2_5.Get("Grc2byc1xi");
+
+  gSHM_BS[4] = (TGraphErrors*)fSHM_BS_2_6.Get("Grc2byc1xi");
+
+  gSHM_BS[5] = (TGraphErrors*)fSHM_BS_2_8.Get("Grc2byc1xi");
+
+  gSHM_BS[6] = (TGraphErrors*)fSHM_BS_3.Get("Grc2byc1xi");
+
+  gSHM_BS[7] = (TGraphErrors*)fSHM_BS_3_2.Get("Grc2byc1xi");
+
+  gSHM_BS[8] = (TGraphErrors*)fSHM_BS_3_5.Get("Grc2byc1xi");
+
+  gSHM_BS[9] = (TGraphErrors*)fSHM_BS_4.Get("Grc2byc1xi");
 
   // // set colors and style
   // gData.SetLineWidth(2);
@@ -209,20 +230,55 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   gSHM.SetFillColor(kOrange - 3);
   gSHM.SetFillStyle(3002);
 
-  gSHM_BS->SetLineWidth(2);
-  gSHM_BS->SetLineColor(kOrange - 3);
-  gSHM_BS->SetFillColor(kOrange - 3);
-  gSHM_BS->SetFillStyle(3002);
+  gSHM_BS[0]->SetLineWidth(2);
+  gSHM_BS[0]->SetLineColor(kBlue); // kViolet
+  gSHM_BS[0]->SetFillColor(kBlue);
+  gSHM_BS[0]->SetFillStyle(3002);
 
-  gSHM_B->SetLineWidth(2);
-  gSHM_B->SetLineColor(kMagenta);
-  gSHM_B->SetFillColor(kMagenta);
-  gSHM_B->SetFillStyle(3002);
+  gSHM_BS[1]->SetLineWidth(2);
+  gSHM_BS[1]->SetLineColor(kAzure + 7); // kBlue
+  gSHM_BS[1]->SetFillColor(kAzure + 7);
+  gSHM_BS[1]->SetFillStyle(3002);
 
-  gSHM_S->SetLineWidth(2);
-  gSHM_S->SetLineColor(kAzure - 7);
-  gSHM_S->SetFillColor(kAzure - 7);
-  gSHM_S->SetFillStyle(3002);
+  gSHM_BS[2]->SetLineWidth(2);
+  gSHM_BS[2]->SetLineColor(kTeal - 7); // kCyan
+  gSHM_BS[2]->SetFillColor(kTeal - 7);
+  gSHM_BS[2]->SetFillStyle(3002);
+
+  gSHM_BS[3]->SetLineWidth(2);
+  gSHM_BS[3]->SetLineColor(kGreen + 1); // kAzure + 7
+  gSHM_BS[3]->SetFillColor(kGreen + 1);
+  gSHM_BS[3]->SetFillStyle(3002);
+
+  // gSHM_BS[4]->SetLineWidth(2);
+  // gSHM_BS[4]->SetLineColor(kTeal - 7);
+  // gSHM_BS[4]->SetFillColor(kTeal - 7);
+  // gSHM_BS[4]->SetFillStyle(3002);
+
+  // gSHM_BS[5]->SetLineWidth(2);
+  // gSHM_BS[5]->SetLineColor(kGreen + 2);
+  // gSHM_BS[5]->SetFillColor(kGreen + 2);
+  // gSHM_BS[5]->SetFillStyle(3002);
+
+  gSHM_BS[6]->SetLineWidth(2);
+  gSHM_BS[6]->SetLineColor(kOrange - 2); // kGreen + 1
+  gSHM_BS[6]->SetFillColor(kOrange - 2);
+  gSHM_BS[6]->SetFillStyle(3002);
+
+  // gSHM_BS[7]->SetLineWidth(2);
+  // gSHM_BS[7]->SetLineColor(kOrange - 2);
+  // gSHM_BS[7]->SetFillColor(kOrange - 2);
+  // gSHM_BS[7]->SetFillStyle(3002);
+
+  gSHM_BS[8]->SetLineWidth(2);
+  gSHM_BS[8]->SetLineColor(kOrange + 7); // kOrange + 7
+  gSHM_BS[8]->SetFillColor(kOrange + 7);
+  gSHM_BS[8]->SetFillStyle(3002);
+
+  gSHM_BS[9]->SetLineWidth(2);
+  gSHM_BS[9]->SetLineColor(kRed); // kRed
+  gSHM_BS[9]->SetFillColor(kRed);
+  gSHM_BS[9]->SetFillStyle(3002);
 
   // gPYTHIA_ANGANTYR.SetLineWidth(2);
   // gPYTHIA_ANGANTYR.SetLineColor(kOrange);
@@ -266,7 +322,7 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   leg.SetTextSize(23);
   leg2.SetTextFont(44);
   leg2.SetTextSize(23);
-  //leg.SetNColumns(2);
+  leg.SetNColumns(2);
   leg2.SetNColumns(3);
   //leg.SetColumnSeparation(0.4);
   leg2.SetColumnSeparation(0.2);
@@ -279,10 +335,17 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
-  leg.SetHeader("TheFIST CE SHM, #it{T} = 155 MeV, #it{V}_{C} = 3d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS, "B + S conservation");
-  leg.AddEntry(gSHM_B, "B conservation");
-  leg.AddEntry(gSHM_S, "S conservation");
+  leg.SetHeader("TheFIST CE SHM, #it{T} = 155 MeV, B + S conservation");
+  leg.AddEntry(gSHM_BS[0], "#it{V}_{C} = 1.0 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS[1], "#it{V}_{C} = 1.5 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS[2], "#it{V}_{C} = 2.0 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS[3], "#it{V}_{C} = 2.5 d#it{V}/d#it{y}");
+  // leg.AddEntry(gSHM_BS[4], "#it{V}_{C} = 2.6 d#it{V}/d#it{y}");
+  // leg.AddEntry(gSHM_BS[5], "#it{V}_{C} = 2.8 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS[6], "#it{V}_{C} = 3.0 d#it{V}/d#it{y}");
+  // leg.AddEntry(gSHM_BS[7], "#it{V}_{C} = 3.2 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS[8], "#it{V}_{C} = 3.5 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_BS[9], "#it{V}_{C} = 4.0 d#it{V}/d#it{y}");
   // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
   // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
   leg2.AddEntry(gPbPb_stat, "ALICE Preliminary, Pb#minusPb", "pe");
@@ -305,9 +368,16 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   // gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   // gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
 
-  gSHM_BS->Draw("samee3l");
-  gSHM_B->Draw("samee3l");
-  gSHM_S->Draw("samee3l");
+  gSHM_BS[0]->Draw("samee3l");
+  gSHM_BS[1]->Draw("samee3l");
+  gSHM_BS[2]->Draw("samee3l");
+  gSHM_BS[3]->Draw("samee3l");
+  // gSHM_BS[4]->Draw("samee3l");
+  // gSHM_BS[5]->Draw("samee3l");
+  gSHM_BS[6]->Draw("samee3l");
+  // gSHM_BS[7]->Draw("samee3l");
+  gSHM_BS[8]->Draw("samee3l");
+  gSHM_BS[9]->Draw("samee3l");
 
   leg.Draw("same");
   leg2.Draw("same");
@@ -328,11 +398,49 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   //t.DrawLatex(35, 0.945, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
   t.DrawLatex(35, 0.945, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 
-  TFile o("final_plot_c2c1_chrgeConserv.root", "recreate");
+  TFile o("final_plot_c2c1_volumes.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1_chargeConserv.pdf");
+  cResult.Print("cC2C1_volumes.pdf");
+
+  // chi2
+  utils::MergeGraphPoints(gSHM_BS[0], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[0], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[1], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[1], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[2], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[2], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[3], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[3], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[4], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[4], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[5], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[5], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[6], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[6], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[7], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[7], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[8], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[8], 4, 5);
+  utils::MergeGraphPoints(gSHM_BS[9], 1, 2);
+  utils::MergeGraphPoints(gSHM_BS[9], 4, 5);
+
+  std::cout << "chi2 = " << utils::chi2(gPbPb_stat, gPbPb_sys, gSHM_BS[2]) << std::endl;
+
+  TCanvas cchi2("cchi2", "cchi2");
+  TGraphErrors gchi2;
+  double vols[] = {1., 1.5, 2., 2.5, 2.6, 2.8, 3., 3.2, 3.5, 4.};
+  for(int i{0}; i < 10; ++i){
+    if (i == 4 || i == 5 || i == 7) continue;
+    gchi2.AddPoint(vols[i], utils::chi2(gPbPb_stat, gPbPb_sys, gSHM_BS[i]));
+    gchi2.SetPointError(gchi2.GetN() - 1, 0., utils::chi2err(gPbPb_stat, gPbPb_sys, gSHM_BS[i]));
+  }
+  cchi2.cd();
+  gchi2.Draw();
+  cchi2.Write();
+  gchi2.Write();
+
   o.Close();
   f.Close();
   //f2.Close();

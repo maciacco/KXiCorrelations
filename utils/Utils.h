@@ -214,6 +214,59 @@ namespace utils
     return TMath::Sqrt(gen * eff * q) / gen;
   }
 
+  void MergeGraphPoints(TGraphErrors *gmodel, int bMin, int bMax){
+    double x1 = gmodel->GetPointX(bMin);
+    double x2 = gmodel->GetPointX(bMax);
+    double y1 = gmodel->GetPointY(bMin);
+    double y2 = gmodel->GetPointY(bMax);
+    double erry1 = gmodel->GetErrorY(bMin);
+    double erry2 = gmodel->GetErrorY(bMax);
+
+    double xavg = 0.5 * (x1 + x2);
+    double yavg = (y1 / erry1 / erry1 + y2 / erry2 / erry2) / (1. / erry1 / erry1 + 1. / erry2 / erry2);
+    double eavg = 1. / sqrt(1. / erry1 / erry1 + 1. / erry2 / erry2);
+
+    gmodel->RemovePoint(bMax);
+    gmodel->SetPointX(bMin, xavg);
+    gmodel->SetPointY(bMax, yavg);
+    gmodel->SetPointError(bMin, 0., eavg);
+  }
+
+  Double_t chi2(TGraphErrors *gstat, TGraphErrors *gsyst, TGraphErrors *gmodel){
+    double res = 0.;
+    for (int i{0}; i < gstat->GetN(); ++i){
+      double o = gstat->GetPointY(i);
+      double ostat = gstat->GetErrorY(i);
+      double osyst = gsyst->GetErrorY(i);
+      double model = gmodel->GetPointY(i);
+      double modelstat = gmodel->GetErrorY(i);
+
+      double tmp = 0.;
+      tmp = ( o - model ) * ( o - model );
+      tmp = tmp / ( ostat * ostat + osyst * osyst + modelstat * modelstat);
+      res += tmp;
+    }
+    return res;
+  }
+
+  Double_t chi2err(TGraphErrors *gstat, TGraphErrors *gsyst, TGraphErrors *gmodel){
+    double res = 0.;
+    for (int i{0}; i < gstat->GetN(); ++i){
+      double o = gstat->GetPointY(i);
+      double ostat = gstat->GetErrorY(i);
+      double osyst = gsyst->GetErrorY(i);
+      double model = gmodel->GetPointY(i);
+      double modelstat = gmodel->GetErrorY(i);
+
+      double tmp = 0.;
+      tmp = 2 * (o - model) * sqrt( ostat * ostat + osyst * osyst);
+      tmp = tmp + 2 * (o - model) * sqrt( modelstat * modelstat  );
+      tmp = tmp / ( ostat * ostat + osyst * osyst + modelstat * modelstat );
+      res += ( tmp * tmp);
+    }
+    return sqrt(res);
+  }
+
 }
 
 #endif

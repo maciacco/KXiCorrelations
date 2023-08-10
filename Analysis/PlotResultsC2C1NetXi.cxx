@@ -25,10 +25,10 @@ void PlotResultsC2C1NetXi(){
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{C}_{2}(#Xi^{-}-#Xi^{+})/#it{C}_{1}(#Xi^{-}+#Xi^{+})", 1, 1.5, 2500, 1, 0.93, 1.04);
-  TLegend leg(0.15, 0.67, 0.7, 0.82);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#Xi^{-} - #Xi^{+})/#it{#kappa}_{1}(#Xi^{-} + #Xi^{+})", 1, 1.5, 2500, 1, 0.90, 1.06);
+  TLegend leg(0.16, /* 0.65 */0.69, 0.7, 0.84); // 0.85
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.82, 0.5, 0.92);
+  TLegend leg2(0.165, 0.85, 0.5, 0.95);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
@@ -52,10 +52,10 @@ void PlotResultsC2C1NetXi(){
   // canvas
   cResult.SetLogx();
   frame.GetYaxis()->SetNdivisions(210);
-  frame.GetYaxis()->SetTitleOffset(1.2);
-  cResult.SetLeftMargin(0.13);
+  frame.GetYaxis()->SetTitleOffset(1.3);
+  cResult.SetLeftMargin(0.14);
   cResult.SetRightMargin(0.02);
-  cResult.SetTopMargin(0.05);
+  cResult.SetTopMargin(0.03);
 
   for (int iB = 0; iB < 6; ++iB){
     gPbPb_sys->SetPointError(iB, mult_shm_PbPb_[iB] * 7.e-2, gPbPb_sys->GetErrorY(iB));
@@ -92,11 +92,20 @@ void PlotResultsC2C1NetXi(){
   //   gData_pp.SetPointError(iB - 1, 0, erry);
   // }
 
+  TFile fSHM_BS_("models/PbPb_gammaS_SHM_baryonplusstrange.root");
+  TGraphErrors* gSHM_BS_ = (TGraphErrors*)fSHM_BS_.Get("Grc2byc1xi");
+
   for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
     int index = kNPointsPbPb - iP - 2 + kNPointspp;
-    gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : mult_shm_PbPb[index], iP < kNPointspp - 1 ? shm_pp_c2c1[iP][0] : shm_PbPb_c2c1[index][0]);
-    gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp_c2c1[iP][1] : shm_PbPb_c2c1[index][1]);
+    gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : gSHM_BS_->GetPointX(iP - kNPointspp + 1), iP < kNPointspp - 1 ? shm_pp_c2c1[iP][0] : gSHM_BS_->GetPointY(iP - kNPointspp + 1));
+    gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp_c2c1[iP][1] : gSHM_BS_->GetErrorY(iP - kNPointspp + 1));
   }
+
+  // for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
+  //   int index = kNPointsPbPb - iP - 2 + kNPointspp;
+  //   gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : mult_shm_PbPb[index], iP < kNPointspp - 1 ? shm_pp_c2c1[iP][0] : shm_PbPb_c2c1[index][0]);
+  //   gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp_c2c1[iP][1] : shm_PbPb_c2c1[index][1]);
+  // }
 
   for (int iP = 0; iP < kNPointsPbPb; ++iP){
     gHIJING.AddPoint(mult_shm_PbPb[iP], hijing_c2c1[iP][0]);
@@ -119,6 +128,12 @@ void PlotResultsC2C1NetXi(){
   // }
 
   gPYTHIA_CRQCD = (TGraphErrors*)fPythia.Get("Grc2byc1xi_net");
+
+  TFile fSHM_4_("models/Output_Final_BS_vc4.0_CE.root");
+  TGraphErrors* gSHM_4 = (TGraphErrors*)fSHM_4_.Get("Grc2byc1xi");
+
+  TFile fSHM_1_("models/Output_Final_BS_vc1.0_CE.root");
+  TGraphErrors* gSHM_1 = (TGraphErrors*)fSHM_1_.Get("Grc2byc1xi");
 
   for (int iP = 0; iP < kNPointspp - 2; ++iP){
     gPYTHIA_CRMPI_ROPON.AddPoint(mult_shm_pp_[iP], pythia_crmpi_ropon_c2c1[iP][0]);
@@ -196,11 +211,21 @@ void PlotResultsC2C1NetXi(){
   gSHM.SetFillColor(kOrange - 3);
   gSHM.SetFillStyle(3002);
 
-  // gPYTHIA_ANGANTYR.SetLineWidth(2);
-  // gPYTHIA_ANGANTYR.SetLineColor(kOrange);
-  // gPYTHIA_ANGANTYR.SetFillColor(kOrange);
-  // gPYTHIA_ANGANTYR.SetFillStyle(3254);
-  //gPYTHIA.SetLineStyle(kDashed);
+  // varied volume
+  gSHM_4->SetLineWidth(2);
+  gSHM_4->SetLineColor(kRed);
+  gSHM_4->SetFillColor(kRed);
+  gSHM_4->SetFillStyle(3002);
+
+  gSHM_1->SetLineWidth(2);
+  gSHM_1->SetLineColor(kGreen + 2);
+  gSHM_1->SetFillColor(kGreen + 2);
+  gSHM_1->SetFillStyle(3002);
+
+  gPYTHIA_ANGANTYR.SetLineWidth(2);
+  gPYTHIA_ANGANTYR.SetLineColor(kAzure + 1);
+  gPYTHIA_ANGANTYR.SetFillColor(kAzure + 1);
+  gPYTHIA_ANGANTYR.SetFillStyle(3002);
 
   gHIJING.SetLineWidth(2);
   gHIJING.SetFillColor(kMagenta);
@@ -214,8 +239,8 @@ void PlotResultsC2C1NetXi(){
   //gPYTHIA.SetLineStyle(kDashed);
 
   gPYTHIA_CRQCD->SetLineWidth(2);
-  gPYTHIA_CRQCD->SetLineColor(kCyan - 2);
-  gPYTHIA_CRQCD->SetFillColor(kCyan - 2);
+  gPYTHIA_CRQCD->SetLineColor(kGreen + 2);
+  gPYTHIA_CRQCD->SetFillColor(kGreen + 2);
   gPYTHIA_CRQCD->SetFillStyle(3002);
 
   gPYTHIA_CRMPI_ROPOFF.SetLineWidth(2);
@@ -245,13 +270,14 @@ void PlotResultsC2C1NetXi(){
   leg2.SetHeader("ALICE Preliminary");
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
-  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "f");
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA MPI, pp", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "f");
+  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
+  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
+  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
+  //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
+  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
+  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+ // leg.AddEntry(gSHM_4, "TheFIST CSM, #it{V}_{C} = 4d#it{V}/d#it{y}", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");
   leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
   leg2.AddEntry(gPbPb_stat, "Pb#minusPb", "pe");
@@ -267,12 +293,15 @@ void PlotResultsC2C1NetXi(){
   gSHM.Draw("samee3l");
   // gPYTHIA.Draw("samee3l");
   gHIJING.Draw("samee3l");
-  //gPYTHIA_ANGANTYR.Draw("samee3l");
+  gPYTHIA_ANGANTYR.Draw("samee3l");
   //gEPOS_pPb.Draw("samee3l");
   gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
-  gPYTHIA_CRMPI_ROPON.Draw("samee3l");
+  //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
+
+  // gSHM_4->Draw("samee3l");
+  // gSHM_1->Draw("samee3l");
 
   leg.Draw("same");
   leg2.Draw("same");
@@ -288,10 +317,10 @@ void PlotResultsC2C1NetXi(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(/* 35 */2.5, 0.945, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(/* 35 */2.1, 0.92, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
-  t.DrawLatex(2.5, 0.940, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(2.5, 0.935, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  //t.DrawLatex(2.5, 0.940, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(2.1, 0.91 /* 0.935 */, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_c2c1.root", "recreate");
   o.cd();

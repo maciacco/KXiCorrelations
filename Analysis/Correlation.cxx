@@ -12,7 +12,7 @@ double compute_covariance(const int iC, const double kaonQ1[2], const double kao
 double compute_net_covariance(const double kaonQ1[2], const double kaonQ1Sq[2], const double kaonQ2[2], const double xiQ1[2], const double xiQ1Sq[2], const double xiQ2[2], const double sameKaonXiQ11[2], const double oppKaonXiQ11[2]);
 double compute_net_variance(const double Q1[2], const double Q11[2], const double Q1Sq[2], const double Q2[2]);
 
-void Correlation (const char* inFileName = "test_20e3_var_0", const char* outFileName = "test_20e3"){
+void Correlation (const char* inFileName = "test_c2c1_xi_var_0", const char* outFileName = "test_c2c1_k"){
   TFile *inFile = TFile::Open(Form("%s.root", inFileName));
   if (!inFile) return;
   TFile outFile(Form("%s.root", outFileName), "recreate");
@@ -165,7 +165,7 @@ void Correlation (const char* inFileName = "test_20e3_var_0", const char* outFil
             }
           }
           for (int iC = 0; iC < 2; ++iC){
-            hCorrDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * DELTA + 0.001) - 1]->Fill(kNetCorrelation ? avg_corr_[iC] / sqrt(net_var_k * net_var_xi) : avg_corr_[iC]/*  / sqrt( avg_avg_var_k_[xi_plus ? 1 - iC : iC][1] * avg_avg_var_xi_[xi_plus ? 0 : 1][1] ) */);
+            hCorrDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * DELTA + 0.001) - 1]->Fill(kNetCorrelation ? avg_avg_var_k_[1][1] / avg_avg_var_k_[1][0]/* avg_corr_[iC] / sqrt(net_var_k * net_var_xi) */ : avg_corr_[iC]/*  / sqrt( avg_avg_var_k_[xi_plus ? 1 - iC : iC][1] * avg_avg_var_xi_[xi_plus ? 0 : 1][1] ) */);
             hNetAvgVarKDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * DELTA + 0.001) - 1]->Fill(iC == 0 ? kaonQ1[0] + kaonQ1[1] : net_var_k);
             hNetAvgVarXiDistrEffCorr_[iC][iCorr][hCent->FindBin(kCentBins[iCent] + iSubCent * DELTA + 0.001) - 1]->Fill(iC == 0 ? xiQ1[0] + xiQ1[1] : net_var_xi);
             for (int iM = 0; iM < 2; ++iM){
@@ -176,7 +176,7 @@ void Correlation (const char* inFileName = "test_20e3_var_0", const char* outFil
           }
         }
         for (int iC = 0; iC < 2; ++iC){
-          hCorrDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(kNetCorrelation ? /* avg_net_var_xi[1] / (avg_avg_var_xi[0][0] + avg_avg_var_xi[1][0]) */avg_corr[iC] / sqrt( avg_net_var_k[1] * avg_net_var_xi[1] ) : avg_corr[iC] / n_ev_tot/*  / sqrt( avg_avg_var_k[xi_plus ? 1 - iC : iC][1] * avg_avg_var_xi[xi_plus ? 0 : 1][1] ) */);
+          hCorrDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(kNetCorrelation ? avg_avg_var_k[1][1]/avg_avg_var_k[1][0]/* avg_net_var_xi[1] / (avg_avg_var_xi[0][0] + avg_avg_var_xi[1][0]) *//* avg_corr[iC] / sqrt( avg_net_var_k[1] * avg_net_var_xi[1] ) */ : avg_corr[iC] / n_ev_tot/*  / sqrt( avg_avg_var_k[xi_plus ? 1 - iC : iC][1] * avg_avg_var_xi[xi_plus ? 0 : 1][1] ) */);
           hNetAvgVarKDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_net_var_k[iC] / n_ev_tot);
           hNetAvgVarXiDistrEffCorrCBWC[iC][iCorr][iCent]->Fill(avg_net_var_xi[iC] / n_ev_tot);
           for (int iM = 0; iM < 2; ++iM){

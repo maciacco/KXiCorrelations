@@ -23,8 +23,8 @@ void PlotResults(){
 
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 1.5, 2500, 1, -0.056, 0.005);
-  TLegend leg(0.15, 0.15, 0.7, 0.35);
-  TLegend leg2(0.162, 0.35, 0.5, 0.45);
+  TLegend leg(0.16, 0.15, 0.7, 0.3);
+  TLegend leg2(0.17, 0.3, 0.5, 0.4);
   //(0.16395348837209303, 0.650399548902823, 0.7395348837209302, 0.9167587400421383);
 
   TGraphErrors gSHM;
@@ -85,11 +85,21 @@ void PlotResults(){
   //   gData_pp.SetPointError(iB - 1, 0, erry);
   // }
 
+  TFile fSHM_BS_("models/PbPb_gammaS_SHM_baryonplusstrange.root");
+  TGraphErrors* gSHM_BS_ = (TGraphErrors*)fSHM_BS_.Get("Grrho");
+
   for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
     int index = kNPointsPbPb - iP - 2 + kNPointspp;
-    gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : mult_shm_PbPb[index], iP < kNPointspp - 1 ? shm_pp[iP][0] : shm_PbPb[index][0]);
-    gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp[iP][1] : shm_PbPb[index][1]);
+    gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : gSHM_BS_->GetPointX(iP - kNPointspp + 1), iP < kNPointspp - 1 ? shm_pp[iP][0] : gSHM_BS_->GetPointY(iP - kNPointspp + 1));
+    gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp[iP][1] : gSHM_BS_->GetErrorY(iP - kNPointspp + 1));
   }
+
+  // for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
+  //   int index = kNPointsPbPb - iP - 2 + kNPointspp;
+  //   gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : mult_shm_PbPb[index], iP < kNPointspp - 1 ? shm_pp[iP][0] : shm_PbPb[index][0]);
+  //   gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp[iP][1] : shm_PbPb[index][1]);
+  // }
+
   for (int iP = 0; iP < kNPointsPbPb; ++iP){
     // gSHM_PbPb.AddPoint(mult_shm_PbPb[iP], shm_PbPb[iP][0]);
     // gSHM_PbPb.SetPointError(iP, 0, shm_PbPb[iP][1]);
@@ -246,8 +256,8 @@ void PlotResults(){
   //gPYTHIA.SetLineStyle(kDashed);
 
   gPYTHIA_CRQCD->SetLineWidth(2);
-  gPYTHIA_CRQCD->SetLineColor(kCyan - 2);
-  gPYTHIA_CRQCD->SetFillColor(kCyan - 2);
+  gPYTHIA_CRQCD->SetLineColor(kGreen + 2);
+  gPYTHIA_CRQCD->SetFillColor(kGreen + 2);
   gPYTHIA_CRQCD->SetFillStyle(3002);
 
   gPYTHIA_CRMPI_ROPOFF.SetLineWidth(2);
@@ -276,15 +286,15 @@ void PlotResults(){
   leg2.SetColumnSeparation(0.1); // 0.2
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
-  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "f");
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA MPI, pp", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "f");
+  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
+  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
+  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
+  //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
+  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
+  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "lf");
   // leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "f");
-  leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
+  // leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");
   leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
   leg2.AddEntry(gPbPb_stat, "Pb#minusPb", "pe");
@@ -309,9 +319,9 @@ void PlotResults(){
   gHIJING.Draw("samee3l");
   //gEPOS_pPb.Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
-  gPYTHIA_CRMPI_ROPON.Draw("samee3l");
+  //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
-  gSHM_PPB_BOOST.Draw("same3l");
+  //gSHM_PPB_BOOST.Draw("same3l");
   //gSHM_PPB_WOBOOST.Draw("same3l");
 
   gPbPb_sys->Draw("e5same");
@@ -324,7 +334,7 @@ void PlotResults(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(2.5, -0.004, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(2.1, -0.004, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
   t.DrawLatex(70, -0.004, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
   t.DrawLatex(70, -0.007, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 

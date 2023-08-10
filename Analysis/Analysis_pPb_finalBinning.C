@@ -21,7 +21,7 @@ void remove_outlier(TH1D* h, double reject_level = 3.){
 void Analysis_pPb_finalBinning()
 {
   gStyle->SetOptStat(0);
-  TFile f(kC2c1 ? "out_sys_16_finalBinning_c2c1.root" : "out_sys_16_finalBinning.root", "recreate");
+  TFile f(kC2c1 ? "out_sys_16_finalBinning_c2c1_c.root" : "out_sys_16_finalBinning.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TH1D *hStat[kNCentBinsAnalysis];
   TGraphErrors gRho;
@@ -37,7 +37,7 @@ void Analysis_pPb_finalBinning()
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
     if (kRho) hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 45, -1, -1/* 150, -0.04, -0.01 *//* 100000, -1.0, 1.0 */);
     //hSys[i] = new TH1D(Form("hSys_%d", i), ;#rho;Entries", 120, -0.05, 0.);
-    else if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", 7, -1, -1/* 300, 0.7, 1.3 */);
+    else if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", /* 5, -1, -1 */i > 4 ? 200 : 400, 0.7, 1.3);
   }
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
     if (kRho) hStat[i] = new TH1D(Form("hStat_%d", i), ";#rho;Entries", 500, -0.5, 0.5);
@@ -192,7 +192,7 @@ void Analysis_pPb_finalBinning()
     hSys[i]->SetFillColor(kBlue);
     hSysFrame[i]->SetMaximum(hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()) + hSys[i]->GetBinContent(hSys[i]->GetMaximumBin()) * 0.05);
     if (kRho) hSysFrame[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 5.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 5.*hSys[i]->GetStdDev());
-    if (kC2c1) hSysFrame[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 3.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 3.*hSys[i]->GetStdDev());
+    if (kC2c1) hSysFrame[i]->GetXaxis()->SetRangeUser(hSys[i]->GetMean() - 7.*hSys[i]->GetStdDev(), hSys[i]->GetMean() + 7.*hSys[i]->GetStdDev());
     hSys[i]->Write();
     gRhoSys.SetPointError(i, 2, hSys[i]->GetStdDev());
     hSysFrame[i]->SetTitle(Form("%d-%d%%",  kMultClasses[i][0], kMultClasses[i][1]));

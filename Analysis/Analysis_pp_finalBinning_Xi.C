@@ -18,10 +18,10 @@ void remove_outlier(TH1D* h, double reject_level = 3.){
   }
 }
 
-void Analysis_pp_finalBinning()
+void Analysis_pp_finalBinning_Xi()
 {
   gStyle->SetOptStat(0);
-  TFile f(kC2c1 ? "out_sys_17_finalBinning_c2c1.root" : "out_sys_17_finalBinning.root", "recreate");
+  TFile f(kC2c1 ? "out_sys_17_finalBinning_xi_p.root" : "out_sys_17_finalBinning.root", "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TH1D *hStat[kNCentBinsAnalysis];
   TGraphErrors gRho;
@@ -36,11 +36,11 @@ void Analysis_pp_finalBinning()
   cSys.Divide(3, 3);
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
     if (kRho) hSys[i] = new TH1D(Form("hSys_%d", i), ";#rho;Entries", 45, -1, -1/* 250, -0.05, 0. *//* 100000, -1.0, 1.0 */);
-    else if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";C_{2}/C_{1};Entries", 8, -1, -1/* i == 7 ? 2000 : 1500, 0.5, 1.5 */);
+    else if (kC2c1) hSys[i] = new TH1D(Form("hSys_%d", i), ";#kappa_{1}(K^{+} + K^{-});Entries", 10, -1, -1/* i == 7 ? 4000 : 3000, 0.5, 1.5 */);
   }
   for (int i{0}; i < kNCentBinsAnalysis; ++i){
     if (kRho) hStat[i] = new TH1D(Form("hStat_%d", i), ";#rho;Entries", 500, -0.5, 0.5);
-    if (kC2c1) hStat[i] = new TH1D(Form("hStat_%d", i), ";C_{2}/C_{1};Entries", 500, -1., 3.);
+    if (kC2c1) hStat[i] = new TH1D(Form("hStat_%d", i), ";#kappa_{1}(K^{+} + K^{-});Entries", 500, -1., 3.);
   }
   for(int iVar = 0; iVar < 1800; ++iVar)
   {
@@ -125,9 +125,9 @@ void Analysis_pp_finalBinning()
       for(int sample = 0; sample < kNSample; sample++)
       {
         if (kRho) rhomean = rhomean + ( /* (c1xi_p[sample][i-1] + c1xi_n[sample][i-1]) / (c1k_p[sample][i-1] + c1k_n[sample][i-1]) ) */( (c11_pp[sample][i-1] + c11_nn[sample][i-1] - c11_pn[sample][i-1] - c11_np[sample][i-1]) / sqrt(c2xi_pn[sample][i-1] * c2k_pn[sample][i-1]) ));
-        else if (kC2c1) rhomean = rhomean + ( ( c2xi_pn[sample][i-1] ) / ( c1xi_n[sample][i-1] + c1xi_p[sample][i-1] ));
+        else if (kC2c1) rhomean = rhomean + ( ( c1xi_p[sample][i-1] ) );
         //if (iVar == 712) hStat[i - 1]->Fill((c11_pp[sample][i-1] + c11_nn[sample][i-1] - c11_pn[sample][i-1] - c11_np[sample][i-1]) / sqrt(c2xi_pn[sample][i-1] * c2k_pn[sample][i-1]));
-        if (iVar == (kC2c1 ? 960 : 1012)) hStat[i - 1]->Fill(( c2xi_pn[sample][i-1] ) / ( c1xi_n[sample][i-1] + c1xi_p[sample][i-1] ));
+        if (iVar == (kC2c1 ? 960 : 1012)) hStat[i - 1]->Fill( ( c1xi_p[sample][i-1] ) );
       }
       rhomean = rhomean / ( kNSample - nSkip);
 
@@ -139,7 +139,7 @@ void Analysis_pp_finalBinning()
       for(int sample = 0; sample < kNSample; sample++)
       {
         if (kRho) rhorms = rhorms + TMath::Power(rhomean - ( /* (c1xi_p[sample][i-1] + c1xi_n[sample][i-1]) / (c1k_p[sample][i-1] + c1k_n[sample][i-1]) ) */( (c11_pp[sample][i-1] + c11_nn[sample][i-1] - c11_pn[sample][i-1] - c11_np[sample][i-1]) / sqrt(c2xi_pn[sample][i-1] * c2k_pn[sample][i-1]) )), 2.0);
-        else if (kC2c1) rhorms = rhorms + TMath::Power(rhomean - ( ( c2xi_pn[sample][i-1] ) / ( c1xi_n[sample][i-1] + c1xi_p[sample][i-1] )), 2.0);
+        else if (kC2c1) rhorms = rhorms + TMath::Power(rhomean - ( ( c1xi_p[sample][i-1] ) ), 2.0);
       }
       // cout << TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))) << "\n";
 
@@ -150,14 +150,17 @@ void Analysis_pp_finalBinning()
       //   rhorms = 1. / (1. / iB0 + 1. / iB1) / (1. / iB0 + 1. / iB1) * ( rhorms * (1. / iB1) * (1. / iB1) + (g.GetErrorY(0) * g.GetErrorY(0)) * ( kNSample - nSkip) * (( kNSample - nSkip) - 1) * (1. / iB0) * (1. / iB0));
       // }
 
-      if ( !(kC2c1 && ( (i == 8 && (iVar/60)%3 > 1)) )){
-        if (!(kC2c1 && rhomean > 1.)){
-          //std::cout << "var = " << (iVar/60)%3 << " " << (iVar/60/3)%11 << std::endl;
-          g.AddPoint(0.5 * (kMultClasses[i - 1][1] + kMultClasses[i - 1][0]), rhomean);
-          hSys[i - 1]->Fill(rhomean);
-        }
-      }
-
+      // if ( !(kC2c1 && ( (i == 8 && (iVar/60)%3 > 1)) )){
+      //   if (!(kC2c1 && rhomean > 1.)){
+      //     //std::cout << "var = " << (iVar/60)%3 << " " << (iVar/60/3)%11 << std::endl;
+      //     g.AddPoint(0.5 * (kMultClasses[i - 1][1] + kMultClasses[i - 1][0]), rhomean);
+      //     hSys[i - 1]->Fill(rhomean);
+      //   }
+      // }
+      
+      g.AddPoint(0.5 * (kMultClasses[i - 1][1] + kMultClasses[i - 1][0]), rhomean);
+      hSys[i - 1]->Fill(rhomean);
+      
       //if (rhomean < -0.023 && i == 2) cout << iVar << std::endl;
       g.SetPointError(i - 1, 0, i == 2 ? TMath::Sqrt(rhorms / (( kNSample - nSkip) * ( ( kNSample - nSkip) - 1))) : TMath::Sqrt(rhorms / (( kNSample - nSkip) * (( kNSample - nSkip) - 1))));
       if (iVar == (kC2c1 ? 960 : 1012)){
@@ -238,12 +241,12 @@ void Analysis_pp_finalBinning()
   gRho.SetLineColor(kRed);
   gRhoSys.Draw("ape5");
   gRhoSys.GetXaxis()->SetTitle("Multiplicity (%)");
-  if (kC2c1) gRhoSys.GetYaxis()->SetTitle("C_{2}(#Xi^{-}-#Xi^{+})/C_{1}(#Xi^{-}+#Xi^{+})");
+  if (kC2c1) gRhoSys.GetYaxis()->SetTitle("#kappa_{1}(K^{+} + K^{-})");
   else if (kRho) gRhoSys.GetYaxis()->SetTitle("#rho(#Delta#Xi#DeltaK)");
   gRho.Draw("pesame");
-  c.Print("c1xin_pp.pdf");
+  c.Print("c1k_pp.pdf");
   c.Write();
   cSys.Write();
-  cSys.Print(kC2c1 ? "cSys_pp_c2c1.pdf" : "cSys_pp.pdf");
+  cSys.Print(kC2c1 ? "cSys_pp_xi_p.pdf" : "cSys_pp.pdf");
   f.Close();
 }

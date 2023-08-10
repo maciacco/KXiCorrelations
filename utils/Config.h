@@ -189,8 +189,8 @@ constexpr const char* kPartLetterLabel[2] = {"K", "#Xi"};
 /* constexpr int kNCentBins = 8;
 constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 30., 40., 50., 70., 100.}; */
 //constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
-// constexpr int kNCentBins = 9;
-// constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
+constexpr int kNCentBins = 9;
+constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
 // constexpr int kNCentBins = 7;
 // constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 40., 60., 80., 100.};
 //constexpr double kCentBinsSmall[kNCentBinsSmall + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.}; //100.};
@@ -200,8 +200,8 @@ constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 30., 40., 50., 7
 // constexpr double kCentBins[kNCentBins + 1] = {0., 10., 30., 40., 50., 70., 80., 90.};
 
 // final pPb binning
-constexpr int kNCentBins = 6;
-constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 40., 60., 80., 100.};
+// constexpr int kNCentBins = 6;
+// constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 40., 60., 80., 100.};
 
 constexpr double kEtaCut = 0.8;
 constexpr double kNsigmaTPCcut = 5.;
@@ -279,7 +279,7 @@ constexpr double kDummyBdtScoreXi = .5; // for code validation purposes
 
 constexpr int kTextFont = 44;
 constexpr int kTextSize = 20;
-constexpr int kMaxCent = 100;
+constexpr int kMaxCent = 90;
 
 constexpr const char* kCollidingSystemText = "pp #sqrt{#it{s}} = 5.02 TeV";
 constexpr const char* kParticleAntiparticleText[2] = {"K^{+} + K^{-}", "#Xi^{+} + #Xi^{-}"}; // {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
@@ -355,5 +355,7 @@ constexpr double pythia_angantyr_pPb_crqcd_rope_mult[] = {3.1607, 11.4166, 17.66
 constexpr double pythia_angantyr_pPb_crqcd_rope[][2] = {{-0.0175068, 0.00204877}, {-0.0169595, 0.00179276}, {-0.0211508, 0.0017223}, {-0.0184069, 0.00202715}, {-0.0197782, 0.00267254}};
 
 constexpr double pythia_angantyr_pPb_c2c1[][2] = {{0.975986, 0.00351429}, {0.958035, 0.0015959}, {0.959044, 0.00129959}, {0.959718, 0.00144488}, {0.960322, 0.000831072}};
+
+constexpr double shm_pbpb_c2c1k[][2] = {{0.848094, 0.00164811}, {0.846901, 0.00105754}, {0.846605, 0.000906364}, {0.847198, 0.00136481}, {0.848438, 0.00136354}, {0.852548, 0.00135875}, {0.851687, 0.00135579}, {0.85501, 0.00128356}};
 
 #endif // CONFIGFILE_H

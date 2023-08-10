@@ -1,4 +1,5 @@
 void scale_contamination(){
+  gStyle->SetOptStat(0);
   double avg_purity_k = 0.95;
   double avg_purity_xi = 0.95;
   TFile fXi("Analysis/sidebands_test_PbPb_2018.root");
@@ -9,6 +10,7 @@ void scale_contamination(){
   auto hKMult = (TH1D*)fMult.Get("hNetAvgKCentEffCorrCBWC_Corr");
   auto hXiMult = (TH1D*)fMult.Get("hNetAvgKCentEffCorrCBWC_Corr");
   TH1D hRhoCont(*hK);
+  hRhoCont.SetTitle(";Centrality (%);#it{#rho}_{contamination}");
   for (int i{1}; i < hRhoCont.GetNbinsX() + 1; ++i){
     double kMult = hKMult->GetBinContent(i);
     double xiMult = hXiMult->GetBinContent(i);
@@ -19,7 +21,17 @@ void scale_contamination(){
     hRhoCont.SetBinContent(i, (kMult * (1. - avg_purity_k) * kRho + xiMult * (1. - avg_purity_xi) * xiRho) / (kMult + xiMult));
     hRhoCont.SetBinError(i, sqrt((kMult * (1. - avg_purity_k) * kRho_err * kMult * (1. - avg_purity_k) * kRho_err + xiMult * (1. - avg_purity_xi) * xiRho_err * xiMult * (1. - avg_purity_xi) * xiRho_err) / (kMult + xiMult) / (kMult + xiMult)) );
   }
+  hRhoCont.SetMarkerSize(0);
+  hRhoCont.SetLineWidth(2);
+  hRhoCont.SetLineColor(kBlue);
+  hRhoCont.SetMarkerColor(kBlue);
   hRhoCont.Fit("pol0");
+  TCanvas cRhoCont;
+  cRhoCont.SetTopMargin(0.05);
+  cRhoCont.SetRightMargin(0.05);
+  cRhoCont.cd();
+  hRhoCont.Draw();
+  cRhoCont.Print("cRhoCont.pdf");
   TFile fo("scale_contamination_PbPb.root", "recreate");
   fo.cd();
   hRhoCont.Write();

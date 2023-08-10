@@ -6,8 +6,9 @@ void set_line_style(TF1* f);
 void set_text_style(TText* t);
 void set_text_style(TLegend* l);
 
-void ResponseStudy(const char* inFileName = "oMC_LHC21l5", const char* outFileName = "Response"){
+void ResponseStudy(const char* inFileName = "test_mc20e3_mcTruth_var_0", const char* outFileName = "Response"){
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
   
   TFile f(Form("%s.root", inFileName));
   TFile o(Form("%s.root", outFileName), "recreate");
@@ -21,44 +22,50 @@ void ResponseStudy(const char* inFileName = "oMC_LHC21l5", const char* outFileNa
   }
   for (int iCent = 0; iCent < 1; ++iCent){ // kNCentBins
     for (int iPart = 0; iPart < 1; ++iPart){
-      for (int iGen = 0; iGen < 100; ++iGen){
+      for (int iGen = 0; iGen < 200; ++iGen){
         // project along particle multiplicity
         hMult->GetXaxis()->SetRangeUser(kCentBins[iCent], kCentBins[iCent + 1]);
         TH1D *hMultProj = (TH1D*)hMult->ProjectionZ(Form("gen_%d_%d", iCent, iGen), iCent + 1, iCent + 1, iGen + 1, iGen + 1);
         TH1D *hMultProjShift = new TH1D();
         hMultProj->SetName(Form("hMult%s_%d", kPartLabel[iPart], iCent));
         hMultProj->GetYaxis()->SetTitle(Form("#it{p}(#it{n}_{%s}^{raw})", kPartLetterLabel[iPart]));
+        hMultProj->GetXaxis()->SetTitle("#it{N}_{rec}");
         hMultProj->Scale(1./hMultProj->Integral());
         shift_binning(hMultProj, hMultProjShift);
 
-        TF1 binom("binom", "TMath::Binomial(TMath::Nint([1]), TMath::Nint(x)) * TMath::Power([0], TMath::Nint(x)) * TMath::Power(1-[0], TMath::Nint([1])-TMath::Nint(x))", 0, 1000.);
+        TF1 binom("binom", "TMath::Binomial(TMath::Nint([1]), TMath::Nint(x)) * TMath::Power([0], TMath::Nint(x)) * TMath::Power(1-[0], TMath::Nint([1])-TMath::Nint(x))", 0, 100.);
         binom.SetNpx(10000);
-        binom.FixParameter(1, iGen);
-        binom.SetParLimits(0, 0, 1);
-        for (int i = 0; i < 3; ++i)hMultProjShift->Fit("binom");
+        //binom.SetParLimits(1, 0, 1000.);
+        binom.SetParameter(1, iGen);
+        binom.SetParLimits(0, 0.01, 0.3);
+        for (int i = 0; i < 3; ++i)hMultProjShift->Fit("binom", "NRM+");
+        hMultProjShift->Fit("binom", "RM+");
         o.cd(Form("%s_mult", kPartLabel[iPart]));
         // hMultProjShift->Write();
 
-        TCanvas c(Form("cMult%s_%d_%d", kPartLabel[iPart], iCent, iGen), Form("multiplicity %s", kPartLabel[iPart]));
+        TCanvas c(Form("cMult%s_%d_%d", kPartLabel[iPart], iCent, iGen), Form("multiplicity %s", kPartLabel[iPart]), 500, 500);
         TLatex t;
-        TLegend l(0.634085, 0.62087, 0.918546, 0.732174);
+        TLegend l(0.65, 0.7, 0.918546, 0.8);
         c.SetLogy();
+        c.SetTopMargin(0.02);
+        c.SetRightMargin(0.03);
         TF1 binomDraw(binom);
         binomDraw.SetRange(0, 1000);
         set_hist_style(hMultProjShift);
         set_line_style(&binomDraw);
         set_text_style(&t);
         set_text_style(&l);
-        hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 80 : 5);
+        hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 40 : 5);
         hMultProjShift->GetYaxis()->SetRangeUser(2.e-9, 4);
         hMultProjShift->Draw("histoe");
         binomDraw.Draw("lsame");
-        t.DrawLatexNDC(0.65, 0.8, kCollidingSystemText);
-        t.DrawLatexNDC(0.65, 0.75, Form("V0M centrality %.0f-%.0f%%", kCentBins[iCent], kCentBins[iCent + 1]));
-        l.AddEntry(hMultProjShift, kParticleAntiparticleText[iPart], "pe");
+        t.DrawLatexNDC(0.55, 0.9, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+        t.DrawLatexNDC(0.55, 0.83, Form("V0M centrality %.0f-%.0f%%", kCentBins[iCent], kCentBins[iCent + 1]));
+        l.AddEntry(hMultProjShift, "K^{-}", "pe");
         l.AddEntry(&binomDraw, "Binomial fit", "l");
         l.Draw("same");
-        // c.Print(Form("%s_%d.png", kPartLabel[iPart], iCent));
+        if (iGen == 89)
+          c.Print(Form("%s_response_%d.pdf", kPartLabel[iPart], iCent));
         c.Write();
       }
     }

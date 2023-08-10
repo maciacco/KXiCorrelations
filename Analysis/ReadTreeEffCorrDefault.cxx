@@ -14,7 +14,7 @@
 #include <TStopwatch.h>
 
 #define FILL_HIST
-//#define CLOSURE_TEST
+// #define CLOSURE_TEST
 
 #ifdef __CINT__
 #pragma link C++ class std::vector<MiniKaon>+;
@@ -141,10 +141,10 @@ void ReadTreeEffCorrDefault(const char* fname = "tree_data_full/part_merging_Tru
   for (int i{iVarMin}; i < iVarMax; ++i)
   {
     if (i < kNMassCuts * kNBdtCuts){
-      evtTuple[i - iVarMin] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN:q1xiP:q1xiN:q2xiP:q2xiN");
+      evtTuple[i - iVarMin] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN:q1xiP:q1xiN:q2xiP:q2xiN:ntrk:v0amp");
     }
     else{
-      evtTuple[i - iVarMin] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN");
+      evtTuple[i - iVarMin] = new TNtuple(Form("evtTuple_%d", i), Form("evtTuple_%d", i), "cent:q1kP:q1kN:q2kP:q2kN:ntrk:v0amp");
     }
     evtTuple[i - iVarMin]->SetDirectory(o[i - iVarMin]);
   }
@@ -184,13 +184,13 @@ void ReadTreeEffCorrDefault(const char* fname = "tree_data_full/part_merging_Tru
         for (int iS = 0; iS < N_SAMPLE; ++iS){
           for (int iVar{iVarMin}; iVar < iVarMax; ++iVar){
             if (fEffK){
-              hEffK[iC][iCent][iEta][iS][iVar - iVarMin] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, 22, kAntiMatterLabel[iC], kPartLabel[0], iCent, 0, 22));
+              hEffK[iC][iCent][iEta][iS][iVar - iVarMin] = (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, 52, kAntiMatterLabel[iC], kPartLabel[0], iCent, 0, 52));
             }
           }
           // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT)
           for (int iVar{iVarMin}; iVar < kNMassCuts * kNBdtCuts; ++iVar){
             if (fEffXi){
-              hEffXi[iC][iCent][iEta][iS][iVar - iVarMin] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, 7, kAntiMatterLabel[iC], kPartLabel[1], iCent, 0, 7)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
+              hEffXi[iC][iCent][iEta][iS][iVar - iVarMin] = kUseBdtInMC || kUseKaonXiEff ? (TH1D*)fEffK->Get(Form("subsample_%d_var_%d/h%sEff%s_%d_%d_%d", 1, 16, kAntiMatterLabel[iC], kPartLabel[1], iCent, 0, 16)) : (TH1D*)fEffXi->Get(Form("fPreselEff_vs_pt_%s_%.0f_%.0f", kAntiMatterLabelML[iC], 0., 90.)); //kCentBins[iCent], kCentBins[iCent + 1]));
             }
           }
         }
@@ -374,7 +374,8 @@ void ReadTreeEffCorrDefault(const char* fname = "tree_data_full/part_merging_Tru
           nK_gen[im_MC] += 1;
         #endif // CLOSURE_TEST
         if (
-            ( ( ( ((k_tmp.fCutBitMap & kCutDCA[iDcaCut]) == kCutDCA[iDcaCut]) || ((k_tmp.fCutBitMap & kCutDCA2[iDcaCut]) == kCutDCA2[iDcaCut]) ) && kRequireDCAcut[iDcaCut] ) || !kRequireDCAcut[iDcaCut] ) &&
+            ( ( (k_tmp.fCutBitMap & kCutDCA[1]) == kCutDCA[1]) || ((k_tmp.fCutBitMap & kCutDCA2[1]) == kCutDCA2[1])) &&
+            ( ( ( ((k_tmp.fCutBitMap & kCutDCA[iDcaCut]) == kCutDCA[iDcaCut]) || ((k_tmp.fCutBitMap & kCutDCA2[iDcaCut]) == kCutDCA2[iDcaCut]) ) && kRequireDCAcut[iDcaCut] && std::abs(k_tmp.fPt) > kDCAcutPt) || (!kRequireDCAcut[iDcaCut] || std::abs(k_tmp.fPt) < kDCAcutPt) ) &&
             ( ( ((k_tmp.fCutBitMap & kCutTPCcls[iTpcClsCut]) == kCutTPCcls[iTpcClsCut] || (k_tmp.fCutBitMap & kCutTPCcls2[iTpcClsCut]) == kCutTPCcls2[iTpcClsCut]) && kRequireTPCclsCut[iTpcClsCut] ) || !kRequireTPCclsCut[iTpcClsCut]) &&
             ( ( ((k_tmp.fCutBitMap & kCutChi2[iChi2Cut]) == kCutChi2[iChi2Cut] || (k_tmp.fCutBitMap & kCutChi22[iChi2Cut]) == kCutChi22[iChi2Cut]) && kRequireChi2Cut[iChi2Cut] ) || !kRequireChi2Cut[iChi2Cut] ) &&
             std::abs(k_tmp.fPt) > kPtLowLimitK && std::abs(k_tmp.fPt) < kTOFptCut &&
@@ -467,7 +468,7 @@ void ReadTreeEffCorrDefault(const char* fname = "tree_data_full/part_merging_Tru
             }
             if ((xi_tmp.fRecFlag & BIT(0)) != 1 || (xi_tmp.fRecFlag & BIT(1)) != 2) continue;
             #ifdef CLOSURE_TEST
-              if (!xi_tmp.fIsReconstructed /* || xi_tmp.fFlag != 1 */) continue;
+              if (!xi_tmp.fIsReconstructed || xi_tmp.fFlag != 1) continue;
             #endif // CLOSURE_TEST
             double bdtEff = 1.;
             if (!isMC && !kUseBdtInMC){
@@ -547,9 +548,9 @@ void ReadTreeEffCorrDefault(const char* fname = "tree_data_full/part_merging_Tru
       #endif // FILL_HIST
 
       if (iVar < kNMassCuts * kNBdtCuts)
-        evtTuple[iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1], qXi_1_tmp[0][1], qXi_1_tmp[1][1], qXi_2_tmp[0][1], qXi_2_tmp[1][1]);
+        evtTuple[iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1], qXi_1_tmp[0][1], qXi_1_tmp[1][1], qXi_2_tmp[0][1], qXi_2_tmp[1][1], c->fNTrk, c->fV0MAmp);
       else
-        evtTuple[iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1]);
+        evtTuple[iVar - iVarMin]->Fill(cent, qK_1_tmp[1][1], qK_1_tmp[0][1], qK_2_tmp[1][1], qK_2_tmp[0][1], c->fNTrk, c->fV0MAmp);
     }
   }
 

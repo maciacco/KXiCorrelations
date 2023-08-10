@@ -1,4 +1,4 @@
-#include "../utils/Config.h"
+#include "../utils/Config_tests.h"
 
 void shift_binning(const TH1D* in, TH1D* out, double shift = -0.5);
 void set_hist_style(TH1D* h);
@@ -6,15 +6,15 @@ void set_line_style(TF1* f);
 void set_text_style(TText* t);
 void set_text_style(TLegend* l);
 
-void MultiplicityDistribution(const char* inFileName = "out_test_mult_var_0", const char* outFileName = "Mult17pq_bdt60_fast"){
+void MultiplicityDistribution(const char* inFileName = "test_mult_lhc18qr_var_0", const char* outFileName = "Mult18qr_bdt30_test"){
   gStyle->SetOptStat(0);
   
   TFile f(Form("%s.root", inFileName));
   TFile o(Form("%s.root", outFileName), "recreate");
 
-  TH3F *hMult = (TH3F*)f.Get("subsample_out_test_mult/hOppNKaonXiMinus");
+  TH3F *hMult = (TH3F*)f.Get("subsample_test_mult_lhc18qr/hOppNKaonXiMinus");
   for (int iS = 1; iS < N_SAMPLE; ++iS){
-    TH3F *hMultTmp = (TH3F*)f.Get(Form("subsample_out_test_mult/hOppNKaonXiPlus", iS + 1));
+    TH3F *hMultTmp = (TH3F*)f.Get(Form("subsample_test_mult_lhc18qr/hOppNKaonXiPlus", iS + 1));
     hMult->Add(hMultTmp);
   }
   hMult->SetName("hMult");
@@ -52,7 +52,7 @@ void MultiplicityDistribution(const char* inFileName = "out_test_mult_var_0", co
       set_line_style(&poisDraw);
       set_text_style(&t);
       set_text_style(&l);
-      hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 80 : 8);
+      hMultProjShift->GetXaxis()->SetRangeUser(0, iPart == 0 ? 50 : 10);
       hMultProjShift->GetYaxis()->SetRangeUser(2.e-12, 4);
       hMultProjShift->Draw("histoe");
       poisDraw.Draw("lsame");

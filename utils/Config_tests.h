@@ -155,8 +155,8 @@ struct MiniEvent {
 
 constexpr const char* kResDir = "results";
 constexpr const char* kDataDir = "/data/mciacco/KXiCorrelations";
-constexpr const char* kEffKFile = "efficieny/KaonXiEff_LHC21l5_postCalib_5";
-constexpr const char* kBdtmapName = "bdt_eff_map_lhc21l5_postCalib";
+constexpr const char* kEffKFile = "../../../home/mciacco/KXiCorrelations/Analysis/results/KaonXiEff_LHC21d6_postCalib_finalBinning";
+constexpr const char* kBdtmapName = "bdt_eff_map_lhc21d6_postCalib";
 //constexpr const char* kEffKFile = "efficieny/KaonXiEff_LHC22l5_postCalib_1";
 //constexpr const char* kEffKFile = "KaonXiEff_LHC22l5_postCalib";
 constexpr const char* kEffXiFile = "PreselEff_0_90";
@@ -166,7 +166,7 @@ constexpr const bool kUseKaonXiEff = true;
 constexpr double kXiMass{1.32171};
 
 constexpr bool isMC = false;
-constexpr int N_SAMPLE = 1;
+constexpr int N_SAMPLE = 20;
 //constexpr int N_SUB_CENT = 10;
 constexpr int DELTA = 1;
 constexpr int kNCentBinsMed = 18;
@@ -186,17 +186,16 @@ constexpr const char* kPartLabel[2] = {"K", "Xi"};
 constexpr const char* kPartLabelExtend[2] = {"Kaon", "Xi"};
 constexpr const char* kXiChargeLabel[2] = {"Minus", "Plus"};
 constexpr const char* kPartLetterLabel[2] = {"K", "#Xi"};
-// constexpr int kNCentBins = 8;
-// constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 30., 40., 50., 70., 100.};
+/* constexpr int kNCentBins = 8;
+constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 30., 40., 50., 70., 100.}; */
 //constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
 // constexpr int kNCentBins = 9;
 // constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
-// constexpr int kNCentBins = 7;
-// constexpr double kCentBins[kNCentBins + 1] = {0., 5., 10., 20., 40., 60., 80., 100.};
+// constexpr int kNCentBins = 6;
+// constexpr double kCentBins[kNCentBins + 1] = {0., 10., 20., 40., 60., 80., 100.};
 //constexpr double kCentBinsSmall[kNCentBinsSmall + 1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.}; //100.};
 constexpr int kNCentBins = 7;
 constexpr double kCentBins[kNCentBins + 1] = {0., 10., 30., 40., 50., 70., 80., 90.};
-
 
 constexpr double kEtaCut = 0.8;
 constexpr double kNsigmaTPCcut = 5.;
@@ -208,23 +207,25 @@ constexpr double kTOFptCut = 1.;
 constexpr double kXiLowPtCut = 1.;
 constexpr double kXiUpPtCut = 3.;
 constexpr double kXiMassCut = .006;
-constexpr double kXiMassCuts[3] = {1., .1, 1.}; //{.003, .0045, 0.006};
+constexpr double kXiMassCuts[3] = {.003, .0045, 0.006}; // {0.005, 0.006, 0.007};
 constexpr double kBdtEffCut = .7;
 constexpr double kBdtScoreCut = 0.99;
-constexpr double kBdtScoreCuts[5] = {0.9750, 0.9775, 0.9900, 0.9825, 0.9850};
-constexpr double kBdtEffCuts[5] = {0.25, 0.275, 0.3, 0.325, 0.35};
+//constexpr double kBdtScoreCuts[5] = {0.9750, 0.9775, 0.9800, 0.9825, 0.9850};
+//constexpr double kBdtEffCuts[5] = {0.50, 0.525, 0.55, 0.575, 0.60};
+constexpr double kBdtEffCuts[] = /* {0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61, 0.62, 0.63, 0.64}; */ {0.25, 0.26, 0.27, 0.28, 0.29, 0.30, 0.31, 0.32, 0.33, 0.34}; //{0.25, 0.275, 0.3, 0.325, 0.35}; // PbPb // {0.55, 0.575, 0.6, 0.625, 0.65}; // pp//  // {0.55, 0.6, 0.65}; // pPb // 
 constexpr double kPtLowLimitK = 0.2;
-constexpr int kLimitedSample = 1000000;
+constexpr int kLimitedSample = 10000000;
 
-constexpr double k_eff_shift = 0.1; //0.; pp
+constexpr double kDCAcutPt = 0.5;
+constexpr double k_eff_shift = 0.1; // 0.0 pp
 
 // k
 const int kNTpcClsCuts = 3;
-const int kNDcaCuts = 1;
+const int kNDcaCuts = 2;
 const int kNChi2Cuts = 2;
 const int kNPidCuts = 5;
 // xi
-const int kNBdtCuts = 5;
+const int kNBdtCuts = 10;
 const int kNMassCuts = 3;
 
 // // k
@@ -239,17 +240,17 @@ const int kNMassCuts = 3;
 constexpr char kCutDCA[] = {BIT(0), BIT(0), BIT(0)};
 constexpr char kCutTPCcls[] = {BIT(2), BIT(2), BIT(2)};
 constexpr char kCutChi2[] = {BIT(4), BIT(4), BIT(4)};
-constexpr char kCutDCA2[] = {BIT(1), BIT(1), BIT(1)};
+constexpr char kCutDCA2[] = {BIT(0), BIT(1), BIT(1)}; // to change first entry if DCA cut is varied
 constexpr char kCutTPCcls2[] = {BIT(2), BIT(3), BIT(3)};
-constexpr char kCutChi22[] = {BIT(4), BIT(5), BIT(5)};
-constexpr bool kRequireDCAcut[] = {true, true, false};
+constexpr char kCutChi22[] = {BIT(5), BIT(5), BIT(5)}; // to change first entry if DCA cut is varied
+constexpr bool kRequireDCAcut[] = {true, false, false};
 constexpr bool kRequireTPCclsCut[] = {true, true, false};
-constexpr bool kRequireChi2Cut[] = {true, true, false};
+constexpr bool kRequireChi2Cut[] = {true, false, false}; // second variation changed to default
 
 constexpr bool kUseCircularPID = false;
 constexpr double kNsigmaITScutAsym[] = {-3., 3.};
-constexpr double kNsigmaTPCcutAsym[][2] = {{-5., 5.}, {-5., 5.}, {-5., 5.}, {-5., 5.}, {-5., 5.}};
-constexpr double kNsigmaTOFcutAsym[][2] = {{-5., 5.}, {-5., 5.}, {-5., 5.}, {-5., 5.}, {-5., 5.}};
+constexpr double kNsigmaTPCcutAsym[][2] = {{-2., 2.}, {-2.5, 2.5}, {-3., 3.}, {-3.5, 3.5}, {-4., 4.}};
+constexpr double kNsigmaTOFcutAsym[][2] = {{-2., 2.}, {-2.5, 2.5}, {-3., 3.}, {-3.5, 3.5}, {-4., 4.}};
 constexpr double kNsigmaITScutAsymP[] = {-3, 3};
 constexpr double kNsigmaTPCcutAsymP[] = {-3, 3}; // for purity routine
 constexpr double kNsigmaTOFcutAsymP[] = {-3., 3.};
@@ -274,17 +275,17 @@ constexpr int kTextFont = 44;
 constexpr int kTextSize = 20;
 constexpr int kMaxCent = 90;
 
-constexpr const char* kCollidingSystemText = "Pb-Pb #sqrt{#it{s}_{NN}} = 5.02 TeV";
+constexpr const char* kCollidingSystemText = "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV";
 constexpr const char* kParticleAntiparticleText[2] = {"K^{+} + K^{-}", "#Xi^{+} + #Xi^{-}"}; // {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
 constexpr const char* kParticleAntiparticleTextAM[2][2] = {{"K^{-}", "K^{+}"}, {"#Xi^{+}", "#Xi^{-}"}}; // {"( K^{+} + K^{-} ) / 2", "( #Xi^{-} + #bar{#Xi}^{+} ) / 2"};
 
 constexpr bool kLimitSample = false;
-constexpr bool kUseIndex = false;
+constexpr bool kUseIndex = true;
 
 constexpr bool kGetBDTEffMap = false;
 
 constexpr bool kRebinNsigma = true;
-constexpr bool k2018 = false;
+constexpr bool k2018 = true;
 
 constexpr bool kNetCorrelation = true;
 constexpr bool kUseBdtInMC = true;

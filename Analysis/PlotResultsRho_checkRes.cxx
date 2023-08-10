@@ -1,11 +1,11 @@
 #include "../utils/Config.h"
 
-void PlotResultsC2C1NetXi_chargeConserv(){
+void PlotResultsRho_checkRes(){
   gStyle->SetOptStat(0);
 
-  TFile fpp("out_sys_17_finalBinning_c2c1.root"); // 17pq
-  TFile fpPb("out_sys_16_finalBinning_c2c1.root"); // 17pq
-  TFile f("out_sys_PbPb_finalBinning_c2c1.root"); // 15o+18qr
+  TFile fpp("out_sys_17_finalBinning.root"); // 17pq
+  TFile fpPb("out_sys_16_finalBinning.root"); // 17pq
+  TFile f("out_sys_PbPb_finalBinning.root"); // 15o+18qr
   // TFile fpp("out_pp_afterCalib.root"); // 17pq
   // TFile f("out_15o_postCalib.root"); // 15o
   // TFile f2("out_18qr_postCalib.root"); // 18qr
@@ -28,7 +28,7 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   TFile fSHM_BS("models/Output_Final_BS_vc3.0_CE.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#Xi^{-} - #Xi^{+})/#it{#kappa}_{1}(#Xi^{-} + #Xi^{+})", 1, 30, 2500, 1, 0.94, 1.03);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.056, 0.04);
   TLegend leg(0.162, 0.74, 0.4, 0.89);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
   TLegend leg2(0.162, 0.89, 0.7, 0.94);
@@ -36,8 +36,8 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   TGraphErrors gData;
   TGraphErrors gData_pp;
   TGraphErrors gSHM;
-  TGraphErrors *gSHM_BS;
-  TGraphErrors *gSHM_B;
+  TGraphErrors *gSHM_BS_;
+  TGraphErrors *gSHM_B_;
   TGraphErrors *gSHM_S;
   TGraphErrors gPYTHIA;
   TGraphErrors gPYTHIA_CRMPI_ROPOFF;
@@ -147,11 +147,21 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   }
 
 
-  gSHM_BS = (TGraphErrors*)fSHM_BS.Get("Grc2byc1xi");
+  // gSHM_BS = (TGraphErrors*)fSHM_BS.Get("Grrho");
 
-  gSHM_B = (TGraphErrors*)fSHM_B.Get("Grc2byc1xi");
+  // gSHM_B = (TGraphErrors*)fSHM_B.Get("Grrho");
 
-  gSHM_S = (TGraphErrors*)fSHM_S.Get("Grc2byc1xi");
+  // gSHM_S = (TGraphErrors*)fSHM_S.Get("Grrho");
+
+
+  TFile fSHM_BS_("models/PbPb_gammaS_SHM_baryonplusstrange.root");
+  TGraphErrors* gSHM_BS = (TGraphErrors*)fSHM_BS_.Get("Grrho");
+
+  TFile fSHM_B_("models/PbPb_gammaS_SHM_baryon.root");
+  TGraphErrors* gSHM_B = (TGraphErrors*)fSHM_B_.Get("Grrho");
+
+  TFile fSHM_BS_woRES("models/PbPb_gammaS_SHM_baryonstrange_woresonance.root");
+  TGraphErrors* gSHM_BS_woRES = (TGraphErrors*)fSHM_BS_woRES.Get("Grrho");
 
   // // set colors and style
   // gData.SetLineWidth(2);
@@ -209,20 +219,38 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   gSHM.SetFillColor(kOrange - 3);
   gSHM.SetFillStyle(3002);
 
+  // gSHM_BS->SetLineWidth(2);
+  // gSHM_BS->SetLineColor(kOrange - 3);
+  // gSHM_BS->SetFillColor(kOrange - 3);
+  // gSHM_BS->SetFillStyle(3002);
+
+  // gSHM_B->SetLineWidth(2);
+  // gSHM_B->SetLineColor(kMagenta);
+  // gSHM_B->SetFillColor(kMagenta);
+  // gSHM_B->SetFillStyle(3002);
+
+  // gSHM_S->SetLineWidth(2);
+  // gSHM_S->SetLineColor(kAzure - 7);
+  // gSHM_S->SetFillColor(kAzure - 7);
+  // gSHM_S->SetFillStyle(3002);
+
   gSHM_BS->SetLineWidth(2);
   gSHM_BS->SetLineColor(kOrange - 3);
   gSHM_BS->SetFillColor(kOrange - 3);
   gSHM_BS->SetFillStyle(3002);
+  gSHM_BS->SetLineWidth(2);
 
   gSHM_B->SetLineWidth(2);
-  gSHM_B->SetLineColor(kMagenta);
-  gSHM_B->SetFillColor(kMagenta);
+  gSHM_B->SetLineColor(kGreen + 3);
+  gSHM_B->SetFillColor(kGreen + 3);
   gSHM_B->SetFillStyle(3002);
+  gSHM_B->SetLineWidth(2);
 
-  gSHM_S->SetLineWidth(2);
-  gSHM_S->SetLineColor(kAzure - 7);
-  gSHM_S->SetFillColor(kAzure - 7);
-  gSHM_S->SetFillStyle(3002);
+  gSHM_BS_woRES->SetLineWidth(2);
+  gSHM_BS_woRES->SetLineColor(kAzure + 7);
+  gSHM_BS_woRES->SetFillColor(kAzure + 7);
+  gSHM_BS_woRES->SetFillStyle(3002);
+  gSHM_BS_woRES->SetLineWidth(2);
 
   // gPYTHIA_ANGANTYR.SetLineWidth(2);
   // gPYTHIA_ANGANTYR.SetLineColor(kOrange);
@@ -279,22 +307,25 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
-  leg.SetHeader("TheFIST CE SHM, #it{T} = 155 MeV, #it{V}_{C} = 3d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS, "B + S conservation");
-  leg.AddEntry(gSHM_B, "B conservation");
-  leg.AddEntry(gSHM_S, "S conservation");
+  leg.SetHeader("TheFIST #gamma_{s} CE SHM, #it{V}_{C} = 3.0 d#it{V}/d#it{y}");
+  leg.AddEntry(gSHM_B, "Pb#minusPb, B, w/ resonances", "f");
+  leg.AddEntry(gSHM_BS_woRES, "Pb#minusPb, B + S, w/o resonances", "f");
+  leg.AddEntry(gSHM_BS, "Pb#minusPb, B + S, w/ resonances", "f");
   // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
   // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
   leg2.AddEntry(gPbPb_stat, "ALICE Preliminary, Pb#minusPb", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
-  TLine l(30, 1, 2500, 1);
+  TLine l(30, 0, 2500, 0);
   l.SetLineWidth(2);
   l.SetLineStyle(kDashed);
 
   cResult.cd();
   frame.Draw();
+  
+  l.Draw("same");
+
   //gSHM.Draw("samee3l");
   // gPYTHIA.Draw("samee3l");
   // gHIJING.Draw("samee3l");
@@ -307,7 +338,7 @@ void PlotResultsC2C1NetXi_chargeConserv(){
 
   gSHM_BS->Draw("samee3l");
   gSHM_B->Draw("samee3l");
-  gSHM_S->Draw("samee3l");
+  gSHM_BS_woRES->Draw("samee3l");
 
   leg.Draw("same");
   leg2.Draw("same");
@@ -318,21 +349,20 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   // gpp_stat->Draw("pesame");
   // gpPb_sys->Draw("e5same");
   // gpPb_stat->Draw("pesame");
-  l.Draw("same");
 
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(35, 0.95, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(35, -0.044, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
-  //t.DrawLatex(35, 0.945, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(35, 0.945, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(35, -0.048, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(35, -0.052, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 
-  TFile o("final_plot_c2c1_chrgeConserv.root", "recreate");
+  TFile o("final_plot_rho_checkRes.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1_chargeConserv.pdf");
+  cResult.Print("cRho_checkRes.pdf");
   o.Close();
   f.Close();
   //f2.Close();
