@@ -52,7 +52,7 @@ void CombineChi2(){
   t.SetTextSize(20);
   t.SetNDC();
   t.DrawLatex(fullRange ? 0.5 : 0.35, 0.85, "ALICE Preliminary");
-  t.DrawLatex(fullRange ? 0.5 : 0.35, 0.78, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  t.DrawLatex(fullRange ? 0.5 : 0.35, 0.78, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
   TLegend leg(fullRange ? 0.5 : 0.62, fullRange ? 0.6 : 0.14, fullRange ? 0.8 : 0.93, fullRange ? 0.74 : 0.28);
   //t.SetNDC(false);
   leg.SetTextFont(44);
@@ -67,7 +67,7 @@ void CombineChi2(){
   }
   f.cd();
   c.Write();
-  c.Print(fullRange ? "combineChi2.pdf" : "combineChi2_zoom.pdf");
+  c.Print(fullRange ? "combineChi2.eps"/* .pdf" */ : "combineChi2_zoom.eps"/* .pdf" */);
   f.Close();
   f1.Close();
   f2.Close();

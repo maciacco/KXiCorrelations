@@ -67,7 +67,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
           }
           double purity = 0., error = 0.;
           if (fitMass){
-            RooRealVar *roo_m = new RooRealVar("m", iM == 1 ? "#it{M} (#Lambda + #pi^{-})" : "#it{M} (#bar{#Lambda} + #pi^{+})", 1.305, 1.34, "GeV/#it{c}^{2}");
+            RooRealVar *roo_m = new RooRealVar("m", iM == 1 ? "#it{M}(#Lambda + #pi^{-})" : "#it{M}(#bar{#Lambda} + #pi^{+})", 1.305, 1.34, "GeV/#it{c}^{2}");
             //roo_m->setBins(25);
             hMassProj->Rebin(2);
             RooDataHist roo_data("data", "data", RooArgSet(*roo_m), hMassProj);
@@ -112,22 +112,23 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             cMass.SetRightMargin(0.04);
             cMass.SetLeftMargin(0.11);
             cMass.cd();
+            massFrame->GetYaxis()->SetTitle(Form("Entries / (%.4f GeV/#it{c}^{2})", hMassProj->GetXaxis()->GetBinWidth(1)));
             massFrame->GetYaxis()->SetTitleOffset(1.);
             massFrame->Draw();
             TLatex t;
             t.SetTextFont(44);
-            t.SetTextSize(16);
+            t.SetTextSize(15);
             t.DrawLatexNDC(0.15, 0.74, Form("Purity = %.3f", purity));
             t.DrawLatexNDC(0.15, 0.88, "ALICE Performance");
-            t.DrawLatexNDC(0.62, 0.88, Form("V0M Centrality %.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
-            t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-            t.DrawLatexNDC(0.62, 0.81, Form("%.1f #leq #it{p}_{T}(#Xi) < %.1f GeV/#it{c}", hMass->GetYaxis()->GetBinLowEdge(iP), hMass->GetYaxis()->GetBinUpEdge(iP)));
+            t.DrawLatexNDC(0.6, 0.88, Form("V0M Centrality %.0f#minus%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+            t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+            t.DrawLatexNDC(0.6, 0.81, Form("%.1f < #it{p}_{T}(#Xi%s) < %.1f GeV/#it{c}", hMass->GetYaxis()->GetBinLowEdge(iP), iM == 0 ? "^{+}" : "^{#minus}", hMass->GetYaxis()->GetBinUpEdge(iP)));
             t.SetTextSize(45);
-            t.DrawLatexNDC(0.7, 0.6, iM == 0? "#bar{#Xi}^{+}" : "#Xi^{-}");
+            t.DrawLatexNDC(0.7, 0.6, iM == 0? "#bar{#Xi}^{+}" : "#Xi^{#minus}");
             
             TLegend l(0.15, 0.51, 0.3, 0.72);
             l.SetTextFont(44);
-            l.SetTextSize(16);
+            l.SetTextSize(15);
             l.AddEntry("data", "data", "pe");
             l.AddEntry("model", "total fit", "l");
             //l.AddEntry("signal", "signal", "l");
@@ -142,7 +143,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
             hPurityXi[iCent - 1]->SetBinContent(hPurityXi[iCent - 1]->FindBin(hMass->GetYaxis()->GetBinCenter(iP)), purity);
             hPurityXi[iCent - 1]->SetBinError(hPurityXi[iCent - 1]->FindBin(hMass->GetYaxis()->GetBinCenter(iP)), error);
             //massFrame->Write();
-            if (iCent == 1 && iP == 5) cMass.Print(Form("c_mass_%d.pdf", iM));
+            if (iCent == 1 && iP == 5) cMass.Print(Form("c_mass_%d.eps"/* .pdf" */, iM));
           }
           if ((hNsigmaTPC->GetYaxis()->GetBinCenter(iP) < kTPCptCut && hNsigmaTPC->GetYaxis()->GetBinCenter(iP) > kPtLowLimitK) /* || kComputeNSigmaMap */){
             RooRealVar tpcSignal("tpcSignal", "n#sigma_{K}^{TPC}", -4. /*3.5*/, 4., "a.u.");
@@ -181,21 +182,22 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
               cTPC.SetLeftMargin(0.11);
               TLatex t;
               t.SetTextFont(44);
-              t.SetTextSize(16);
+              t.SetTextSize(15);
               cTPC.cd();
+              tpcFrame->GetYaxis()->SetTitle(Form("Entries / (%.1f a.u.)", tpcFrame->GetXaxis()->GetBinWidth(1)));
               tpcFrame->GetYaxis()->SetTitleOffset(1.);
               tpcFrame->Draw();
               t.DrawLatexNDC(0.15, 0.74, Form("Purity = %.3f", purity));
               t.DrawLatexNDC(0.15, 0.88, "ALICE Performance");
-              t.DrawLatexNDC(0.62, 0.88, Form("V0M Centrality %.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
-              t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-              t.DrawLatexNDC(0.62, 0.81, Form("%.1f #leq #it{p}_{T}(K) < %.1f GeV/#it{c}", hNsigmaTPC->GetYaxis()->GetBinLowEdge(iP), hNsigmaTPC->GetYaxis()->GetBinUpEdge(iP)));
+              t.DrawLatexNDC(0.6, 0.88, Form("V0M Centrality %.0f#minus%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+              t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+              t.DrawLatexNDC(0.6, 0.81, Form("%.1f < #it{p}_{T}(K%s) < %.1f GeV/#it{c}", hNsigmaTPC->GetYaxis()->GetBinLowEdge(iP), iM == 0 ? "^{#minus}" : "^{+}", hNsigmaTPC->GetYaxis()->GetBinUpEdge(iP)));
               t.SetTextSize(45);
-              t.DrawLatexNDC(0.7, 0.6, iM == 0? "K^{-}" : "K^{+}");
+              t.DrawLatexNDC(0.7, 0.6, iM == 0? "K^{#minus}" : "K^{+}");
 
               TLegend l(0.15, 0.51, 0.3, 0.72);
               l.SetTextFont(44);
-              l.SetTextSize(16);
+              l.SetTextSize(15);
               l.AddEntry("data", "data", "pe");
               l.AddEntry("model", "total fit", "l");
               //l.AddEntry("signal", "signal", "l");
@@ -203,7 +205,7 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
               l.Draw("same");
 
               cTPC.Write();
-              if (iCent == 1 && iP == 3) cTPC.Print(Form("c_TPC_%d.pdf", iM));
+              if (iCent == 1 && iP == 3) cTPC.Print(Form("c_TPC_%d.eps"/* .pdf" */, iM));
             }
             hMeanTPC[iM]->SetBinContent(iCent, iP, iE + 1, tpcMu.getVal());
             hSigmaTPC[iM]->SetBinContent(iCent, iP, iE + 1, tpcSigma.getVal());
@@ -244,29 +246,30 @@ void Purity(const char* inFileName = "test_LHC18qr_purity_var_0", const char* ou
               cTOF.SetRightMargin(0.04);
               cTOF.SetLeftMargin(0.11);
               cTOF.cd();
+              tofFrame->GetYaxis()->SetTitle(Form("Entries / (%.1f a.u.)", tofFrame->GetXaxis()->GetBinWidth(1)));
               tofFrame->GetYaxis()->SetTitleOffset(1.);
               tofFrame->Draw();
               TLatex t;
               t.SetTextFont(44);
-              t.SetTextSize(16);
+              t.SetTextSize(15);
               t.DrawLatexNDC(0.15, 0.74, Form("Purity = %.3f", purity));
               t.DrawLatexNDC(0.15, 0.88, "ALICE Performance");
-              t.DrawLatexNDC(0.62, 0.88, Form("V0M Centrality %.0f-%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
-              t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb #sqrt{#it{s}_{NN}} = 5.02 TeV");
-              t.DrawLatexNDC(0.62, 0.81, Form("%.1f #leq #it{p}_{T}(K) < %.1f GeV/#it{c}", hNsigmaTOF->GetYaxis()->GetBinLowEdge(iP), hNsigmaTOF->GetYaxis()->GetBinUpEdge(iP)));
+              t.DrawLatexNDC(0.6, 0.88, Form("V0M Centrality %.0f#minus%.0f%%", kCentBins[iCent - 1], kCentBins[iCent]));
+              t.DrawLatexNDC(0.15, 0.81, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+              t.DrawLatexNDC(0.6, 0.81, Form("%.1f < #it{p}_{T}(K%s) < %.1f GeV/#it{c}", hNsigmaTOF->GetYaxis()->GetBinLowEdge(iP), iM == 0 ? "^{#minus}" : "^{+}", hNsigmaTOF->GetYaxis()->GetBinUpEdge(iP)));
               t.SetTextSize(45);             
-              t.DrawLatexNDC(0.7, 0.6, iM == 0? "K^{-}" : "K^{+}");
+              t.DrawLatexNDC(0.7, 0.6, iM == 0? "K^{#minus}" : "K^{+}");
 
               TLegend l(0.15, 0.51, 0.3, 0.72);
               l.SetTextFont(44);
-              l.SetTextSize(16);
+              l.SetTextSize(15);
               l.AddEntry("data", "data", "pe");
               l.AddEntry("model", "total fit", "l");
               //l.AddEntry("signal", "signal", "l");
               l.AddEntry("background", "background", "l");
               l.Draw("same");
 
-              if (iCent == 1 && iP == 7) cTOF.Print(Form("c_TOF_%d.pdf", iM));
+              if (iCent == 1 && iP == 7) cTOF.Print(Form("c_TOF_%d.eps"/* .pdf" */, iM));
               cTOF.Write();
             }
             hMeanTOF[iM]->SetBinContent(iCent, iP, iE + 1, tofMu.getVal());

@@ -253,7 +253,6 @@ void PlotResults(){
   // gEPOS_pPb.SetLineColor(kViolet+1);
   // gEPOS_pPb.SetFillColor(kViolet+1);
   // gEPOS_pPb.SetFillStyle(3002);
-  //gPYTHIA.SetLineStyle(kDashed);
 
   gPYTHIA_CRQCD->SetLineWidth(2);
   gPYTHIA_CRQCD->SetLineColor(kGreen + 2);
@@ -291,9 +290,11 @@ void PlotResults(){
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
   leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+  
   leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
+  //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
+  
   leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "lf");
-  // leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");
   leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
@@ -317,8 +318,10 @@ void PlotResults(){
  //gPYTHIA_ANGANTYR_PPB_CRQCD_ROPE.Draw("samee3l");
   gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gHIJING.Draw("samee3l");
+  
   //gEPOS_pPb.Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
+  
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
   //gSHM_PPB_BOOST.Draw("same3l");
@@ -335,15 +338,15 @@ void PlotResults(){
   t.SetTextFont(44);
   t.SetTextSize(23);
   t.DrawLatex(2.1, -0.004, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
-  t.DrawLatex(70, -0.004, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(70, -0.007, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(70, -0.004, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(70, -0.007, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_rho_finalBinning.root", "recreate");
   o.cd();
 
   gPYTHIA.Write();
   cResult.Write();
-  cResult.Print("cRho.pdf");
+  cResult.Print("cRho.eps"/* .pdf" */);
   o.Close();
   f.Close();
   f.Close();

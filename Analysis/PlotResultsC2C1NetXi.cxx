@@ -25,7 +25,7 @@ void PlotResultsC2C1NetXi(){
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#Xi^{-} - #Xi^{+})/#it{#kappa}_{1}(#Xi^{-} + #Xi^{+})", 1, 1.5, 2500, 1, 0.90, 1.06);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 1.5, 2500, 1, 0.90, 1.06);
   TLegend leg(0.16, /* 0.65 */0.69, 0.7, 0.84); // 0.85
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
   TLegend leg2(0.165, 0.85, 0.5, 0.95);
@@ -232,10 +232,10 @@ void PlotResultsC2C1NetXi(){
   gHIJING.SetLineColor(kMagenta);
   gHIJING.SetFillStyle(3002);
 
-  // gEPOS_pPb.SetLineWidth(2);
-  // gEPOS_pPb.SetLineColor(kViolet+1);
-  // gEPOS_pPb.SetFillColor(kViolet+1);
-  // gEPOS_pPb.SetFillStyle(3002);
+  gEPOS_pPb.SetLineWidth(2);
+  gEPOS_pPb.SetLineColor(kViolet+1);
+  gEPOS_pPb.SetFillColor(kViolet+1);
+  gEPOS_pPb.SetFillStyle(3002);
   //gPYTHIA.SetLineStyle(kDashed);
 
   gPYTHIA_CRQCD->SetLineWidth(2);
@@ -271,6 +271,8 @@ void PlotResultsC2C1NetXi(){
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
+  //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
+  
   leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "lf");
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
@@ -294,9 +296,11 @@ void PlotResultsC2C1NetXi(){
   // gPYTHIA.Draw("samee3l");
   gHIJING.Draw("samee3l");
   gPYTHIA_ANGANTYR.Draw("samee3l");
+  
   //gEPOS_pPb.Draw("samee3l");
   gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
+  
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
 
@@ -319,14 +323,14 @@ void PlotResultsC2C1NetXi(){
   t.SetTextSize(23);
   t.DrawLatex(/* 35 */2.1, 0.92, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
-  //t.DrawLatex(2.5, 0.940, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(2.1, 0.91 /* 0.935 */, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  //t.DrawLatex(2.5, 0.940, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(2.1, 0.91 /* 0.935 */, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_c2c1.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1.pdf");
+  cResult.Print("cC2C1.eps"/*.pdf"*/);
   o.Close();
   f.Close();
   //f2.Close();

@@ -28,10 +28,10 @@ void PlotResultsRho_chargeConserv(){
   TFile fSHM_BS("models/Output_Final_BS_vc3.0_CE.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.056, 0.04);
-  TLegend leg(0.162, 0.74, 0.4, 0.89);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.055, 0.03);
+  TLegend leg(0.162, 0.7, 0.4, 0.85);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.89, 0.7, 0.94);
+  TLegend leg2(0.162, 0.86, 0.7, 0.94);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
@@ -279,13 +279,14 @@ void PlotResultsRho_chargeConserv(){
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
-  leg.SetHeader("TheFIST CE SHM, #it{T} = 155 MeV, #it{V}_{C} = 3d#it{V}/d#it{y}");
+  leg.SetHeader("TheFIST CE SHM, #it{T}_{chem} = 155 MeV, #it{V}_{C} = 3d#it{V}/d#it{y}");
   leg.AddEntry(gSHM_BS, "B + S conservation");
   leg.AddEntry(gSHM_B, "B conservation");
   leg.AddEntry(gSHM_S, "S conservation");
   // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
   // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
-  leg2.AddEntry(gPbPb_stat, "ALICE Preliminary, Pb#minusPb", "pe");
+  leg2.SetHeader("ALICE Preliminary");
+  leg2.AddEntry(gPbPb_stat, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
@@ -325,16 +326,16 @@ void PlotResultsRho_chargeConserv(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(35, -0.044, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(35, -0.044, "|#it{#eta}| < 0.8");
 
-  t.DrawLatex(35, -0.048, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(35, -0.052, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(35, -0.048, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(35, -0.052, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_rho_chrgeConserv.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cRho_chargeConserv.pdf");
+  cResult.Print("cRho_chargeConserv.eps"/* .pdf" */);
   o.Close();
   f.Close();
   //f2.Close();

@@ -354,8 +354,8 @@ void PlotResultsC2C1NetK(){
   t.SetTextSize(23);
   t.DrawLatex(/* 35 */2.3, 0.965, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
-  t.DrawLatex(2.3, 0.955, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  //t.DrawLatex(2.5, 0.96, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(2.3, 0.955, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
+  //t.DrawLatex(2.5, 0.96, "1.0 < #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_c2c1_k.root", "recreate");
   o.cd();

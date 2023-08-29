@@ -36,10 +36,10 @@ void PlotResultsC2C1NetXi_volumes(){
   TFile fSHM_BS_3_2("models/Output_Final_BS_vc3.2_CE.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#Xi^{-} - #Xi^{+})/#it{#kappa}_{1}(#Xi^{-} + #Xi^{+})", 1, 30, 2500, 1, 0.94, 1.03);
-  TLegend leg(0.162, 0.7025, 0.7, 0.89);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 30, 2500, 1, 0.94, 1.04);
+  TLegend leg(0.162, 0.6625, 0.7, 0.85);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.89, 0.7, 0.94);
+  TLegend leg2(0.162, 0.86, 0.7, 0.94);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
@@ -335,7 +335,7 @@ void PlotResultsC2C1NetXi_volumes(){
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
-  leg.SetHeader("TheFIST CE SHM, #it{T} = 155 MeV, B + S conservation");
+  leg.SetHeader("TheFIST CE SHM, #it{T}_{chem} = 155 MeV, B + S conservation");
   leg.AddEntry(gSHM_BS[0], "#it{V}_{C} = 1.0 d#it{V}/d#it{y}");
   leg.AddEntry(gSHM_BS[1], "#it{V}_{C} = 1.5 d#it{V}/d#it{y}");
   leg.AddEntry(gSHM_BS[2], "#it{V}_{C} = 2.0 d#it{V}/d#it{y}");
@@ -348,7 +348,8 @@ void PlotResultsC2C1NetXi_volumes(){
   leg.AddEntry(gSHM_BS[9], "#it{V}_{C} = 4.0 d#it{V}/d#it{y}");
   // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
   // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
-  leg2.AddEntry(gPbPb_stat, "ALICE Preliminary, Pb#minusPb", "pe");
+  leg2.SetHeader("ALICE Preliminary");
+  leg2.AddEntry(gPbPb_stat, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
@@ -393,16 +394,16 @@ void PlotResultsC2C1NetXi_volumes(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(23);
-  t.DrawLatex(35, 0.95, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  t.DrawLatex(35, 0.95, "|#it{#eta}| < 0.8");
 
-  //t.DrawLatex(35, 0.945, "0.2 #leq #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(35, 0.945, "1.0 #leq #it{p}_{T} (#Xi) < 3.0 GeV/#it{c}");
+  //t.DrawLatex(35, 0.945, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(35, 0.945, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_c2c1_volumes.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1_volumes.pdf");
+  cResult.Print("cC2C1_volumes.eps"/* .pdf" */);
 
   // chi2
   utils::MergeGraphPoints(gSHM_BS[0], 1, 2);
