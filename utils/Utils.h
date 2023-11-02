@@ -243,7 +243,39 @@ namespace utils
 
       double tmp = 0.;
       tmp = ( o - model ) * ( o - model );
-      tmp = tmp / ( ostat * ostat + osyst * osyst + modelstat * modelstat);
+      tmp = tmp / ( ostat * ostat + osyst * osyst/*  + modelstat * modelstat */);
+      res += tmp;
+    }
+    return res;
+  }
+    
+  Double_t chi2interp(TGraphErrors *gstat, TGraphErrors *gsyst, TGraphErrors *gmodel){
+    double res = 0.;
+    for (int i{0}; i < gstat->GetN(); ++i){
+      double o = gstat->GetPointY(i);
+      double ostat = gstat->GetErrorY(i);
+      double osyst = gsyst->GetErrorY(i);
+      int pL = -999, pR = -999;
+      double x = gstat->GetPointX(i);
+      for (int iP{0}; iP < gmodel->GetN(); ++iP){
+        // std::cout << x << "\t" << gmodel->GetPointX(iP) << "\n";
+        if (x > gmodel->GetPointX(iP)) continue;
+        pR = iP;
+        pL = iP - 1;
+        break;
+      }
+      if (pR == pL) continue;
+      TF1 f("fit", "pol1", gmodel->GetPointX(pL) - 0.5, gmodel->GetPointX(pR) + 0.5);
+      auto r = gmodel->Fit("fit", "NRSQ", "", gmodel->GetPointX(pL) -0.5, gmodel->GetPointX(pR) + 0.5);
+      double xx[1] = { x };
+      double err[1];  // error on the function at point x0
+      r->GetConfidenceIntervals(1, 1, 1, xx, err, 0.683, false);
+      double model = f.Eval(x);
+      double model_err = err[0];
+      double tmp = 0.;
+      std::cout << o << "\t" << model << "\n";
+      tmp = ( o - model ) * ( o - model );
+      tmp = tmp / ( ostat * ostat + osyst * osyst + model_err * model_err);
       res += tmp;
     }
     return res;
@@ -259,9 +291,9 @@ namespace utils
       double modelstat = gmodel->GetErrorY(i);
 
       double tmp = 0.;
-      tmp = 2 * (o - model) * sqrt( ostat * ostat + osyst * osyst);
-      tmp = tmp + 2 * (o - model) * sqrt( modelstat * modelstat  );
-      tmp = tmp / ( ostat * ostat + osyst * osyst + modelstat * modelstat );
+      //tmp = 2 * (o - model) * sqrt( ostat * ostat + osyst * osyst);
+      tmp = tmp + 2 * (o - model) * sqrt( modelstat * modelstat );
+      tmp = tmp / ( ostat * ostat + osyst * osyst/*  + modelstat * modelstat  */);
       res += ( tmp * tmp);
     }
     return sqrt(res);

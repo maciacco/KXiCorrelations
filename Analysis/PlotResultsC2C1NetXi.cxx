@@ -1,4 +1,5 @@
 #include "../utils/Config.h"
+#include "../utils/Utils.h"
 
 void PlotResultsC2C1NetXi(){
   gStyle->SetOptStat(0);
@@ -23,12 +24,14 @@ void PlotResultsC2C1NetXi(){
   gPbPb_sys->SetName("gRhoSys_PbPb");
 
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
+  TFile fEPOSPbPb("models/out_analysis_repro.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 1.5, 2500, 1, 0.90, 1.06);
   TLegend leg(0.16, /* 0.65 */0.69, 0.7, 0.84); // 0.85
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.165, 0.85, 0.5, 0.95);
+  TLegend leg2(0.18, 0.85, 0.5, 0.95);
+  TLegend leg3(0.5275, 0.84, 0.7975, 0.89);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
@@ -40,6 +43,7 @@ void PlotResultsC2C1NetXi(){
   TGraphErrors gPYTHIA_ANGANTYR;
   TGraphErrors gPYTHIA_ANGANTYR_PPB;
   TGraphErrors gEPOS_pPb;
+  TGraphErrors *gEPOS_PbPb;
   TGraphErrors gHIJING;
 
   // h_c1a->Add(h_c1m);
@@ -52,12 +56,15 @@ void PlotResultsC2C1NetXi(){
   // canvas
   cResult.SetLogx();
   frame.GetYaxis()->SetNdivisions(210);
-  frame.GetYaxis()->SetTitleOffset(1.3);
-  cResult.SetLeftMargin(0.14);
+  frame.GetYaxis()->SetTitleOffset(1.45);
+  cResult.SetLeftMargin(0.15);
   cResult.SetRightMargin(0.02);
   cResult.SetTopMargin(0.03);
 
   for (int iB = 0; iB < 6; ++iB){
+    TH1D* hsys = (TH1D*)f.Get(Form("hSys_%d", iB));
+    gPbPb_sys->SetPointY(iB, hsys->GetMean());
+    gPbPb_stat->SetPointY(iB, hsys->GetMean());
     gPbPb_sys->SetPointError(iB, mult_shm_PbPb_[iB] * 7.e-2, gPbPb_sys->GetErrorY(iB));
     gPbPb_stat->SetPointX(iB, mult_shm_PbPb_[iB]);
     gPbPb_sys->SetPointX(iB, mult_shm_PbPb_[iB]);
@@ -65,12 +72,18 @@ void PlotResultsC2C1NetXi(){
   //gPbPb_stat->Fit("pol0", "R", "", 40, 2000);
 
   for (int iB = 0; iB < 6; ++iB){
+    TH1D* hsys = (TH1D*)fpPb.Get(Form("hSys_%d", iB));
+    gpPb_sys->SetPointY(iB, hsys->GetMean());
+    gpPb_stat->SetPointY(iB, hsys->GetMean());
     gpPb_sys->SetPointError(iB, mult_pPb[iB] * 7.e-2, gpPb_sys->GetErrorY(iB));
     gpPb_stat->SetPointX(iB, mult_pPb[iB]);
     gpPb_sys->SetPointX(iB, mult_pPb[iB]);
   }
 
   for (int iB = 0; iB < 8; ++iB){
+    TH1D* hsys = (TH1D*)fpp.Get(Form("hSys_%d", iB));
+    gpp_sys->SetPointY(iB, hsys->GetMean());
+    gpp_stat->SetPointY(iB, hsys->GetMean());
     gpp_sys->SetPointError(iB, mult_pp[iB] * 7.e-2, gpp_sys->GetErrorY(iB));
     gpp_stat->SetPointX(iB, mult_pp[iB]);
     gpp_sys->SetPointX(iB, mult_pp[iB]);
@@ -128,6 +141,7 @@ void PlotResultsC2C1NetXi(){
   // }
 
   gPYTHIA_CRQCD = (TGraphErrors*)fPythia.Get("Grc2byc1xi_net");
+  gEPOS_PbPb = (TGraphErrors*)fEPOSPbPb.Get("Grc2byc1xi");
 
   TFile fSHM_4_("models/Output_Final_BS_vc4.0_CE.root");
   TGraphErrors* gSHM_4 = (TGraphErrors*)fSHM_4_.Get("Grc2byc1xi");
@@ -154,6 +168,9 @@ void PlotResultsC2C1NetXi(){
     gPYTHIA_ANGANTYR_PPB.AddPoint(pythia_angantyr_pPb_mult[iP], pythia_angantyr_pPb_c2c1[iP][0]);
     gPYTHIA_ANGANTYR_PPB.SetPointError(iP, 0, pythia_angantyr_pPb_c2c1[iP][1]);
   }
+
+  TFile fSHM_Vanilla_("models/out_analysis_30_low_mult_vanilla_refitted_extend.root");
+  TGraphErrors* gSHM_Vanilla_ = (TGraphErrors*)fSHM_Vanilla_.Get("Grc2byc1xi");
 
   // // set colors and style
   // gData.SetLineWidth(2);
@@ -232,6 +249,11 @@ void PlotResultsC2C1NetXi(){
   gHIJING.SetLineColor(kMagenta);
   gHIJING.SetFillStyle(3002);
 
+  gEPOS_PbPb->SetLineWidth(2);
+  gEPOS_PbPb->SetLineColor(kViolet+1);
+  gEPOS_PbPb->SetFillColor(kViolet+1);
+  gEPOS_PbPb->SetFillStyle(3002);
+
   gEPOS_pPb.SetLineWidth(2);
   gEPOS_pPb.SetLineColor(kViolet+1);
   gEPOS_pPb.SetFillColor(kViolet+1);
@@ -258,23 +280,32 @@ void PlotResultsC2C1NetXi(){
   gPYTHIA_ANGANTYR_PPB.SetFillColor(kAzure - 7);
   gPYTHIA_ANGANTYR_PPB.SetFillStyle(3002);
 
+
+
+  gSHM_Vanilla_->SetLineWidth(2);
+  gSHM_Vanilla_->SetLineColor(kViolet + 1);
+  gSHM_Vanilla_->SetFillColor(kViolet + 1);
+  gSHM_Vanilla_->SetFillStyle(3002);
+
   // legend
   leg.SetTextFont(44);
   leg.SetTextSize(23);
   leg2.SetTextFont(44);
-  leg2.SetTextSize(23);
+  leg2.SetTextSize(30);
+  leg3.SetTextFont(44);
+  leg3.SetTextSize(23);
   leg.SetNColumns(2);
   leg2.SetNColumns(3);
   leg.SetColumnSeparation(0.4);
   leg2.SetColumnSeparation(0.1);
-  leg2.SetHeader("ALICE Preliminary");
+  leg2.SetHeader("ALICE");
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
-  //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
-  
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{C} = 3d#it{V}/d#it{y}", "lf");
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
+  
+  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
+  //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
+  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
   leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
@@ -284,6 +315,8 @@ void PlotResultsC2C1NetXi(){
   leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
   leg2.AddEntry(gPbPb_stat, "Pb#minusPb", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
+
+  //leg3.AddEntry(&gEPOS_pPb, "EPOS LHC, p#minusPb", "lf");
 
   // line
   TLine l(1.5/* 30 */, 1, 2500, 1);
@@ -298,17 +331,21 @@ void PlotResultsC2C1NetXi(){
   gPYTHIA_ANGANTYR.Draw("samee3l");
   
   //gEPOS_pPb.Draw("samee3l");
+  //gEPOS_PbPb->Draw("samee3l");
   gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
   
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
 
+  //gSHM_Vanilla_->Draw("samee3l");
+
   // gSHM_4->Draw("samee3l");
   // gSHM_1->Draw("samee3l");
 
   leg.Draw("same");
   leg2.Draw("same");
+  //leg3.Draw("same");
 
   gPbPb_sys->Draw("e5same");
   gPbPb_stat->Draw("pesame");
@@ -320,17 +357,19 @@ void PlotResultsC2C1NetXi(){
 
   TLatex t;
   t.SetTextFont(44);
-  t.SetTextSize(23);
+  t.SetTextSize(30);
   t.DrawLatex(/* 35 */2.1, 0.92, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
   //t.DrawLatex(2.5, 0.940, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
   t.DrawLatex(2.1, 0.91 /* 0.935 */, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
+  std::cout << utils::chi2interp(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";
+
   TFile o("final_plot_c2c1.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1.eps"/*.pdf"*/);
+  cResult.Print("cC2C1.pdf"/*.pdf"*/);
   o.Close();
   f.Close();
   //f2.Close();

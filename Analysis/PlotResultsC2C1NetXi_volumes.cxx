@@ -26,25 +26,30 @@ void PlotResultsC2C1NetXi_volumes(){
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
   TFile fSHM_BS_1("models/Output_Final_BS_vc1.0_CE.root");
   TFile fSHM_BS_2("models/Output_Final_BS_vc2.0_CE.root");
-  TFile fSHM_BS_3("models/Output_Final_BS_vc3.0_CE.root");
+  //TFile fSHM_BS_3("models/Output_Final_BS_vc3.0_CE.root");
   TFile fSHM_BS_4("models/Output_Final_BS_vc4.0_CE.root");
   TFile fSHM_BS_1_5("models/Output_Final_BS_vc1.5_CE.root");
   TFile fSHM_BS_2_5("models/Output_Final_BS_vc2.5_CE.root");
   TFile fSHM_BS_3_5("models/Output_Final_BS_vc3.5_CE.root");
   TFile fSHM_BS_2_6("models/Output_Final_BS_vc2.6_CE.root");
-  TFile fSHM_BS_2_8("models/Output_Final_BS_vc2.8_CE.root");
-  TFile fSHM_BS_3_2("models/Output_Final_BS_vc3.2_CE.root");
+  TFile fSHM_BS_2_8("models/out_analysis_28.root");
+  TFile fSHM_BS_2_9("models/out_analysis_29.root");
+  TFile fSHM_BS_3("models/out_analysis_30.root");
+  TFile fSHM_BS_3_1("models/out_analysis_31.root");
+  TFile fSHM_BS_3_2("models/out_analysis_32.root");
+  TFile fSHM_BS_3_3("models/out_analysis_33.root");
+  TFile fSHM_BS_3_4("models/out_analysis_34.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 30, 2500, 1, 0.94, 1.04);
-  TLegend leg(0.162, 0.6625, 0.7, 0.85);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 30, 2500, 1, 0.94, 1.03);
+  TLegend leg(0.18, 0.6925, 0.7, 0.88);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.86, 0.7, 0.94);
+  TLegend leg2(0.18, 0.89, 0.7, 0.94);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
   TGraphErrors gSHM;
-  TGraphErrors *gSHM_BS[10];
+  TGraphErrors *gSHM_BS[13];
   TGraphErrors *gSHM_B;
   TGraphErrors *gSHM_S;
   TGraphErrors gPYTHIA;
@@ -66,12 +71,15 @@ void PlotResultsC2C1NetXi_volumes(){
   // canvas
   cResult.SetLogx();
   frame.GetYaxis()->SetNdivisions(210);
-  frame.GetYaxis()->SetTitleOffset(1.3);
-  cResult.SetLeftMargin(0.14);
+  frame.GetYaxis()->SetTitleOffset(1.45);
+  cResult.SetLeftMargin(0.15);
   cResult.SetRightMargin(0.02);
   cResult.SetTopMargin(0.03);
 
   for (int iB = 0; iB < 6; ++iB){
+    TH1D* hsys = (TH1D*)f.Get(Form("hSys_%d", iB));
+    gPbPb_sys->SetPointY(iB, hsys->GetMean());
+    gPbPb_stat->SetPointY(iB, hsys->GetMean());
     gPbPb_sys->SetPointError(iB, mult_shm_PbPb_[iB] * 7.e-2, gPbPb_sys->GetErrorY(iB));
     gPbPb_stat->SetPointX(iB, mult_shm_PbPb_[iB]);
     gPbPb_sys->SetPointX(iB, mult_shm_PbPb_[iB]);
@@ -79,12 +87,18 @@ void PlotResultsC2C1NetXi_volumes(){
   //gPbPb_stat->Fit("pol0", "R", "", 40, 2000);
 
   for (int iB = 0; iB < 6; ++iB){
+    TH1D* hsys = (TH1D*)fpPb.Get(Form("hSys_%d", iB));
+    gpPb_sys->SetPointY(iB, hsys->GetMean());
+    gpPb_stat->SetPointY(iB, hsys->GetMean());
     gpPb_sys->SetPointError(iB, mult_pPb[iB] * 7.e-2, gpPb_sys->GetErrorY(iB));
     gpPb_stat->SetPointX(iB, mult_pPb[iB]);
     gpPb_sys->SetPointX(iB, mult_pPb[iB]);
   }
 
   for (int iB = 0; iB < 8; ++iB){
+    TH1D* hsys = (TH1D*)fpp.Get(Form("hSys_%d", iB));
+    gpp_sys->SetPointY(iB, hsys->GetMean());
+    gpp_stat->SetPointY(iB, hsys->GetMean());
     gpp_sys->SetPointError(iB, mult_pp[iB] * 7.e-2, gpp_sys->GetErrorY(iB));
     gpp_stat->SetPointX(iB, mult_pp[iB]);
     gpp_sys->SetPointX(iB, mult_pp[iB]);
@@ -162,17 +176,25 @@ void PlotResultsC2C1NetXi_volumes(){
 
   gSHM_BS[3] = (TGraphErrors*)fSHM_BS_2_5.Get("Grc2byc1xi");
 
-  gSHM_BS[4] = (TGraphErrors*)fSHM_BS_2_6.Get("Grc2byc1xi");
+  //gSHM_BS[4] = (TGraphErrors*)fSHM_BS_2_6.Get("Grc2byc1xi");
 
-  gSHM_BS[5] = (TGraphErrors*)fSHM_BS_2_8.Get("Grc2byc1xi");
+  gSHM_BS[4] = (TGraphErrors*)fSHM_BS_2_8.Get("Grc2byc1xi");
+
+  gSHM_BS[5] = (TGraphErrors*)fSHM_BS_2_9.Get("Grc2byc1xi");
 
   gSHM_BS[6] = (TGraphErrors*)fSHM_BS_3.Get("Grc2byc1xi");
 
-  gSHM_BS[7] = (TGraphErrors*)fSHM_BS_3_2.Get("Grc2byc1xi");
+  gSHM_BS[7] = (TGraphErrors*)fSHM_BS_3_1.Get("Grc2byc1xi");
 
-  gSHM_BS[8] = (TGraphErrors*)fSHM_BS_3_5.Get("Grc2byc1xi");
+  gSHM_BS[8] = (TGraphErrors*)fSHM_BS_3_2.Get("Grc2byc1xi");
 
-  gSHM_BS[9] = (TGraphErrors*)fSHM_BS_4.Get("Grc2byc1xi");
+  gSHM_BS[9] = (TGraphErrors*)fSHM_BS_3_3.Get("Grc2byc1xi");
+
+  gSHM_BS[10] = (TGraphErrors*)fSHM_BS_3_4.Get("Grc2byc1xi");
+
+  gSHM_BS[11] = (TGraphErrors*)fSHM_BS_3_5.Get("Grc2byc1xi");
+
+  gSHM_BS[12] = (TGraphErrors*)fSHM_BS_4.Get("Grc2byc1xi");
 
   // // set colors and style
   // gData.SetLineWidth(2);
@@ -270,15 +292,15 @@ void PlotResultsC2C1NetXi_volumes(){
   // gSHM_BS[7]->SetFillColor(kOrange - 2);
   // gSHM_BS[7]->SetFillStyle(3002);
 
-  gSHM_BS[8]->SetLineWidth(2);
-  gSHM_BS[8]->SetLineColor(kOrange + 7); // kOrange + 7
-  gSHM_BS[8]->SetFillColor(kOrange + 7);
-  gSHM_BS[8]->SetFillStyle(3002);
+  gSHM_BS[11]->SetLineWidth(2);
+  gSHM_BS[11]->SetLineColor(kOrange + 7); // kOrange + 7
+  gSHM_BS[11]->SetFillColor(kOrange + 7);
+  gSHM_BS[11]->SetFillStyle(3002);
 
-  gSHM_BS[9]->SetLineWidth(2);
-  gSHM_BS[9]->SetLineColor(kRed); // kRed
-  gSHM_BS[9]->SetFillColor(kRed);
-  gSHM_BS[9]->SetFillStyle(3002);
+  gSHM_BS[12]->SetLineWidth(2);
+  gSHM_BS[12]->SetLineColor(kRed); // kRed
+  gSHM_BS[12]->SetFillColor(kRed);
+  gSHM_BS[12]->SetFillStyle(3002);
 
   // gPYTHIA_ANGANTYR.SetLineWidth(2);
   // gPYTHIA_ANGANTYR.SetLineColor(kOrange);
@@ -321,7 +343,7 @@ void PlotResultsC2C1NetXi_volumes(){
   leg.SetTextFont(44);
   leg.SetTextSize(23);
   leg2.SetTextFont(44);
-  leg2.SetTextSize(23);
+  leg2.SetTextSize(30);
   leg.SetNColumns(2);
   leg2.SetNColumns(3);
   //leg.SetColumnSeparation(0.4);
@@ -335,21 +357,21 @@ void PlotResultsC2C1NetXi_volumes(){
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
-  leg.SetHeader("TheFIST CE SHM, #it{T}_{chem} = 155 MeV, B + S conservation");
-  leg.AddEntry(gSHM_BS[0], "#it{V}_{C} = 1.0 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS[1], "#it{V}_{C} = 1.5 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS[2], "#it{V}_{C} = 2.0 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS[3], "#it{V}_{C} = 2.5 d#it{V}/d#it{y}");
-  // leg.AddEntry(gSHM_BS[4], "#it{V}_{C} = 2.6 d#it{V}/d#it{y}");
-  // leg.AddEntry(gSHM_BS[5], "#it{V}_{C} = 2.8 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS[6], "#it{V}_{C} = 3.0 d#it{V}/d#it{y}");
-  // leg.AddEntry(gSHM_BS[7], "#it{V}_{C} = 3.2 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS[8], "#it{V}_{C} = 3.5 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS[9], "#it{V}_{C} = 4.0 d#it{V}/d#it{y}");
+  leg.SetHeader("TheFIST CSM, #it{T}_{chem} = 155 MeV, B + S conservation");
+  leg.AddEntry(gSHM_BS[0], "#it{V}_{c} = 1.0 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(gSHM_BS[1], "#it{V}_{c} = 1.5 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(gSHM_BS[2], "#it{V}_{c} = 2.0 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(gSHM_BS[3], "#it{V}_{c} = 2.5 d#it{V}/d#it{y}", "lf");
+  // leg.AddEntry(gSHM_BS[4], "#it{V}_{c} = 2.6 d#it{V}/d#it{y}", "lf");
+  // leg.AddEntry(gSHM_BS[5], "#it{V}_{c} = 2.8 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(gSHM_BS[6], "#it{V}_{c} = 3.0 d#it{V}/d#it{y}", "lf");
+  // leg.AddEntry(gSHM_BS[7], "#it{V}_{c} = 3.2 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(gSHM_BS[11], "#it{V}_{c} = 3.5 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(gSHM_BS[12], "#it{V}_{c} = 4.0 d#it{V}/d#it{y}", "lf");
   // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
   // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
-  leg2.SetHeader("ALICE Preliminary");
-  leg2.AddEntry(gPbPb_stat, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pe");
+  //leg2.SetHeader("ALICE");
+  leg2.AddEntry(gPbPb_stat, "ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
@@ -377,8 +399,11 @@ void PlotResultsC2C1NetXi_volumes(){
   // gSHM_BS[5]->Draw("samee3l");
   gSHM_BS[6]->Draw("samee3l");
   // gSHM_BS[7]->Draw("samee3l");
-  gSHM_BS[8]->Draw("samee3l");
-  gSHM_BS[9]->Draw("samee3l");
+  // gSHM_BS[8]->Draw("samee3l");
+  // gSHM_BS[9]->Draw("samee3l");
+  // gSHM_BS[10]->Draw("samee3l");
+  gSHM_BS[11]->Draw("samee3l");
+  gSHM_BS[12]->Draw("samee3l");
 
   leg.Draw("same");
   leg2.Draw("same");
@@ -393,47 +418,31 @@ void PlotResultsC2C1NetXi_volumes(){
 
   TLatex t;
   t.SetTextFont(44);
-  t.SetTextSize(23);
-  t.DrawLatex(35, 0.95, "|#it{#eta}| < 0.8");
+  t.SetTextSize(30);
+  t.DrawLatex(37, 0.9515, "|#it{#eta}| < 0.8");
 
   //t.DrawLatex(35, 0.945, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(35, 0.945, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(37, 0.945, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_c2c1_volumes.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1_volumes.eps"/* .pdf" */);
+  cResult.Print("cC2C1_volumes.pdf"/* .pdf" */);
 
   // chi2
-  utils::MergeGraphPoints(gSHM_BS[0], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[0], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[1], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[1], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[2], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[2], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[3], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[3], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[4], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[4], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[5], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[5], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[6], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[6], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[7], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[7], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[8], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[8], 4, 5);
-  utils::MergeGraphPoints(gSHM_BS[9], 1, 2);
-  utils::MergeGraphPoints(gSHM_BS[9], 4, 5);
+  for (int i = 0; i < 13; ++i){
+    utils::MergeGraphPoints(gSHM_BS[i], 1, 2);
+    utils::MergeGraphPoints(gSHM_BS[i], 4, 5);
+  }
 
   std::cout << "chi2 = " << utils::chi2(gPbPb_stat, gPbPb_sys, gSHM_BS[2]) << std::endl;
 
   TCanvas cchi2("cchi2", "cchi2");
   TGraphErrors gchi2;
-  double vols[] = {1., 1.5, 2., 2.5, 2.6, 2.8, 3., 3.2, 3.5, 4.};
-  for(int i{0}; i < 10; ++i){
-    if (i == 4 || i == 5 || i == 7) continue;
+  double vols[] = {1., 1.5, 2., 2.5, 2.8, 2.9, 3., 3.1, 3.2, 3.3, 3.4, 3.5, 4.};
+  for(int i{0}; i < 13; ++i){
+    //if (i == 4 || i == 5 || i == 7) continue;
     gchi2.AddPoint(vols[i], utils::chi2(gPbPb_stat, gPbPb_sys, gSHM_BS[i]));
     gchi2.SetPointError(gchi2.GetN() - 1, 0., utils::chi2err(gPbPb_stat, gPbPb_sys, gSHM_BS[i]));
   }

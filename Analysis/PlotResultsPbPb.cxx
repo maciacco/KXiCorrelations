@@ -1,8 +1,8 @@
 #include "../utils/Config.h"
-#include "../utils/Utils.h"
 
-void PlotResults(){
+void PlotResultsPbPb(){
   gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
 
   TFile fpp("out_sys_17_finalBinning.root"); // 17pq
   TFile fpPb("out_sys_16_finalBinning.root"); // 16qt
@@ -24,7 +24,7 @@ void PlotResults(){
   TFile fEPOSPbPb("models/out_analysis_repro.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 1.5, 2500, 1, -0.056, 0.005);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.056, 0.005);
   TLegend leg(0.16, 0.15, 0.7, 0.3);
   TLegend leg2(0.18, 0.3, 0.5, 0.4);
   TLegend leg3(0.5275, 0.3, 0.7975, 0.35);
@@ -101,10 +101,10 @@ void PlotResults(){
   TFile fSHM_BS_("models/PbPb_gammaS_SHM_baryonplusstrange.root");
   TGraphErrors* gSHM_BS_ = (TGraphErrors*)fSHM_BS_.Get("Grrho");
 
-  for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
+  for (int iP = kNPointspp - 1; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
     int index = kNPointsPbPb - iP - 2 + kNPointspp;
     gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : gSHM_BS_->GetPointX(iP - kNPointspp + 1), iP < kNPointspp - 1 ? shm_pp[iP][0] : gSHM_BS_->GetPointY(iP - kNPointspp + 1));
-    gSHM.SetPointError(iP, 0, iP < kNPointspp - 1 ? shm_pp[iP][1] : gSHM_BS_->GetErrorY(iP - kNPointspp + 1));
+    gSHM.SetPointError(iP - kNPointspp + 1, 0, iP < kNPointspp - 1 ? shm_pp[iP][1] : gSHM_BS_->GetErrorY(iP - kNPointspp + 1));
   }
 
   // for (int iP = 0; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
@@ -315,25 +315,25 @@ void PlotResults(){
   leg2.SetColumnSeparation(0.1); // 0.2
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
+  //leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
   
   leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
+  //leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
+  //leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
   leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
 
   // leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
-  leg2.AddEntry(gpp_stat, "pp", "pe");
-  leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
+  // leg2.AddEntry(gpp_stat, "pp", "pe");
+  // leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
   leg2.AddEntry(gPbPb_stat, "Pb#minusPb", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
-  //leg3.AddEntry(&gEPOS_pPb, "EPOS LHC, p#minusPb", "lf");
+  leg.AddEntry(&gEPOS_pPb, "EPOS LHC, Pb#minusPb", "lf");
 
   // line
-  TLine l(1.5, 0, 2500, 0);
+  TLine l(30, 0, 2500, 0);
   l.SetLineWidth(2);
   l.SetLineStyle(kDashed);
 
@@ -342,31 +342,31 @@ void PlotResults(){
   l.Draw("same");
   leg.Draw("same");
   leg2.Draw("same");
-  //leg3.Draw("same");
+  leg3.Draw("same");
   // gSHM_PbPb.Draw("samee3l");
   // gSHM_pp.Draw("samee3l");
   gSHM.Draw("samee3l");
   gPYTHIA_ANGANTYR.Draw("samee3l");
  //gPYTHIA_ANGANTYR_PPB_CRQCD_ROPE.Draw("samee3l");
-  gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
+  //gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gHIJING.Draw("samee3l");
   
   //gEPOS_pPb.Draw("samee3l");
-  //gEPOS_PbPb->Draw("samee3l");
-  gPYTHIA_CRQCD->Draw("samee3l");
+  gEPOS_PbPb->Draw("samee3l");
+  //gPYTHIA_CRQCD->Draw("samee3l");
   
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
-  gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
+  //gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
   //gSHM_Vanilla_->Draw("samee3l");
   //gSHM_PPB_BOOST.Draw("same3l");
   //gSHM_PPB_WOBOOST.Draw("same3l");
 
   gPbPb_sys->Draw("e5same");
-  gpp_sys->Draw("e5same");
+  //gpp_sys->Draw("e5same");
   gPbPb_stat->Draw("pesame");
-  gpp_stat->Draw("pesame");
-  gpPb_sys->Draw("e5same");
-  gpPb_stat->Draw("pesame");
+  //gpp_stat->Draw("pesame");
+  //gpPb_sys->Draw("e5same");
+  //gpPb_stat->Draw("pesame");
 
   TLatex t;
   t.SetTextFont(44);
@@ -376,15 +376,34 @@ void PlotResults(){
   t.DrawLatex(70, -0.0035, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
   t.DrawLatex(70, -0.0075, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
-  TFile o("final_plot_rho_finalBinning.root", "recreate");
+  TFile o("rho_pbpb.root", "recreate");
   o.cd();
 
-  gPYTHIA.Write();
+  //gPYTHIA.Write();
   cResult.Write();
-  cResult.Print("cRho.pdf"/* .pdf" */);
-
-  std::cout << utils::chi2interp(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";
-  
+  cResult.Print("cRhoPbPb.pdf"/* .pdf" */);
+  gPbPb_stat->GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  gPbPb_stat->GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  gPbPb_sys->GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  gPbPb_sys->GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  gPbPb_sys->Write();
+  gPbPb_stat->Write();
+  gEPOS_PbPb->SetName("gEPOS_LHC_PbPb");
+  gEPOS_PbPb->GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  gEPOS_PbPb->GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  gEPOS_PbPb->Write();
+  gHIJING.SetName("gHIJING");
+  gHIJING.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  gHIJING.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  gHIJING.Write();
+  gPYTHIA_ANGANTYR.SetName("gPYTIHA_Angantyr");
+  gPYTHIA_ANGANTYR.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  gPYTHIA_ANGANTYR.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  gPYTHIA_ANGANTYR.Write();
+  gSHM.SetName("gGammasSHM");
+  gSHM.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  gSHM.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  gSHM.Write();
   o.Close();
   f.Close();
   f.Close();

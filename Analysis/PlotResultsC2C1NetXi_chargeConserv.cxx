@@ -24,14 +24,14 @@ void PlotResultsC2C1NetXi_chargeConserv(){
 
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
   TFile fSHM_B("models/Output_Final_B_vc3.0_CE.root");
+  TFile fSHM_BS("models/out_analysis_30.root");
   TFile fSHM_S("models/Output_Final_S_vc3.0_CE.root");
-  TFile fSHM_BS("models/Output_Final_BS_vc3.0_CE.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 30, 2500, 1, 0.94, 1.033);
-  TLegend leg(0.162, 0.7, 0.4, 0.85);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 30, 2500, 1, 0.94, 1.03);
+  TLegend leg(0.18, 0.73, 0.4, 0.88);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.162, 0.86, 0.7, 0.94);
+  TLegend leg2(0.18, 0.89, 0.7, 0.94);
 
   TGraphErrors gData;
   TGraphErrors gData_pp;
@@ -58,12 +58,15 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   // canvas
   cResult.SetLogx();
   frame.GetYaxis()->SetNdivisions(210);
-  frame.GetYaxis()->SetTitleOffset(1.3);
-  cResult.SetLeftMargin(0.14);
+  frame.GetYaxis()->SetTitleOffset(1.45);
+  cResult.SetLeftMargin(0.15);
   cResult.SetRightMargin(0.02);
   cResult.SetTopMargin(0.03);
 
   for (int iB = 0; iB < 6; ++iB){
+    TH1D* hsys = (TH1D*)f.Get(Form("hSys_%d", iB));
+    gPbPb_sys->SetPointY(iB, hsys->GetMean());
+    gPbPb_stat->SetPointY(iB, hsys->GetMean());
     gPbPb_sys->SetPointError(iB, mult_shm_PbPb_[iB] * 7.e-2, gPbPb_sys->GetErrorY(iB));
     gPbPb_stat->SetPointX(iB, mult_shm_PbPb_[iB]);
     gPbPb_sys->SetPointX(iB, mult_shm_PbPb_[iB]);
@@ -71,12 +74,18 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   //gPbPb_stat->Fit("pol0", "R", "", 40, 2000);
 
   for (int iB = 0; iB < 6; ++iB){
+    TH1D* hsys = (TH1D*)fpPb.Get(Form("hSys_%d", iB));
+    gpPb_sys->SetPointY(iB, hsys->GetMean());
+    gpPb_stat->SetPointY(iB, hsys->GetMean());
     gpPb_sys->SetPointError(iB, mult_pPb[iB] * 7.e-2, gpPb_sys->GetErrorY(iB));
     gpPb_stat->SetPointX(iB, mult_pPb[iB]);
     gpPb_sys->SetPointX(iB, mult_pPb[iB]);
   }
 
   for (int iB = 0; iB < 8; ++iB){
+    TH1D* hsys = (TH1D*)fpp.Get(Form("hSys_%d", iB));
+    gpp_sys->SetPointY(iB, hsys->GetMean());
+    gpp_stat->SetPointY(iB, hsys->GetMean());
     gpp_sys->SetPointError(iB, mult_pp[iB] * 7.e-2, gpp_sys->GetErrorY(iB));
     gpp_stat->SetPointX(iB, mult_pp[iB]);
     gpp_sys->SetPointX(iB, mult_pp[iB]);
@@ -265,7 +274,7 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   leg.SetTextFont(44);
   leg.SetTextSize(23);
   leg2.SetTextFont(44);
-  leg2.SetTextSize(23);
+  leg2.SetTextSize(30);
   //leg.SetNColumns(2);
   leg2.SetNColumns(3);
   //leg.SetColumnSeparation(0.4);
@@ -279,14 +288,14 @@ void PlotResultsC2C1NetXi_chargeConserv(){
   //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p-Pb", "f");
-  leg.SetHeader("TheFIST CE SHM, #it{T}_{chem} = 155 MeV, #it{V}_{C} = 3d#it{V}/d#it{y}");
+  leg.SetHeader("TheFIST CSM, #it{T}_{chem} = 155 MeV, #it{V}_{c} = 3d#it{V}/d#it{y}");
   leg.AddEntry(gSHM_BS, "B + S conservation");
   leg.AddEntry(gSHM_B, "B conservation");
   leg.AddEntry(gSHM_S, "S conservation");
   // leg2.AddEntry(gpp_stat, "ALICE, pp", "pe");
   // leg2.AddEntry(gpPb_stat, "ALICE, p-Pb", "pe");
-  leg2.SetHeader("ALICE Preliminary");
-  leg2.AddEntry(gPbPb_stat, "Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pe");
+  //leg2.SetHeader("ALICE");
+  leg2.AddEntry(gPbPb_stat, "ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pe");
   //leg.AddEntry(&gPYTHIA, "PYTHIA, pp #sqrt{#it{s}_{NN}}=13 TeV");
 
   // line
@@ -323,17 +332,17 @@ void PlotResultsC2C1NetXi_chargeConserv(){
 
   TLatex t;
   t.SetTextFont(44);
-  t.SetTextSize(23);
-  t.DrawLatex(35, 0.95, "|#it{#eta}| < 0.8");
+  t.SetTextSize(30);
+  t.DrawLatex(37, 0.951, "|#it{#eta}| < 0.8");
 
   //t.DrawLatex(35, 0.945, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(35, 0.945, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(37, 0.945, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("final_plot_c2c1_chrgeConserv.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1_chargeConserv.eps"/* .pdf" */);
+  cResult.Print("cC2C1_chargeConserv.pdf"/* .pdf" */);
   o.Close();
   f.Close();
   //f2.Close();

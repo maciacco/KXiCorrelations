@@ -23,10 +23,11 @@ void PlotResults_Xi(){
   gPbPb_sys->SetName("gRhoSys_PbPb");
 
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
+  TFile fEPOSPbPb("models/out_analysis_repro.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{1}(#Xi^{+})", 1, 1.5, 2500, 1, 0.001, 7.);
-  TLegend leg(0.5, 0.7, 0.8, 0.9);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{1}(#Xi^{#minus})", 1, 1.5, 2500, 1, 0.001, 7.);
+  TLegend leg(0.6, 0.3, 0.8, 0.35);
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
   TLegend leg2(0.18, 0.8, 0.5, 0.9);
 
@@ -40,6 +41,7 @@ void PlotResults_Xi(){
   TGraphErrors gPYTHIA_ANGANTYR;
   TGraphErrors gPYTHIA_ANGANTYR_PPB;
   TGraphErrors gEPOS_pPb;
+  TGraphErrors *gEPOS_PbPb;
   TGraphErrors gHIJING;
 
   // h_c1a->Add(h_c1m);
@@ -137,6 +139,7 @@ void PlotResults_Xi(){
   // }
 
   gPYTHIA_CRQCD = (TGraphErrors*)fPythia.Get("Grc2byc1xi_net");
+  gEPOS_PbPb = (TGraphErrors*)fEPOSPbPb.Get("Gxin");
 
   for (int iP = 0; iP < kNPointspp - 2; ++iP){
     gPYTHIA_CRMPI_ROPON.AddPoint(mult_shm_pp_[iP], pythia_crmpi_ropon_c2c1[iP][0]);
@@ -260,10 +263,10 @@ void PlotResults_Xi(){
   gHIJING.SetLineColor(kMagenta);
   gHIJING.SetFillStyle(3002);
 
-  // gEPOS_pPb.SetLineWidth(2);
-  // gEPOS_pPb.SetLineColor(kViolet+1);
-  // gEPOS_pPb.SetFillColor(kViolet+1);
-  // gEPOS_pPb.SetFillStyle(3002);
+  gEPOS_PbPb->SetLineWidth(2);
+  gEPOS_PbPb->SetLineColor(kViolet+1);
+  gEPOS_PbPb->SetFillColor(kViolet+1);
+  gEPOS_PbPb->SetFillStyle(3002);
   //gPYTHIA.SetLineStyle(kDashed);
 
   gPYTHIA_CRQCD->SetLineWidth(2);
@@ -299,16 +302,16 @@ void PlotResults_Xi(){
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   // leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "f");
-  leg.SetHeader("TheFIST #gamma_{s} CE SHM, #it{V}_{C} = 3.0 d#it{V}/d#it{y}");
-  leg.AddEntry(gSHM_BS, "Pb#minusPb, B + S, w/ resonances", "f");
-  leg.AddEntry(gSHM_B, "Pb#minusPb, B, w/ resonances", "f");
-  leg.AddEntry(gSHM_BS_woRES, "Pb#minusPb, B + S, w/o resonances", "f");
-  leg.AddEntry(gSHM_pp, "pp, B + S, w/ resonances", "f");
+  // leg.SetHeader("TheFIST #gamma_{s} CE SHM, #it{V}_{C} = 3.0 d#it{V}/d#it{y}");
+  // leg.AddEntry(gSHM_BS, "Pb#minusPb, B + S, w/ resonances", "f");
+  // leg.AddEntry(gSHM_B, "Pb#minusPb, B, w/ resonances", "f");
+  // leg.AddEntry(gSHM_BS_woRES, "Pb#minusPb, B + S, w/o resonances", "f");
+  // leg.AddEntry(gSHM_pp, "pp, B + S, w/ resonances", "f");
   // leg.AddEntry(gSHM_BS_3_5, "#it{V}_{C} = 3.5 d#it{V}/d#it{y}", "f");
   // leg.AddEntry(gSHM_BS_4, "#it{V}_{C} = 4.0 d#it{V}/d#it{y}", "f");
   // leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA MPI, pp", "f");
   // leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  //leg.AddEntry(&gEPOS_pPb, "EPOS, p-Pb", "f");
+  leg.AddEntry(gEPOS_PbPb, "EPOS LHC, Pb#minusPb", "f");
   // leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "f");
   // leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");
@@ -338,9 +341,10 @@ void PlotResults_Xi(){
   // gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   // gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
 
-  //leg.Draw("same");
+  leg.Draw("same");
   leg2.Draw("same");
 
+  gEPOS_PbPb->Draw("same3l");
   gPbPb_sys->Draw("e5same");
   gPbPb_stat->Draw("pesame");
   gpp_sys->Draw("e5same");
