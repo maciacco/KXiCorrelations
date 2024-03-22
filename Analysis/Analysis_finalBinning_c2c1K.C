@@ -117,7 +117,7 @@ void Analysis_finalBinning_c2c1K()
       fin->Close();
       delete fin;
     }
-    
+
     TGraphErrors g;
     g.SetName(Form("g_%d", iVar));
     for(int i = 1; i < kNCentBinsAnalysis; i++)

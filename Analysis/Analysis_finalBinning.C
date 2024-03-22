@@ -23,7 +23,7 @@ const char* period = "15o"; // 18qr
 
 void Analysis_finalBinning()
 {
-  TFile f(Form("out_sys_%s_finalBinning_%s.root", period, kC2c1 ? "c2c1" : ""), "recreate");
+  TFile f(Form("out_sys_%s_finalBinning_%s_study_bdt.root", period, kC2c1 ? "c2c1" : ""), "recreate");
   TH1D *hSys[kNCentBinsAnalysis];
   TGraphErrors gRho;
   gRho.SetName("gRho");
@@ -41,6 +41,14 @@ void Analysis_finalBinning()
   {
     std::cout << "var = " << iVar << "..." << std::endl;
     // k-only variation
+
+    if ((iVar%3)!=1) continue;
+    if ((iVar/3)%5!=2) continue;
+    if ((iVar/5/3)%2!=1) continue;
+    if ((iVar/5/3/2)%2!=1) continue;
+
+    if ((iVar/3/5/2/2)%3!=1) continue;
+    //if ((iVar/3/5/2/2/3)%10!=5) continue;
     // if ((iVar/5/3)%2!=1) continue;
     // if ((iVar%3)!=1) continue;
     // if ((iVar/3)%5!=2) continue;
@@ -117,7 +125,7 @@ void Analysis_finalBinning()
       fin->Close();
       delete fin;
     }
-    
+
     TGraphErrors g;
     g.SetName(Form("g_%d", iVar));
     for(int i = 1; i < kNCentBinsAnalysis; i++)

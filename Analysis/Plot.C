@@ -10,7 +10,7 @@ void Plot()
 {
   gStyle->SetOptStat(0);
 
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(p - #bar{p})/#it{#kappa}_{1}(p + #bar{p})", 1, 75, 2500, 1, 0.88, 1.01);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(p - #bar{p})/#it{#kappa}_{1}(p + #bar{p})", 1, 75, 2500, 1, 0.9, 1.01);
 
   double mult_err[8] = {0};
   double multSHM_err[8] = {0};
@@ -37,7 +37,7 @@ void Plot()
   line.SetLineWidth(2);
   line.SetLineStyle(kDashed);
 
-  TLegend leg(0.17, 0.16, 0.5, 0.31);
+  TLegend leg(0.17, 0.65, 0.5, 0.85);
   leg.SetTextFont(44);
   leg.SetTextSize(29);
   leg.AddEntry(&gData, "#splitline{ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV}{Phys. Lett. B 844 (2023) 137545}", "pe");

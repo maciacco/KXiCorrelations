@@ -1,4 +1,4 @@
-constexpr bool fullRange = false;
+constexpr bool fullRange = true;
 void CombineChi2(){
 
   gStyle->SetOptStat(0);
@@ -6,17 +6,17 @@ void CombineChi2(){
 
   TGaxis::SetMaxDigits(3);
 
-  TFile f(fullRange ? "final_plot_chi2_combined_test.root" : "final_plot_chi2_combined_zoom_test.root", "recreate");
-  TFile f1("final_plot_c2c1_volumes_test.root");
-  TFile f2("final_plot_rho_volumes_test.root");
+  TFile f(fullRange ? "final_plot_chi2_combined_test_nosys.root" : "final_plot_chi2_combined_zoom_test_nosys.root", "recreate");
+  TFile f1("final_plot_c2c1_volumes_nosys.root");
+  TFile f2("final_plot_rho_volumes_nosys.root");
   // double vols_bin[] = {0.55, 1.45, 1.55, 2.45, 2.55, 2.65, 2.95, 3.05, 3.35, 3.65, 4.35};
   // TH1D h("h", ";#it{V}_{c} (d#it{V}/d#it{y});#chi^{2};", 10, vols_bin);
-  TH2D frame("frame", ";#it{V}_{c} (d#it{V}/d#it{y});#chi^{2};", 7, 0.75, 4.25, 1100, 0, 1100);
+  TH2D frame("frame", ";#it{V}_{c} (d#it{V}/d#it{y});#chi^{2};", 7, 0.75, 4.25, 1300, 0, 1300);
   TH1D h("h", ";#it{V}_{c} (d#it{V}/d#it{y});#chi^{2};", 7, 0.75, 4.25);
   TGraphErrors *g1 = (TGraphErrors*)f1.Get(";2");
   TGraphErrors *g2 = (TGraphErrors*)f2.Get(";2");
   g1->SetName("chi2");
-  
+
   // double vols[] = {1., 1.5, 2., 2.5, 2.6, 2.8, 3., 3.2, 3.5, 4.};
   double vols[] = {1., 1.5, 2., 2.5, 3., 3.5, 4.};
   for (int i{0}; i < g1->GetN(); ++i){
@@ -48,7 +48,7 @@ void CombineChi2(){
   g1->GetFunction("profile")->SetLineWidth(2);
   //h.Draw("psx0");
   frame.GetXaxis()->SetRangeUser(fullRange ? 0.85 : 2.25, 4.25);
-  frame.GetYaxis()->SetRangeUser(fullRange ? 0 : 0, fullRange ? 1100 : 60);
+  frame.GetYaxis()->SetRangeUser(fullRange ? 0 : 0, fullRange ? 1500 : 70);
   for (int i{0}; i < g1->GetN(); ++i){
     //g1->SetPointError(i, 0., 0. );
   }

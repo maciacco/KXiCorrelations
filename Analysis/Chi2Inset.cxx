@@ -2,9 +2,9 @@ void Chi2Inset(){
   TGaxis::SetMaxDigits(3);
   gStyle->SetOptFit(0);
   gStyle->SetOptStat(0);
-  TFile f1("final_plot_chi2_combined_test.root");
-  TFile f2("final_plot_chi2_combined_zoom_test.root");
-  TFile fout("final_chi2_inset.root", "recreate");  
+  TFile f1("final_plot_chi2_combined_test_nosys.root");
+  TFile f2("final_plot_chi2_combined_zoom_test_nosys.root");
+  TFile fout("final_chi2_inset_nosys.root", "recreate");
   TCanvas c0("c0", "c0", 500, 500);
   auto c = (TCanvas*)f1.Get("c");
   c->SetName("c1");
@@ -13,7 +13,7 @@ void Chi2Inset(){
   TPad pad0("pad0", "pad0", 0., 0., 1., 1., 0);
   TPad pad1("pad1", "pad1", 0.38, 0.22, 0.88, 0.63, 0);
   c0.cd();
-  
+
   pad0.Draw();
   pad0.cd();
   pad0.SetTopMargin(0.06);
@@ -24,7 +24,7 @@ void Chi2Inset(){
   g->SetName("chi2_1");
   //g->SetMarkerSize(0.8);
   fr->Draw("");
-  
+
   pad1.Draw();
   pad1.cd();
   pad1.SetLeftMargin(0.21);
@@ -64,7 +64,7 @@ void Chi2Inset(){
   double min = profile->GetMinimum(1., 4., 1.e-4, 1000000.);
   double left = profile->GetX(min + 1, 1., minX, 1.e-4, 1000000.);
   double right = profile->GetX(min + 1, minX, 4., 1.e-4, 1000000.);
-  t.DrawLatex(0.47, 0.8, Form("#it{V}_{c} = %.2f #pm %.2f d#it{V}/d#it{y}", minX, 0.5 * (right - left)));
+  t.DrawLatex(0.47, 0.8, Form("#it{V}_{c} = %.2f #pm %.2f d#it{V}/d#it{y}", minX, std::hypot(0.5 * (right - left), 0.5 * (3.28869-3.09651))));
 
   TLegend leg(0.5, 0.65, 0.8, 0.77);
   //t.SetNDC(false);

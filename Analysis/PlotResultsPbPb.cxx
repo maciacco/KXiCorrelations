@@ -4,6 +4,10 @@ void PlotResultsPbPb(){
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
 
+  double centCl[] = {5., 20., 35., 45., 60., 75.};
+  double centClExtSHM[] = {75., 65., 55., 45., 35., 25., 15., 5.};
+  double centClExt[] = {5., 15., 25., 35., 45., 55., 65., 75.};
+
   TFile fpp("out_sys_17_finalBinning.root"); // 17pq
   TFile fpPb("out_sys_16_finalBinning.root"); // 16qt
   TFile f("out_sys_PbPb_finalBinning.root" /* "out_sys_PbPb_new_3.root" */); // 15o+18qr
@@ -24,7 +28,7 @@ void PlotResultsPbPb(){
   TFile fEPOSPbPb("models/out_analysis_repro.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 30, 2500, 1, -0.056, 0.005);
+  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 0, 80, 1, -0.056, 0.005);
   TLegend leg(0.16, 0.15, 0.7, 0.3);
   TLegend leg2(0.18, 0.3, 0.5, 0.4);
   TLegend leg3(0.5275, 0.3, 0.7975, 0.35);
@@ -47,7 +51,7 @@ void PlotResultsPbPb(){
   TGraphErrors gSHM_PPB_WOBOOST;
 
   // canvas
-  cResult.SetLogx();
+  //cResult.SetLogx();
   frame.GetYaxis()->SetNdivisions(210);
   frame.GetYaxis()->SetTitleOffset(1.45);
   cResult.SetLeftMargin(0.15);
@@ -56,11 +60,11 @@ void PlotResultsPbPb(){
 
   for (int iB = 0; iB < 6; ++iB){
     TH1D* hsys = (TH1D*)f.Get(Form("hSys_%d", iB));
-    gPbPb_sys->SetPointY(iB, hsys->GetMean());
-    gPbPb_stat->SetPointY(iB, hsys->GetMean());
-    gPbPb_sys->SetPointError(iB, mult_shm_PbPb_[iB] * 7.e-2, gPbPb_sys->GetErrorY(iB));
-    gPbPb_stat->SetPointX(iB, mult_shm_PbPb_[iB]);
-    gPbPb_sys->SetPointX(iB, mult_shm_PbPb_[iB]);
+    // gPbPb_sys->SetPointY(iB, hsys->GetMean());
+    // gPbPb_stat->SetPointY(iB, hsys->GetMean());
+    gPbPb_sys->SetPointError(iB, 2.5, gPbPb_sys->GetErrorY(iB));
+    gPbPb_stat->SetPointX(iB, centCl[iB]);
+    gPbPb_sys->SetPointX(iB, centCl[iB]);
   }
 
   for (int iB = 0; iB < 6; ++iB){
@@ -103,7 +107,7 @@ void PlotResultsPbPb(){
 
   for (int iP = kNPointspp - 1; iP < kNPointsPbPb + kNPointspp - 1; ++iP){
     int index = kNPointsPbPb - iP - 2 + kNPointspp;
-    gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : gSHM_BS_->GetPointX(iP - kNPointspp + 1), iP < kNPointspp - 1 ? shm_pp[iP][0] : gSHM_BS_->GetPointY(iP - kNPointspp + 1));
+    gSHM.AddPoint(iP < kNPointspp - 1 ? mult_shm_pp[iP] : centClExtSHM[iP - kNPointspp + 1], iP < kNPointspp - 1 ? shm_pp[iP][0] : gSHM_BS_->GetPointY(iP - kNPointspp + 1));
     gSHM.SetPointError(iP - kNPointspp + 1, 0, iP < kNPointspp - 1 ? shm_pp[iP][1] : gSHM_BS_->GetErrorY(iP - kNPointspp + 1));
   }
 
@@ -116,7 +120,7 @@ void PlotResultsPbPb(){
   for (int iP = 0; iP < kNPointsPbPb; ++iP){
     // gSHM_PbPb.AddPoint(mult_shm_PbPb[iP], shm_PbPb[iP][0]);
     // gSHM_PbPb.SetPointError(iP, 0, shm_PbPb[iP][1]);
-    gHIJING.AddPoint(mult_shm_PbPb[iP], hijing[iP][0]);
+    gHIJING.AddPoint(centClExt[iP], hijing[iP][0]);
     gHIJING.SetPointError(iP, 0, hijing[iP][1]);
   }
 
@@ -138,6 +142,9 @@ void PlotResultsPbPb(){
 
   gPYTHIA_CRQCD = (TGraphErrors*)fPythia.Get("Grrho_net");
   gEPOS_PbPb = (TGraphErrors*)fEPOSPbPb.Get("Grrho");
+  for (int iP = 0; iP < 8; ++iP){
+    gEPOS_PbPb->SetPointX(iP, centClExt[iP]);
+  }
 
   for (int iP = 0; iP < kNPointspp - 2; ++iP){
     gPYTHIA_CRMPI_ROPON.AddPoint(mult_pythia_[iP], pythia_crmpi_ropon_netCorr[iP][0]);
@@ -316,14 +323,14 @@ void PlotResultsPbPb(){
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
-  
+
   leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
   //leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
   //leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
-  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+  //leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
 
   // leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
   // leg2.AddEntry(gpp_stat, "pp", "pe");
@@ -333,7 +340,7 @@ void PlotResultsPbPb(){
   leg.AddEntry(&gEPOS_pPb, "EPOS LHC, Pb#minusPb", "lf");
 
   // line
-  TLine l(30, 0, 2500, 0);
+  TLine l(0, 0, 80, 0);
   l.SetLineWidth(2);
   l.SetLineStyle(kDashed);
 
@@ -346,15 +353,15 @@ void PlotResultsPbPb(){
   // gSHM_PbPb.Draw("samee3l");
   // gSHM_pp.Draw("samee3l");
   gSHM.Draw("samee3l");
-  gPYTHIA_ANGANTYR.Draw("samee3l");
+  //gPYTHIA_ANGANTYR.Draw("samee3l");
  //gPYTHIA_ANGANTYR_PPB_CRQCD_ROPE.Draw("samee3l");
   //gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gHIJING.Draw("samee3l");
-  
+
   //gEPOS_pPb.Draw("samee3l");
   gEPOS_PbPb->Draw("samee3l");
   //gPYTHIA_CRQCD->Draw("samee3l");
-  
+
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   //gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
   //gSHM_Vanilla_->Draw("samee3l");
@@ -373,8 +380,8 @@ void PlotResultsPbPb(){
   t.SetTextSize(30);
   t.DrawLatex(2.1, -0.0035, "#sqrt{#it{s}_{NN}} = 5.02 TeV");
   t.DrawLatex(2.1, -0.0075, "|#it{#eta}| < 0.8");
-  t.DrawLatex(70, -0.0035, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(70, -0.0075, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(60, -0.0035, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
+  t.DrawLatex(60, -0.0075, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   TFile o("rho_pbpb.root", "recreate");
   o.cd();
@@ -396,10 +403,10 @@ void PlotResultsPbPb(){
   gHIJING.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
   gHIJING.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
   gHIJING.Write();
-  gPYTHIA_ANGANTYR.SetName("gPYTIHA_Angantyr");
-  gPYTHIA_ANGANTYR.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
-  gPYTHIA_ANGANTYR.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
-  gPYTHIA_ANGANTYR.Write();
+  // gPYTHIA_ANGANTYR.SetName("gPYTIHA_Angantyr");
+  // gPYTHIA_ANGANTYR.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
+  // gPYTHIA_ANGANTYR.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");
+  // gPYTHIA_ANGANTYR.Write();
   gSHM.SetName("gGammasSHM");
   gSHM.GetXaxis()->SetTitle("#LTd#it{N}_{ch}/d#it{#eta}#GT");
   gSHM.GetYaxis()->SetTitle("#it{#rho}_{#Delta#Xi #DeltaK}");

@@ -24,6 +24,8 @@
 using namespace std;
 using ROOT::RDataFrame;
 
+constexpr double fac = 0.;
+
 namespace utils
 {
 
@@ -242,13 +244,13 @@ namespace utils
       double modelstat = gmodel->GetErrorY(i);
 
       double tmp = 0.;
-      tmp = ( o - model ) * ( o - model );
-      tmp = tmp / ( ostat * ostat + osyst * osyst/*  + modelstat * modelstat */);
+      tmp = ( o + fac * osyst - model ) * ( o + fac * osyst - model );
+      tmp = tmp / ( std::pow(ostat / o * (o + fac * osyst), 2) /* + osyst * osyst *//*  + modelstat * modelstat */);
       res += tmp;
     }
     return res;
   }
-    
+
   Double_t chi2interp(TGraphErrors *gstat, TGraphErrors *gsyst, TGraphErrors *gmodel){
     double res = 0.;
     for (int i{0}; i < gstat->GetN(); ++i){
@@ -292,8 +294,8 @@ namespace utils
 
       double tmp = 0.;
       //tmp = 2 * (o - model) * sqrt( ostat * ostat + osyst * osyst);
-      tmp = tmp + 2 * (o - model) * sqrt( modelstat * modelstat );
-      tmp = tmp / ( ostat * ostat + osyst * osyst/*  + modelstat * modelstat  */);
+      tmp = tmp + 2 * (o + fac * osyst - model) * sqrt( modelstat * modelstat );
+      tmp = tmp / ( std::pow(ostat / o * (o + fac * osyst), 2 ) /* + osyst * osyst *//*  + modelstat * modelstat  */);
       res += ( tmp * tmp);
     }
     return sqrt(res);

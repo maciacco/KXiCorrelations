@@ -28,9 +28,9 @@ void PlotResultsC2C1NetXi(){
 
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 1.5, 2500, 1, 0.90, 1.06);
-  TLegend leg(0.16, /* 0.65 */0.69, 0.7, 0.84); // 0.85
+  TLegend leg(0.16, /* 0.65 */0.66, 0.7, 0.81); // 0.85
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
-  TLegend leg2(0.18, 0.85, 0.5, 0.95);
+  TLegend leg2(0.18, 0.82, 0.5, 0.95);
   TLegend leg3(0.5275, 0.84, 0.7975, 0.89);
 
   TGraphErrors gData;
@@ -245,8 +245,8 @@ void PlotResultsC2C1NetXi(){
   gPYTHIA_ANGANTYR.SetFillStyle(3002);
 
   gHIJING.SetLineWidth(2);
-  gHIJING.SetFillColor(kMagenta);
-  gHIJING.SetLineColor(kMagenta);
+  gHIJING.SetFillColor(kMagenta - 7);
+  gHIJING.SetLineColor(kMagenta - 7);
   gHIJING.SetFillStyle(3002);
 
   gEPOS_PbPb->SetLineWidth(2);
@@ -266,8 +266,8 @@ void PlotResultsC2C1NetXi(){
   gPYTHIA_CRQCD->SetFillStyle(3002);
 
   gPYTHIA_CRMPI_ROPOFF.SetLineWidth(2);
-  gPYTHIA_CRMPI_ROPOFF.SetLineColor(kOrange + 7);
-  gPYTHIA_CRMPI_ROPOFF.SetFillColor(kOrange + 7);
+  gPYTHIA_CRMPI_ROPOFF.SetLineColor(kRed - 4);
+  gPYTHIA_CRMPI_ROPOFF.SetFillColor(kRed - 4);
   gPYTHIA_CRMPI_ROPOFF.SetFillStyle(3002);
 
   gPYTHIA_CRMPI_ROPON.SetLineWidth(2);
@@ -298,12 +298,12 @@ void PlotResultsC2C1NetXi(){
   leg2.SetNColumns(3);
   leg.SetColumnSeparation(0.4);
   leg2.SetColumnSeparation(0.1);
-  leg2.SetHeader("ALICE");
+  leg2.SetHeader("ALICE, #sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
   
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3 d#it{V}/d#it{y}", "lf");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
   leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
@@ -358,7 +358,7 @@ void PlotResultsC2C1NetXi(){
   TLatex t;
   t.SetTextFont(44);
   t.SetTextSize(30);
-  t.DrawLatex(/* 35 */2.1, 0.92, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
+  //t.DrawLatex(/* 35 */2.1, 0.92, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
   //t.DrawLatex(2.5, 0.940, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
   t.DrawLatex(2.1, 0.91 /* 0.935 */, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");

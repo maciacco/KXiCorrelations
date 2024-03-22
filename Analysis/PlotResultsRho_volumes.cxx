@@ -379,7 +379,7 @@ void PlotResultsRho_volumes(){
 
   cResult.cd();
   frame.Draw();
-  
+
   l.Draw("same");
 
   //gSHM.Draw("samee3l");
@@ -424,7 +424,7 @@ void PlotResultsRho_volumes(){
   t.DrawLatex(37, -0.084, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
   t.DrawLatex(37, -0.093, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
-  TFile o("final_plot_rho_volumes.root", "recreate");
+  TFile o("final_plot_rho_volumes_nosys.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
