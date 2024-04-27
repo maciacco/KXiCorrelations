@@ -11,7 +11,7 @@ void Chi2Inset(){
   auto c1 = (TCanvas*)f2.Get("c");
   c1->SetName("c2");
   TPad pad0("pad0", "pad0", 0., 0., 1., 1., 0);
-  TPad pad1("pad1", "pad1", 0.38, 0.22, 0.88, 0.63, 0);
+  TPad pad1("pad1", "pad1", 0.38, 0.2, 0.88, 0.6, 0);
   c0.cd();
 
   pad0.Draw();
@@ -58,15 +58,17 @@ void Chi2Inset(){
   t.SetTextSize(20);
   t.SetNDC();
   t.DrawLatex(0.38, 0.87, "ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV");
+  t.SetTextSize(18);
+  t.DrawLatex(0.26, 0.8, "TheFIST CE SHM, #it{T}_{chem} = 155 MeV, #gamma_{s} = 1");
 
   TF1 *profile = (TF1*)g->GetFunction("profile");
   double minX = profile->GetMinimumX(1., 4., 1.e-4, 1000000.);
   double min = profile->GetMinimum(1., 4., 1.e-4, 1000000.);
   double left = profile->GetX(min + 1, 1., minX, 1.e-4, 1000000.);
   double right = profile->GetX(min + 1, minX, 4., 1.e-4, 1000000.);
-  t.DrawLatex(0.47, 0.8, Form("#it{V}_{c} = %.2f #pm %.2f d#it{V}/d#it{y}", minX, std::hypot(0.5 * (right - left), 0.5 * (3.28869-3.09651))));
+  t.DrawLatex(0.48, 0.73, Form("#it{V}_{c} = %.2f #pm %.2f d#it{V}/d#it{y}", minX, std::hypot(0.5 * (right - left), 0.5 * (3.28869-3.09651))));
 
-  TLegend leg(0.5, 0.65, 0.8, 0.77);
+  TLegend leg(0.5, 0.6, 0.8, 0.7);
   //t.SetNDC(false);
   leg.SetTextFont(44);
   leg.SetTextSize(20);

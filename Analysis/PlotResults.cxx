@@ -25,7 +25,7 @@ void PlotResults(){
 
   TCanvas cResult("cResult", "cResult", 800, 800);
   TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 1.5, 2500, 1, -0.056, 0.013);
-  TLegend leg(0.16, 0.15, 0.7, 0.3);
+  TLegend leg(0.16, 0.15, 0.7, 0.35);
   TLegend leg2(0.18, 0.82, 0.5, 0.95);
   TLegend leg3(0.5275, 0.3, 0.7975, 0.35);
   //(0.16395348837209303, 0.650399548902823, 0.7395348837209302, 0.9167587400421383);
@@ -315,15 +315,18 @@ void PlotResults(){
   leg2.SetColumnSeparation(0.1); // 0.2
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
+  TH1F hEmpty;
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
-
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(&hEmpty, "", "");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
   leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
   leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
   leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+  leg.AddEntry(&gSHM, "TheFIST CE SHM, #it{V}_{c} = 3 d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(&hEmpty, "", "");
+  leg.AddEntry(&hEmpty, "#it{T}_{chem}, d#it{V}/d#it{y}, and #gamma_{s} from Phys. Rev. C 100 (2019) 054906", "");
 
   // leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");

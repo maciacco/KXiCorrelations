@@ -27,7 +27,7 @@ void Plot()
   gData.SetMarkerSize(1.);
   gData.SetLineColor(kBlue);
   gData.SetMarkerColor(kBlue);
-  
+
   gModel.SetLineWidth(2);
   gModel.SetLineColor(kOrange - 3);
   gModel.SetFillColor(kOrange - 3);
@@ -39,9 +39,9 @@ void Plot()
 
   TLegend leg(0.17, 0.65, 0.5, 0.85);
   leg.SetTextFont(44);
-  leg.SetTextSize(29);
+  leg.SetTextSize(26);
   leg.AddEntry(&gData, "#splitline{ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV}{Phys. Lett. B 844 (2023) 137545}", "pe");
-  leg.AddEntry(&gModel, "TheFIST CSM, #it{T}_{chem} = 155 MeV, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
+  leg.AddEntry(&gModel, "TheFIST CE SHM, #it{T}_{chem} = 155 MeV, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
 
   TCanvas c("cProton", "cProton", 800, 800);
   c.cd();

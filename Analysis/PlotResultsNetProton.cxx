@@ -1,7 +1,7 @@
 #include "../utils/Config.h"
 #include "../utils/Utils.h"
 
-void PlotResults(){
+void PlotResultsNetProton(){
   gStyle->SetOptStat(0);
 
   TFile fpp("out_sys_17_finalBinning.root"); // 17pq
@@ -316,8 +316,8 @@ void PlotResults(){
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
-  
-  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CSM, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
+
+  leg.AddEntry(&gSHM, "TheFIST #gamma_{s} CE SHM, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
   leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
   leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
@@ -350,11 +350,11 @@ void PlotResults(){
  //gPYTHIA_ANGANTYR_PPB_CRQCD_ROPE.Draw("samee3l");
   gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gHIJING.Draw("samee3l");
-  
+
   //gEPOS_pPb.Draw("samee3l");
   //gEPOS_PbPb->Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
-  
+
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
   gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
   //gSHM_Vanilla_->Draw("samee3l");
@@ -384,7 +384,7 @@ void PlotResults(){
   cResult.Print("cRho.pdf"/* .pdf" */);
 
   std::cout << utils::chi2interp(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";
-  
+
   o.Close();
   f.Close();
   f.Close();
