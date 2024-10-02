@@ -1,7 +1,7 @@
 #include "../utils/Config.h"
 #include "../utils/Utils.h"
 
-void PlotResultsC2C1NetXi(){
+void PlotResultsC2C1NetXi_CERNCourier(){
   gStyle->SetOptStat(0);
 
   TFile fpp("out_sys_17_finalBinning_c2c1.root"); // 17pq
@@ -27,8 +27,8 @@ void PlotResultsC2C1NetXi(){
   TFile fEPOSPbPb("models/out_analysis_repro.root");
 
   TCanvas cResult("cResult", "cResult", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#kappa}_{2}(#bar{#Xi}^{+} - #Xi^{#minus})/#it{#kappa}_{1}(#bar{#Xi}^{+} + #Xi^{#minus})", 1, 1.5, 2500, 1, 0.90, 1.08);
-  TLegend leg(0.16, /* 0.65 */0.61, 0.7, 0.81); // 0.85
+  TH2D frame("frame", ";Charged particle multiplicity;Variance / Mean (net-#Xi)", 1, 1.5, 2500, 1, 0.92, 1.05);
+  TLegend leg(0.2, /* 0.65 */0.68, 0.75, 0.8); // 0.85
   //TLegend leg2(0.162, 0.8, 0.7, 0.85);
   TLegend leg2(0.18, 0.82, 0.5, 0.95);
   TLegend leg3(0.5275, 0.84, 0.7975, 0.89);
@@ -289,7 +289,7 @@ void PlotResultsC2C1NetXi(){
 
   // legend
   leg.SetTextFont(44);
-  leg.SetTextSize(23);
+  leg.SetTextSize(30);
   leg2.SetTextFont(44);
   leg2.SetTextSize(30);
   leg3.SetTextFont(44);
@@ -302,17 +302,17 @@ void PlotResultsC2C1NetXi(){
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   TH1F hEmpty;
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
-  leg.AddEntry(&hEmpty, "", "");
+  //leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
+  //leg.AddEntry(&hEmpty, "", "");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
-  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
+  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA 8, pp", "lf");
+  leg.AddEntry(&gHIJING, "HIJING, Pb#minusPb", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
-  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
-  leg.AddEntry(&gSHM, "TheFIST CE SHM, #it{V}_{c} = 3 d#it{V}/d#it{y}", "lf");
-  leg.AddEntry(&hEmpty, "", "");
-  leg.AddEntry(&hEmpty, "#it{T}_{chem}, d#it{V}/d#it{y}, and #gamma_{s} from Phys. Rev. C 100 (2019) 054906", "");
+  //leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
+  //leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+  leg.AddEntry(&gSHM, "Statistical hadronization", "lf");
+  //leg.AddEntry(&hEmpty, "", "");
+  //leg.AddEntry(&hEmpty, "#it{T}_{chem}, d#it{V}/d#it{y}, and #gamma_{s} from Phys. Rev. C 100 (2019) 054906", "");
  // leg.AddEntry(gSHM_4, "TheFIST CSM, #it{V}_{C} = 4d#it{V}/d#it{y}", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");
   leg2.AddEntry(gpPb_stat, "p#minusPb", "pe");
@@ -331,15 +331,15 @@ void PlotResultsC2C1NetXi(){
   gSHM.Draw("samee3l");
   // gPYTHIA.Draw("samee3l");
   gHIJING.Draw("samee3l");
-  gPYTHIA_ANGANTYR.Draw("samee3l");
+  //gPYTHIA_ANGANTYR.Draw("samee3l");
 
   //gEPOS_pPb.Draw("samee3l");
   //gEPOS_PbPb->Draw("samee3l");
-  gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
+  //gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gPYTHIA_CRQCD->Draw("samee3l");
 
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
-  gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
+  //gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
 
   //gSHM_Vanilla_->Draw("samee3l");
 
@@ -364,16 +364,16 @@ void PlotResultsC2C1NetXi(){
   //t.DrawLatex(/* 35 */2.1, 0.92, "#sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8");
 
   //t.DrawLatex(2.5, 0.940, "0.2 < #it{p}_{T} (K) < 1.0 GeV/#it{c}");
-  t.DrawLatex(2.1, 0.91 /* 0.935 */, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
+  t.DrawLatex(2.1, 0.93 /* 0.935 */, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
   std::cout << utils::chi2interp(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";
   std::cout << utils::chi2interpMatrices(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";
 
-  TFile o("final_plot_c2c1.root", "recreate");
+  TFile o("final_plot_c2c1_cerncourier.root", "recreate");
   o.cd();
   gData.Write();
   cResult.Write();
-  cResult.Print("cC2C1.pdf"/*.pdf"*/);
+  cResult.Print("cC2C1_cerncourier.pdf"/*.pdf"*/);
   o.Close();
   f.Close();
   //f2.Close();

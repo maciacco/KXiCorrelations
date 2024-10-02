@@ -22,7 +22,7 @@
 #pragma link C++ class std::vector<MiniXi>+;
 #pragma link C++ class std::vector<MiniXiMC>+;
 #endif
- 
+
 void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_AnalysisResults", const char* ofname = "o15_", const int iVarMin = 0, const int iVarMax = 135, const int tree_number = 1)
 {
   TTree::SetMaxTreeSize( 1000000000000LL ); // 1 TB
@@ -87,7 +87,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
     //t->SetBranchAddress("index", &index, &bindex);
   TBranch *be = t->GetBranch("MiniCollision");
   be->SetAddress(&c);
-  
+
   TH1D *hCent[N_SAMPLE];
   #ifdef CLOSURE_TEST
     TH1D *hKaonQ1_Gen[2][N_SAMPLE];
@@ -100,7 +100,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
     TH1D *hXiQ2_Gen[2][N_SAMPLE];
     TH1D *hSameKaonXiQ11_Gen[2][N_SAMPLE];
     TH1D *hOppKaonXiQ11_Gen[2][N_SAMPLE];
-  #endif // CLOSURE_TEST 
+  #endif // CLOSURE_TEST
   TH1D *hKaonQ1[2][2][N_SAMPLE];
   TH1D *hKaonQ11[2][2][N_SAMPLE];
   TH1D *hKaonQ1Sq[2][2][N_SAMPLE];
@@ -111,7 +111,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
   TH1D *hXiQ2[2][2][N_SAMPLE];
   TH1D *hSameKaonXiQ11[2][2][N_SAMPLE];
   TH1D *hOppKaonXiQ11[2][2][N_SAMPLE];
-  
+
   TH3F *hNsigmaITS[2][kNEtaBins];
   TH3F *hNsigmaTPC[2][kNEtaBins];
   TH3F *hNsigmaTOF[2][kNEtaBins];
@@ -124,7 +124,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
   TH3F *hBDTEffXi; // TO BE IMPROVED -> CENTRALITY DIFFERENTIAL ESTIMATE OF XI EFFICIENCY (ALSO BDT -> SEPARATELY FOR CHARGES)
 
   TNtuple *evtTuple[N_SAMPLE][nF];
-  
+
   for (int i_sample{0}; i_sample < N_SAMPLE; ++i_sample){
     for (int i{iVarMin}; i < iVarMax; ++i)
     {
@@ -264,27 +264,27 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
     for (int j = 0; j < kNCentBinsSmall; ++j){
       for (int is = 0; is < N_SAMPLE; ++is){
         #ifdef CLOSURE_TEST
-          qK_1_Gen[j][i][is] = 0;  
-          qK_11_Gen[j][i][is] = 0;        
-          qK_1Sq_Gen[j][i][is] = 0;       
-          qXi_1_Gen[j][i][is] = 0;        
-          qXi_11_Gen[j][i][is] = 0;      
-          qXi_1Sq_Gen[j][i][is] = 0;      
-          qK_2_Gen[j][i][is] = 0;    
-          qXi_2_Gen[j][i][is] = 0;       
-          qKXi_11Same_Gen[j][i][is] = 0;      
+          qK_1_Gen[j][i][is] = 0;
+          qK_11_Gen[j][i][is] = 0;
+          qK_1Sq_Gen[j][i][is] = 0;
+          qXi_1_Gen[j][i][is] = 0;
+          qXi_11_Gen[j][i][is] = 0;
+          qXi_1Sq_Gen[j][i][is] = 0;
+          qK_2_Gen[j][i][is] = 0;
+          qXi_2_Gen[j][i][is] = 0;
+          qKXi_11Same_Gen[j][i][is] = 0;
           qKXi_11Opp_Gen[j][i][is] = 0;
         #endif // CLOSURE_TEST
         for (int k = 0; k < 2; ++k){ // efficiency corrected and w/o correction
           qK_1[j][i][k][is] = 0;
-          qK_11[j][i][k][is] = 0;   
-          qK_1Sq[j][i][k][is] = 0;       
-          qXi_1[j][i][k][is] = 0;          
-          qXi_11[j][i][k][is] = 0;    
-          qXi_1Sq[j][i][k][is] = 0;      
-          qK_2[j][i][k][is] = 0;    
-          qXi_2[j][i][k][is] = 0;       
-          qKXi_11Same[j][i][k][is] = 0;      
+          qK_11[j][i][k][is] = 0;
+          qK_1Sq[j][i][k][is] = 0;
+          qXi_1[j][i][k][is] = 0;
+          qXi_11[j][i][k][is] = 0;
+          qXi_1Sq[j][i][k][is] = 0;
+          qK_2[j][i][k][is] = 0;
+          qXi_2[j][i][k][is] = 0;
+          qKXi_11Same[j][i][k][is] = 0;
           qKXi_11Opp[j][i][k][is] = 0;
         }
       }
@@ -297,9 +297,9 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
 
     Long64_t e = i;
     if (!(i%1000000)) std::cout << "n_ev = " << i << std::endl;
-    
+
     Long64_t tentry = t->LoadTree(e);
-    
+
     if (be->GetEntry(tentry) < 0 || bk->GetEntry(tentry) < 0 || bxi->GetEntry(tentry) < 0) continue;
 
     float cent = c->fCent;
@@ -404,6 +404,7 @@ void ReadTreeEffCorr2(const char* fname = "tree_data_full/part_merging_True/%s_A
           double q2 = 1./eff/eff;
           qK_2_tmp[im][1] += q2;
           nK[im] += 1;
+          std::cout << nK[im] << std::endl;
           #ifdef FILL_HIST
             if (iDcaCut == 1 && iTpcClsCut == 1 && iChi2Cut == 1 && iPidCut == 2){
               hNsigmaITS[im][ie - 1]->Fill(cent, std::abs(k_tmp.fPt), k_tmp.fNsigmaITS);

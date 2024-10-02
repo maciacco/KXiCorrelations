@@ -39,9 +39,13 @@ void Plot()
 
   TLegend leg(0.17, 0.65, 0.5, 0.85);
   leg.SetTextFont(44);
-  leg.SetTextSize(26);
-  leg.AddEntry(&gData, "#splitline{ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV}{Phys. Lett. B 844 (2023) 137545}", "pe");
-  leg.AddEntry(&gModel, "TheFIST CE SHM, #it{T}_{chem} = 155 MeV, #it{V}_{c} = 3d#it{V}/d#it{y}", "lf");
+  leg.SetTextSize(29);
+  leg.AddEntry(&gData, "#splitline{ALICE, Pb#minusPb, #sqrt{#it{s}_{NN}} = 5.02 TeV, |#it{#eta}| < 0.8}{Phys. Lett. B 844 (2023) 137545}", "pe");
+  leg.AddEntry(&gModel, "#splitline{TheFIST CE SHM}{#it{T}_{chem} = 155 MeV, #it{V}_{c} = 3 d#it{V}/d#it{y}}", "lf");
+  TLatex t;
+  t.SetTextFont(44);
+  t.SetTextSize(29);
+  t.SetNDC();
 
   TCanvas c("cProton", "cProton", 800, 800);
   c.cd();
@@ -54,6 +58,7 @@ void Plot()
   frame.Draw("");
   line.Draw("same");
   leg.Draw("same");
+  t.DrawLatex(0.255, 0.59 /* 0.935 */, "0.6 < #it{p} < 1.5 GeV/#it{c}");
   gModel.Draw("samee3l");
   gData.Draw("samepe5");
 

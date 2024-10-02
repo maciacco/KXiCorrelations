@@ -1,0 +1,20 @@
+. scripts/run_dat_pPb_1.sh 30 33
+. scripts/run_dat_pPb_1.sh 33 36
+. scripts/run_dat_pPb_1.sh 36 39
+. scripts/run_dat_pPb_1.sh 39 42
+. scripts/run_dat_pPb_1.sh 42 45
+. scripts/run_dat_pPb_1.sh 45 48
+. scripts/run_dat_pPb_1.sh 48 51
+. scripts/run_dat_pPb_1.sh 51 54
+. scripts/run_dat_pPb_1.sh 54 57
+. scripts/run_dat_pPb_1.sh 57 60
+# . scripts/run_dat_pPb_1.sh 60 63
+# . scripts/run_dat_pPb_1.sh 63 66
+# . scripts/run_dat_pPb_1.sh 66 69
+# . scripts/run_dat_pPb_1.sh 69 72
+# . scripts/run_dat_pPb_1.sh 72 75
+# . scripts/run_dat_pPb_1.sh 75 78
+# . scripts/run_dat_pPb_1.sh 78 81
+# . scripts/run_dat_pPb_1.sh 81 84
+# . scripts/run_dat_pPb_1.sh 84 87
+# . scripts/run_dat_pPb_1.sh 87 90

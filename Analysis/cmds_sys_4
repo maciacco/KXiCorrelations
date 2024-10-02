@@ -1,0 +1,10 @@
+. scripts/sys.sh 1 1500 2025
+. scripts/sys.sh 2 1500 2025
+. scripts/sys.sh 3 1500 2025
+. scripts/sys.sh 4 1500 2025
+. scripts/sys.sh 5 1500 2025
+. scripts/sys.sh 6 1500 2025
+. scripts/sys.sh 7 1500 2025
+. scripts/sys.sh 8 1500 2025
+. scripts/sys.sh 9 1500 2025
+. scripts/sys.sh 10 1500 2025

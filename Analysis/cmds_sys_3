@@ -1,0 +1,10 @@
+. scripts/sys.sh 1 1000 1500
+. scripts/sys.sh 2 1000 1500
+. scripts/sys.sh 3 1000 1500
+. scripts/sys.sh 4 1000 1500
+. scripts/sys.sh 5 1000 1500
+. scripts/sys.sh 6 1000 1500
+. scripts/sys.sh 7 1000 1500
+. scripts/sys.sh 8 1000 1500
+. scripts/sys.sh 9 1000 1500
+. scripts/sys.sh 10 1000 1500

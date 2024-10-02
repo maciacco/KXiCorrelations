@@ -1,0 +1,10 @@
+. scripts/run_dat_15.sh 1
+. scripts/run_dat_15.sh 2
+. scripts/run_dat_15.sh 3
+. scripts/run_dat_15.sh 4
+. scripts/run_dat_15.sh 5
+. scripts/run_dat_15.sh 6
+. scripts/run_dat_15.sh 7
+. scripts/run_dat_15.sh 8
+. scripts/run_dat_15.sh 9
+. scripts/run_dat_15.sh 10

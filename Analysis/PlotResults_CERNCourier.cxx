@@ -1,7 +1,7 @@
 #include "../utils/Config.h"
 #include "../utils/Utils.h"
 
-void PlotResults(){
+void PlotResults_CERNCourier(){
   gStyle->SetOptStat(0);
 
   TFile fpp("out_sys_17_finalBinning.root"); // 17pq
@@ -23,9 +23,9 @@ void PlotResults(){
   TFile fPythia("models/PYTHIA_5TEV_CRQCD_RopeOn.root");
   TFile fEPOSPbPb("models/out_analysis_repro.root");
 
-  TCanvas cResult("cResultT", "cResultT", 800, 800);
-  TH2D frame("frame", ";#LTd#it{N}_{ch}/d#it{#eta}#GT;#it{#rho}_{#Delta#Xi #DeltaK}", 1, 1.5, 2500, 1, -0.056, 0.013);
-  TLegend leg(0.16, 0.15, 0.7, 0.35);
+  TCanvas cResult("cResult", "cResult", 800, 800);
+  TH2D frame("frame", ";Charged particle multiplicity;Pearson correlation (net-#Xi, net-K)", 1, 1.5, 2500, 1, -0.056, 0.013);
+  TLegend leg(0.2, 0.18, 0.75, 0.3);
   TLegend leg2(0.18, 0.82, 0.5, 0.95);
   TLegend leg3(0.5275, 0.3, 0.7975, 0.35);
   //(0.16395348837209303, 0.650399548902823, 0.7395348837209302, 0.9167587400421383);
@@ -303,7 +303,7 @@ void PlotResults(){
 
   // legend
   leg.SetTextFont(44);
-  leg.SetTextSize(23);
+  leg.SetTextSize(30);
   leg2.SetTextFont(44);
   leg2.SetTextSize(30);
   leg3.SetTextFont(44);
@@ -316,17 +316,17 @@ void PlotResults(){
   // leg.AddEntry(&gSHM_PbPb, "Thermal-FIST, 3 d#it{V}/d#it{y}, Pb-Pb #sqrt{#it{s}_{NN}}=5.02 TeV", "f");
   // leg.AddEntry(&gSHM_pp, "Thermal-FIST, 3 d#it{V}/d#it{y}, pp #sqrt{#it{s}_{NN}}=13 TeV", "f");
   TH1F hEmpty;
-  leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
-  leg.AddEntry(&hEmpty, "", "");
+  //leg.AddEntry(&gPYTHIA_CRMPI_ROPOFF, "PYTHIA Monash, pp", "lf");
+  //leg.AddEntry(&hEmpty, "", "");
   //leg.AddEntry(&gEPOS_pPb, "EPOS 3, p#minusPb", "lf");
-  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA QCD + Rope, pp", "lf");
-  leg.AddEntry(&gHIJING, "HIJING Pb#minusPb", "lf");
+  leg.AddEntry(gPYTHIA_CRQCD, "PYTHIA 8, pp", "lf");
+  leg.AddEntry(&gHIJING, "HIJING, Pb#minusPb", "lf");
   //leg.AddEntry(&gPYTHIA_CRMPI_ROPON, "PYTHIA MPI + Rope, pp", "f");
-  leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
-  leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
-  leg.AddEntry(&gSHM, "TheFIST CE SHM, #it{V}_{c} = 3 d#it{V}/d#it{y}", "lf");
-  leg.AddEntry(&hEmpty, "", "");
-  leg.AddEntry(&hEmpty, "#it{T}_{chem}, d#it{V}/d#it{y}, and #gamma_{s} from Phys. Rev. C 100 (2019) 054906", "");
+  //leg.AddEntry(&gPYTHIA_ANGANTYR_PPB, "PYTHIA Angantyr, p#minusPb", "lf");
+  //leg.AddEntry(&gPYTHIA_ANGANTYR, "PYTHIA Angantyr, Pb#minusPb", "lf");
+  leg.AddEntry(&gSHM, "Statistical hadronization", "lf");
+  //leg.AddEntry(&hEmpty, "", "");
+  //leg.AddEntry(&hEmpty, "#it{T}_{chem}, d#it{V}/d#it{y}, and #gamma_{s} from Phys. Rev. C 100 (2019) 054906", "");
 
   // leg.AddEntry(&gSHM_PPB_BOOST, "TheFIST p#minusPb w/ rapidity boost", "f");
   leg2.AddEntry(gpp_stat, "pp", "pe");
@@ -349,9 +349,9 @@ void PlotResults(){
   // gSHM_PbPb.Draw("samee3l");
   // gSHM_pp.Draw("samee3l");
   gSHM.Draw("samee3l");
-  gPYTHIA_ANGANTYR.Draw("samee3l");
+  //gPYTHIA_ANGANTYR.Draw("samee3l");
  //gPYTHIA_ANGANTYR_PPB_CRQCD_ROPE.Draw("samee3l");
-  gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
+  //gPYTHIA_ANGANTYR_PPB.Draw("samee3l");
   gHIJING.Draw("samee3l");
 
   //gEPOS_pPb.Draw("samee3l");
@@ -359,7 +359,7 @@ void PlotResults(){
   gPYTHIA_CRQCD->Draw("samee3l");
 
   //gPYTHIA_CRMPI_ROPON.Draw("samee3l");
-  gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
+  //gPYTHIA_CRMPI_ROPOFF.Draw("samee3l");
   //gSHM_Vanilla_->Draw("samee3l");
   //gSHM_PPB_BOOST.Draw("same3l");
   //gSHM_PPB_WOBOOST.Draw("same3l");
@@ -379,12 +379,12 @@ void PlotResults(){
   t.DrawLatex(2.1, -0.0035, "0.2 < #it{p}_{T}(K) < 1.0 GeV/#it{c}");
   t.DrawLatex(2.1, -0.008, "1.0 < #it{p}_{T}(#Xi) < 3.0 GeV/#it{c}");
 
-  TFile o("final_plot_rho_finalBinningT.root", "recreate");
+  TFile o("final_plot_rho_finalBinning_cernCourier.root", "recreate");
   o.cd();
 
   gPYTHIA.Write();
   cResult.Write();
-  cResult.Print("cRho.pdf"/* .pdf" */);
+  cResult.Print("cRho_cerncourier.pdf"/* .pdf" */);
 
   std::cout << utils::chi2interp(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";
   std::cout << utils::chi2interpMatrices(gpp_stat, gpp_sys, gPYTHIA_CRQCD) << "\n";

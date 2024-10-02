@@ -301,6 +301,65 @@ namespace utils
     return sqrt(res);
   }
 
+  double chi2Matrices(TGraphErrors* const& gStat, TGraphErrors* const& gSys, TGraphErrors* const& gModel, int size = 7){
+    ROOT::Math::SVector<double, 7> data_model_diff;
+    ROOT::Math::SMatrix<double, 7, 7> covariance;
+
+    // fill data, model, and uncorrelated uncertainty matrices
+    for (int iDiag{0}; iDiag < size; ++iDiag) {
+      std::cout << gStat->GetPointY(iDiag + 1) << "\t" << gSys->GetPointY(iDiag + 1) << "\n";
+      data_model_diff[iDiag] = gStat->GetPointY(iDiag + 1) - gModel->GetPointY(iDiag);
+      covariance[iDiag][iDiag] = std::pow(gStat->GetErrorY(iDiag + 1), 2.)+ std::pow(gModel->GetErrorY(iDiag), 2.); //+ std::pow(gSys->GetErrorY(iDiag + 1), 2.);
+    }
+
+    //fill correlated uncertainty matrix
+    for (int iC{0}; iC < size; ++iC) {
+      for (int iR{0}; iR < size; ++iR) {
+        covariance[iR][iC] += (gSys->GetErrorY(iR) * gSys->GetErrorY(iC)); // + 0.021 * gStat->GetPointY(iR) * 0.021 * gStat->GetPointY(iC));
+      }
+    }
+
+    // covariance.Print(std::cout);
+
+    // combine errors
+    auto inverse_covariance = covariance.Invert();
+
+    return ROOT::Math::Similarity<double>(covariance, data_model_diff);
+  }
+
+  Double_t chi2interpMatrices(TGraphErrors *gstat, TGraphErrors *gsyst, TGraphErrors *gmodel, int size = 7){
+    double res = 0.;
+    TGraphErrors modelInterp;
+    for (int i{0}; i < gstat->GetN(); ++i){
+      int pL = -999, pR = -999;
+      double x = gstat->GetPointX(i);
+      for (int iP{0}; iP < gmodel->GetN(); ++iP){
+        // std::cout << x << "\t" << gmodel->GetPointX(iP) << "\n";
+        if (x > gmodel->GetPointX(iP)) continue;
+        pR = iP;
+        pL = iP - 1;
+        break;
+      }
+      if (pR == pL) continue;
+      TF1 f("fit", "pol1", gmodel->GetPointX(pL) - 0.5, gmodel->GetPointX(pR) + 0.5);
+      auto r = gmodel->Fit("fit", "NRSQ", "", gmodel->GetPointX(pL) -0.5, gmodel->GetPointX(pR) + 0.5);
+      double xx[1] = { x };
+      double err[1];  // error on the function at point x0
+      r->GetConfidenceIntervals(1, 1, 1, xx, err, 0.683, false);
+      double model = f.Eval(x);
+      double model_err = err[0];
+      double tmp = 0.;
+      modelInterp.AddPoint(x, model);
+      modelInterp.SetPointError(modelInterp.GetN() - 1, 0, err[0]);
+    }
+    TFile fg("cfg.root", "recreate");
+    fg.cd();
+    modelInterp.Write();
+    gstat->Write();
+    gsyst->Write();
+    return chi2Matrices(gstat, gsyst, &modelInterp, size);
+  }
+
 }
 
 #endif

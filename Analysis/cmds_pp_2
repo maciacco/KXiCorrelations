@@ -1,0 +1,10 @@
+. scripts/run_dat_pp.sh 11
+. scripts/run_dat_pp.sh 12
+. scripts/run_dat_pp.sh 13
+. scripts/run_dat_pp.sh 14
+. scripts/run_dat_pp.sh 15
+. scripts/run_dat_pp.sh 16
+. scripts/run_dat_pp.sh 17
+. scripts/run_dat_pp.sh 18
+. scripts/run_dat_pp.sh 19
+. scripts/run_dat_pp.sh 20

@@ -1,0 +1,12 @@
+. scripts/run_dat_1.sh 21 0 45
+. scripts/run_dat_1.sh 22 0 45
+. scripts/run_dat_1.sh 23 0 45
+. scripts/run_dat_1.sh 24 0 45
+. scripts/run_dat_1.sh 25 0 45
+. scripts/run_dat_1.sh 26 0 45
+. scripts/run_dat_1.sh 27 0 45
+. scripts/run_dat_1.sh 28 0 45
+. scripts/run_dat_1.sh 29 0 45
+. scripts/run_dat_1.sh 30 0 45
+. scripts/run_dat_1.sh 31 0 45
+. scripts/run_dat_1.sh 32 0 45

@@ -55,6 +55,16 @@
         "sstream": "cpp",
         "stdexcept": "cpp",
         "streambuf": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "AnalysisSysPbPbCombined_finalBinning.C": "cpp",
+        "Analysis.C": "cpp",
+        "sameevent.C": "cpp",
+        "sameevent2.C": "cpp",
+        "Analysis_pp_finalBinning_Xi.C": "cpp",
+        "Analysis_pp_finalBinning_K.C": "cpp",
+        "Analysis_pp_finalBinning_c2c1K.C": "cpp",
+        "Analysis_pp.C": "cpp",
+        "Analysis_pp_finalBinning copy.C": "cpp",
+        "Analysis_pp_test.C": "cpp"
     }
 }

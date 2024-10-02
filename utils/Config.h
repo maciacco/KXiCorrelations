@@ -124,7 +124,7 @@ struct MiniEvent2 {
   }
   unsigned char fCent;
   std::vector<MicroTrack> fTracks;
-  
+
   bool IsSame(MiniEvent2 other){
     return (this->fCent == other.fCent && this->fTracks.front().fPt == other.fTracks.front().fPt && this->fTracks.front().fIsKaon == other.fTracks.front().fIsKaon && this->fTracks.front().fIsXi == other.fTracks.front().fIsXi);
   }
@@ -218,7 +218,7 @@ constexpr double kBdtEffCut = .7;
 constexpr double kBdtScoreCut = 0.99;
 //constexpr double kBdtScoreCuts[5] = {0.9750, 0.9775, 0.9800, 0.9825, 0.9850};
 //constexpr double kBdtEffCuts[5] = {0.50, 0.525, 0.55, 0.575, 0.60};
-constexpr double kBdtEffCuts[] = {0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61, 0.62, 0.63, 0.64}; // {0.25, 0.26, 0.27, 0.28, 0.29, 0.30, 0.31, 0.32, 0.33, 0.34}; //{0.25, 0.275, 0.3, 0.325, 0.35}; // PbPb // {0.55, 0.575, 0.6, 0.625, 0.65}; // pp//  // {0.55, 0.6, 0.65}; // pPb // 
+constexpr double kBdtEffCuts[] = {0.55, 0.56, 0.57, 0.58, 0.59, 0.60, 0.61, 0.62, 0.63, 0.64}; // {0.25, 0.26, 0.27, 0.28, 0.29, 0.30, 0.31, 0.32, 0.33, 0.34}; //{0.25, 0.275, 0.3, 0.325, 0.35}; // PbPb // {0.55, 0.575, 0.6, 0.625, 0.65}; // pp//  // {0.55, 0.6, 0.65}; // pPb //
 constexpr double kPtLowLimitK = 0.2;
 constexpr int kLimitedSample = 10000000;
 

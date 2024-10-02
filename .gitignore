@@ -17,3 +17,6 @@
 
 # even if they are inside subdirectories
 !*/
+
+# add commands
+!*cmds*
